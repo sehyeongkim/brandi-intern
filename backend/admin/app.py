@@ -1,8 +1,18 @@
 import config
-from connection import get_connection
 
 from flask import Flask
 from flask_cors import CORS
+
+from service import (
+                        ProductService, 
+                        OrderService, 
+                        AccountService
+)
+from model import (
+                    ProductDao, 
+                    OrderDao, 
+                    AccountDao
+)
 
 
 def create_app(test_config=None):
@@ -15,44 +25,23 @@ def create_app(test_config=None):
     else:
         app.config.update(test_config)
 
+    # model
+    product_dao = ProductDao()
+    order_dao = OrderDao()
+    account_dao = AccountDao()
+
+    # service
+    product_service = ProductService(product_dao)
+    order_service = OrderService(order_dao)
+    account_service = AccountService(account_dao)
+
+    services = {
+        'product_service': product_service,
+        'order_service': order_service,
+        'account_service': account_service
+    }
+    
+    # endpoint 생성 
+    create_endpoints(app, services)
+    
     return app
-
-
-# @app.route("/select", methods=["GET"])
-# def select():
-#     connection = None
-#     try:
-#         # 파라메터 벨리데이션
-#         # 요청 값 벨리데이션
-#         connection = get_connection()
-#         # 비지니스 체크
-#         with connection.cursor() as cursor:
-#             sql = "SELECT * FROM test;"
-#             cursor.execute(sql)
-#             result = cursor.fetchall()
-#             print(result)
-
-#     finally:
-#         if connection:
-#             connection.close()
-
-#     return result[0]
-
-
-# @app.route("/insert", methods=["POST"])
-# def insert():
-#     connection = None
-#     try:
-#         connection = get_connection()
-
-#         with connection.cursor() as cursor:
-#             sql = "INSERT INTO test(name) VALUES ('찬호');"
-#             cursor.execute(sql)
-
-#         connection.commit()
-
-#     finally:
-#         if connection:
-#             connection.close()
-
-#     return "haha"
