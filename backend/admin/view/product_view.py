@@ -78,7 +78,7 @@ class ProductView(MethodView):
             if conn:
                 result = self.service.get_products_list(conn, params)
             
-            return jsonify(result, 200)
+            return jsonify(result), 200
         
         finally:
             conn.close()
@@ -96,7 +96,7 @@ class ProductView(MethodView):
                 
             conn.commit()
 
-            return jsonify('', 200)
+            return jsonify(''), 200
         
         finally:
             conn.close()
@@ -113,7 +113,7 @@ class ProductView(MethodView):
             
             conn.commit()
 
-            return jsonify('', 200)
+            return jsonify(''), 200
         
         finally:
             conn.close()
@@ -132,7 +132,7 @@ class ProductDetailView(MethodView):
             if conn:
                 result = self.service.get_product_detail(conn, product_code)
             
-            return jsonify(result, 200)
+            return jsonify(result), 200
         
         finally:
             conn.close()
@@ -151,7 +151,7 @@ class ProductCategoryView(MethodView):
             if conn:
                 result = self.service.get_categories_list(conn, category_id)
             
-            return jsonify(result, 200)
+            return jsonify(result), 200
         
         finally:
             conn.close()
@@ -170,7 +170,7 @@ class ProductSellerView(MethodView):
             if conn:
                 result = self.service.get_sellers_list(conn, seller_id)
             
-            return jsonify(result, 200)
+            return jsonify(result), 200
         
         finally:
             conn.close()
@@ -192,7 +192,7 @@ class ProductSellerSearchView(MethodView):
             if conn:
                 result = self.service.search_seller(conn, *args)
             
-            return jsonify(result, 200)
+            return jsonify(result), 200
         
         finally:
             conn.close()
