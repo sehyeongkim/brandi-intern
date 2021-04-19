@@ -1,8 +1,6 @@
-from datetime import datetime
-
-from flask import request, jsonify
+from flask import request, jsonify, g
 from flask.views import MethodView
-from flask_request_validator import validate_params, Param
+from flask_request_validator import validate_params, Param, GET, Datetime, ValidRequest
 
 from connection import get_connection
 
@@ -27,53 +25,13 @@ class ProductView(MethodView):
         Param('product_number', GET, int, required=False),
         Param('page', GET, int, required=False),
         Param('limit', GET, int, required=False),
-        Param('start_date', GET, str, rules=[datetime('%Y-%m-%d')]),
-        Param('end_date', GET, str, rules=[datetime('%Y-%m-%d')])
+        Param('start_date', GET, str, rules=[Datetime('%Y-%m-%d')]),
+        Param('end_date', GET, str, rules=[Datetime('%Y-%m-%d')])
     )
-    def get(self, *args):
+    def get(self, valid: ValidRequest):
         conn = None
         try:
-            params = dict()
-            if args[0]:
-                params['selling'] = args[0]
-            
-            if args[1]:
-                params['discount'] = args[1]
-            
-            if args[2]:
-                params['start_date'] = args[2]
-            
-            if args[3]:
-                params['end_date'] = args[3]
-            
-            if args[4]:
-                params['displayed'] = args[4]
-            
-            if args[5]:
-                params['sub_property'] = args[5]
-            
-            if args[6]:
-                params['seller'] = args[6]
-
-            if args[7]:
-                params['product_id'] = args[7]
-            
-            if args[8]:
-                params['product_name'] = args[8]
-            
-            if args[9]:
-                params['product_code'] = args[9]
-            
-            if args[10]:
-                params['product_number'] = args[10]
-            
-            # pagination
-            if args[11]:
-                params[''] = args[11]
-            
-            if args[12]:
-                params[''] = args[12]
-            
+            params = valid.get_params()
             conn = get_connection()
             if conn:
                 result = self.service.get_products_list(conn, params)
@@ -88,11 +46,11 @@ class ProductView(MethodView):
     def post(self):
         conn = None
         try:
-            # request의 body 출력값 
-            data = request.data   # type of data ??
+            # request body의 data
+            body = request.data
             conn = get_connection()
             if conn:
-                self.service.post_product_by_seller_or_master(conn, data)
+                self.service.post_product_by_seller_or_master(conn, body)
                 
             conn.commit()
 
@@ -106,10 +64,11 @@ class ProductView(MethodView):
     def patch(self):
         conn = None
         try:
-            data = request.data
+            # request body의 data
+            body = request.data
             conn = get_connection()
             if conn:
-                self.service.patch_product(conn, data)
+                self.service.patch_product(conn, body)
             
             conn.commit()
 
@@ -183,14 +142,15 @@ class ProductSellerSearchView(MethodView):
     # 상품 등록 -> 셀러 검색
     # @login_required
     @validate_params(
-        Params('search', GET, str, required=False)
+        Param('search', GET, str, required=False)
     )
-    def get(self, *args):
+    def get(self, valid: ValidRequest):
         conn = None
         try:
+            params = valid.get_params()
             conn = get_connection()
             if conn:
-                result = self.service.search_seller(conn, *args)
+                result = self.service.search_seller(conn, params)
             
             return jsonify(result), 200
         

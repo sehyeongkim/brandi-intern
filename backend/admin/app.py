@@ -8,12 +8,12 @@ from service import (
                         OrderService, 
                         AccountService
 )
-from model import (
-                    ProductDao, 
-                    OrderDao, 
-                    AccountDao
-)
 
+from view import create_endpoints
+
+
+class Service:
+    pass
 
 def create_app(test_config=None):
     app = Flask(__name__)
@@ -24,24 +24,14 @@ def create_app(test_config=None):
         app.config.from_pyfile("config.py")
     else:
         app.config.update(test_config)
-
-    # model
-    product_dao = ProductDao()
-    order_dao = OrderDao()
-    account_dao = AccountDao()
-
-    # service
-    product_service = ProductService(product_dao)
-    order_service = OrderService(order_dao)
-    account_service = AccountService(account_dao)
-
-    services = {
-        'product_service': product_service,
-        'order_service': order_service,
-        'account_service': account_service
-    }
     
-    # endpoint 생성 
+    services = Service()
+
+    services.product_service = ProductService()
+    services.order_service = OrderService()
+    services.account_service = AccountService()
+
+    # endpoint 생성
     create_endpoints(app, services)
-    
+
     return app

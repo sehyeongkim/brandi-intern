@@ -1,6 +1,6 @@
 from flask import request, jsonify
 from flask.views import MethodView
-from flask_request_validator import validate_params, Param
+from flask_request_validator import validate_params, Param, GET, ValidRequest
 
 from connection import get_connection
 
@@ -21,34 +21,11 @@ class OrderView(MethodView):
         Param('phone', GET, str, required=False),
         Param('seller_name', GET, str, required=False),
         Param('product_name', GET, str, required=False)
-)
-    def get(self, *args):
+    )
+    def get(self, valid: ValidRequest):
         conn = None
         try:
-            params = dict()
-            params['date_from'] = args[0]
-            params['date_to'] = args[1]
-            params['order_no'] = args[3]
-            params['order_status_id'] = args[4]
-
-            if args[2]:
-                params['sub_property'] = args[2]
-            
-            if args[5]:
-                params['order_detail_no'] = args[5]
-            
-            if args[6]:
-                params['user_name'] = args[6]
-            
-            if args[7]:
-                params['phone'] = args[7]
-            
-            if args[8]:
-                params['seller_name'] = args[8]
-            
-            if args[9]:
-                params['product_name'] = args[9]
-
+            params = valid.get_params()
             conn = get_connection()
             if conn:
                 result = self.service.get_order_list(conn, params)
@@ -58,15 +35,15 @@ class OrderView(MethodView):
         finally:
             conn.close()
     
-    # order status type 변경
+    # order_status_type 변경
     # @login_required
     def patch(self):
         conn = None
         try:
-            data = request.data
+            body = request.data
             conn = get_connection()
             if conn:
-                self.service.patch_order_status_type(conn, data)
+                self.service.patch_order_status_type(conn, body)
             
             conn.commit()
             

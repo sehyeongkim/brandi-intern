@@ -10,10 +10,10 @@ class AccountSignUpView(MethodView):
     def post(self):
         conn = None
         try:
-            data = request.data
+            body = request.data
             conn = get_connection()
             if conn:
-                self.service.post_account_signup(conn, data)
+                self.service.post_account_signup(conn, body)
             
             conn.commit()
             
@@ -31,10 +31,10 @@ class AccountLogInView(MethodView):
     def post(self):
         conn = None
         try:
-            data = request.data
+            body = request.data
             conn = get_connection()
             if conn:
-                result = self.service.post_account_login(conn, data)
+                result = self.service.post_account_login(conn, body)
             
             conn.commit()
 
