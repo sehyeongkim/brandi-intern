@@ -3,7 +3,9 @@ from .product_view import (
                             ProductDetailView, 
                             ProductCategoryView,
                             ProductSellerView,
-                            ProductSellerSearchView
+                            ProductSellerSearchView,
+                            ProductColorView,
+                            ProductSizeView
 )
 
 from .order_view import (
@@ -15,11 +17,13 @@ from .account_view import (
                             AccountLogInView
 )
 
+
 def create_endpoints(app, services):
 
     product_service = services.product_service
     order_service = services.order_service
     account_service = services.account_service
+
     
     # product
     app.add_url_rule("/products",
@@ -40,6 +44,14 @@ def create_endpoints(app, services):
 
     app.add_url_rule("/products/seller", 
                     view_func=ProductSellerSearchView.as_view('product_seller_search_view', product_service), 
+                    methods=['GET'])
+
+    app.add_url_rule("/products/color",
+                    view_func=ProductColorView.as_view('product_color_view', product_service),
+                    methods=['GET'])
+    
+    app.add_url_rule("/products/size",
+                    view_func=ProductSizeView.as_view('product_size_view', product_service),
                     methods=['GET'])
 
     # order

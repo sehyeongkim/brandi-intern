@@ -42,7 +42,7 @@ class ProductView(MethodView):
             conn.close()
     
     # 상품 등록 (by master or seller)
-    # @login_required 
+    # @login_required
     def post(self):
         conn = None
         try:
@@ -151,6 +151,40 @@ class ProductSellerSearchView(MethodView):
             conn = get_connection()
             if conn:
                 result = self.service.search_seller(conn, params)
+            
+            return jsonify(result), 200
+        
+        finally:
+            conn.close()
+
+
+class ProductColorView(MethodView):
+    def __init__(self, service):
+        self.service = service
+    
+    def get(self):
+        conn = None
+        try:
+            conn = get_connection()
+            if conn:
+                result = self.service.get_products_color_list(conn)
+            
+            return jsonify(result), 200
+        
+        finally:
+            conn.close()
+
+
+class ProductSizeView(MethodView):
+    def __init__(self, service):
+        self.service = service
+    
+    def get(self):
+        conn = None
+        try:
+            conn = get_connection()
+            if conn:
+                result = self.service.get_products_size_list(conn)
             
             return jsonify(result), 200
         
