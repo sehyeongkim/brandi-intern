@@ -23,7 +23,6 @@ def create_endpoints(app, services):
     order_service = services.order_service
     account_service = services.account_service
 
-    
     # product
     app.add_url_rule("/products",
                     view_func=ProductView.as_view('product_view', product_service), 

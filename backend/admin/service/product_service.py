@@ -1,4 +1,4 @@
-from model import ProductDao
+from admin.model import ProductDao
 
 class ProductService:
     def __new__(cls, *args, **kwargs):

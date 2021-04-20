@@ -1,6 +1,6 @@
 import bcrypt, jwt
 
-from model import AccountDao
+from admin.model import AccountDao
 
 class AccountService:
     def __new__(cls, *args, **kwargs):

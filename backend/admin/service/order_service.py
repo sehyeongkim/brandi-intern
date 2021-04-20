@@ -1,4 +1,4 @@
-from model import OrderDao
+from admin.model import OrderDao
 
 class OrderService:
     def __new__(cls, *args, **kwargs):

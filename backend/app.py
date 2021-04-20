@@ -2,13 +2,13 @@ from flask import Flask
 from flask_cors import CORS
 
 
-from model.service import (
-                            ProductService,
-                            OrderService,
-                            AccountService
-)x
+from admin.service import (
+    ProductService,
+    OrderService,
+    AccountService
+)
 
-from model.view import create_endpoints
+from admin.view import create_endpoints
 
 
 class Service:
