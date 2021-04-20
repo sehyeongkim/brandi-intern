@@ -19,7 +19,6 @@ from .account_view import (
 
 
 def create_endpoints(app, services):
-
     product_service = services.product_service
     order_service = services.order_service
     account_service = services.account_service
@@ -71,3 +70,4 @@ def create_endpoints(app, services):
     app.add_url_rule("/account/login",
                     view_func=AccountLogInView.as_view('account_login_view', account_service),
                     methods=['POST'])
+    
