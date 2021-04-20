@@ -16,4 +16,4 @@ class OrderService:
     
     # order_status_type 변경
     def patch_order_status_type(self, conn, body):
-        return order_dao.patch_order_status_type(conn, dbody)
+        return order_dao.patch_order_status_type(conn, body)
