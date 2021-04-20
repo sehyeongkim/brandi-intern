@@ -8,7 +8,7 @@ from admin.service import (
     AccountService
 )
 
-from model.view import create_endpoints
+from admin.view import create_endpoints
 
 
 class Service:

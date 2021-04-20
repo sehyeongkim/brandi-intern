@@ -1,10 +1,14 @@
 import bcrypt, jwt
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 from admin.model import AccountDao
 =======
 from model import AccountDao
 >>>>>>> Modify: Directory 구조 변경 및 경로 수정정
+=======
+from admin.model import AccountDao
+>>>>>>> Modify: Directory 구조 변경 및 경로 수정 완료
 
 class AccountService:
     def __new__(cls, *args, **kwargs):
