@@ -1,7 +1,8 @@
 from flask import request, jsonify, g
 from flask.views import MethodView
 from flask_request_validator import validate_params, Param, GET, Datetime, ValidRequest
-from backend.connection import get_connection
+
+from connection import get_connectionconda
 
 class ProductView(MethodView):
     def __init__(self, service):
