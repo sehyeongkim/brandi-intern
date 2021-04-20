@@ -3,7 +3,7 @@ from .order_dao import OrderDao
 from .account_dao import AccountDao
 
 __all__ = [
-    ProductDao,
-    OrderDao,
-    AccountDao
+    "ProductDao",
+    "OrderDao",
+    "AccountDao"
 ]
