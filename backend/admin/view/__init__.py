@@ -59,4 +59,3 @@ def create_endpoints(app, services):
     app.add_url_rule("/account/login",
                     view_func=AccountLogInView.as_view('account_login_view', account_service),
                     methods=['POST'])
-    

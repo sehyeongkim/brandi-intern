@@ -35,6 +35,7 @@ class AccountSignUpView(MethodView):
             if conn:
                 conn.rollback()
             raise e
+        
         finally:
             if conn:
                 conn.close()
