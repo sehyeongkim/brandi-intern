@@ -1,14 +1,12 @@
 from flask import request, jsonify, g
 from flask.views import MethodView
 from flask_request_validator import validate_params, Param, GET, Datetime, ValidRequest
-
-from connection import get_connection
+from backend.connection import get_connection
 
 
 class ProductView(MethodView):
     def __init__(self, service):
         self.service = service
-
     # 상품 리스트 조회
     # @login_required
     @validate_params(
