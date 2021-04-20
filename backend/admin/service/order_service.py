@@ -1,5 +1,9 @@
 from admin.model import OrderDao
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> Order 주문관리 진행중
 class OrderService:
     def __new__(cls, *args, **kwargs):
         if not hasattr(cls, '_instance'):
@@ -9,7 +13,10 @@ class OrderService:
     def __init__(self):
         self.order_dao = OrderDao()
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> Order 주문관리 진행중
     
 >>>>>>> Modify: Directory 구조 변경 및 경로 수정정
     # 주문 조회
@@ -18,6 +25,7 @@ class OrderService:
     
     # order_status_type 변경
     def patch_order_status_type(self, conn, body):
+<<<<<<< HEAD
 <<<<<<< HEAD
         return order_dao.patch_order_status_type(conn, body)
     
@@ -28,3 +36,6 @@ class OrderService:
 =======
         return self.order_dao.patch_order_status_type(conn, body)
 >>>>>>> Modify: Directory 구조 변경 및 경로 수정정
+=======
+        return self.order_dao.patch_order_status_type(conn, dbody)
+>>>>>>> Order 주문관리 진행중
