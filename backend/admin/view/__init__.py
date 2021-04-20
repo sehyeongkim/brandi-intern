@@ -75,6 +75,7 @@ def create_endpoints(app, services):
     app.add_url_rule("/account/login",
                     view_func=AccountLogInView.as_view('account_login_view', account_service),
 <<<<<<< HEAD
+<<<<<<< HEAD
                     methods=['POST'])
 <<<<<<< HEAD
     
@@ -85,3 +86,7 @@ def create_endpoints(app, services):
 =======
                     methods=['POST'])
 >>>>>>> Modify : 디렉토리 수정, gitignore에 .vscode 추가
+=======
+                    methods=['POST'])
+    
+>>>>>>> Modify : import 경로 문제 수정
