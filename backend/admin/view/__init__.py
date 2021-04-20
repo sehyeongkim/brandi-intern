@@ -75,6 +75,9 @@ def create_endpoints(app, services):
     app.add_url_rule("/account/login",
                     view_func=AccountLogInView.as_view('account_login_view', account_service),
                     methods=['POST'])
+<<<<<<< HEAD
     
     error_handle(app)
+=======
+>>>>>>> Add : 회원가입 API 작성중
     
