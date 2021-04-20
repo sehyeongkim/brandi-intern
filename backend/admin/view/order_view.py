@@ -4,7 +4,7 @@ from flask_request_validator import validate_params, Param, GET, ValidRequest
 
 from connection import get_connection
 
-class OrderView(MethodView):
+class OrderListView(MethodView):
     def __init__(self, service):
         self.service = service
     
@@ -13,8 +13,8 @@ class OrderView(MethodView):
     @validate_params(
         Param('date_from', GET, str, required=True),
         Param('date_to', GET, str, required=True),
-        Param('sub_property', GET, str, required=False),
-        Param('order_no', GET, str, required=True),
+        Param('sub_property', GET, str, required=False), # decorator에서 master인 경우에 True
+        Param('order_no', GET, str, required=False),
         Param('order_status_id', GET, int, required=True),
         Param('order_detail_no', GET, str, required=False),
         Param('user_name', GET, str, required=False),
