@@ -1,5 +1,6 @@
-from model import AccountDao
 import bcrypt, jwt
+
+from model import AccountDao
 
 class AccountService:
     def __new__(cls, *args, **kwargs):
@@ -38,7 +39,6 @@ class AccountService:
         # if not create_seller_result:
             # return False
         
-        print(data)    
         return self.account_dao.create_seller_signup(conn, data)
     
     # seller or master 로그인

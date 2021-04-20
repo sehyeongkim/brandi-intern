@@ -6,7 +6,7 @@ from functools import wraps
 
 from connection import get_connection
 
-from model import AccountDao
+from admin.model import AccountDao
 
 def login_required(f):
     @wraps(f)

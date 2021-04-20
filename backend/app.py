@@ -1,15 +1,14 @@
-import sys
-
 from flask import Flask
 from flask_cors import CORS
 
-from admin.service import (
+
+from model.service import (
                             ProductService,
                             OrderService,
                             AccountService
-)
+)x
 
-from admin.view import create_endpoints
+from model.view import create_endpoints
 
 
 class Service:
