@@ -38,6 +38,7 @@ class AccountSignUpView(MethodView):
             if conn:
                 conn.rollback()
             raise e
+        
         finally:
             try:
                 if conn is not None:
