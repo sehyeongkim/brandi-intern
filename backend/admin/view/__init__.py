@@ -78,6 +78,7 @@ def create_endpoints(app, services):
 <<<<<<< HEAD
                     methods=['POST'])
 <<<<<<< HEAD
+<<<<<<< HEAD
     
     error_handle(app)
 =======
@@ -90,3 +91,8 @@ def create_endpoints(app, services):
                     methods=['POST'])
     
 >>>>>>> Modify : import 경로 문제 수정
+=======
+    
+    error_handle(app)
+    
+>>>>>>> [error_handle 작성]
