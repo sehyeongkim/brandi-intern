@@ -25,17 +25,18 @@ class ProductService:
     def get_product_detail(self, conn, product_code):
         return self.product_dao.get_product_detail(conn, product_code)
     
-    # 상품 categories list 가져오기
-    def get_categories_list(self, conn, category_id):
-        return self.product_dao.get_categories_list(conn, category_id)
+    # 상품 등록 창에서 seller 검색 master만 가능함
+    def search_seller(self, conn, keyword):
+        keyword = keyword + '%'
+        return self.product_dao.search_seller(conn, keyword)
     
-    # sellers list 가져오기
-    def get_sellers_list(self, conn, seller_id):
-        return self.product_dao.get_seller_list(conn, seller_id)
-
-    # 상품 등록 창에서 seller 검색
-    def search_seller(self, conn, params):
-        return self.product_dao.search_seller(conn, params)
+    # seller 속성, 1차 카테고리
+    def get_property_and_available_categories_list(self, conn, seller_id):
+        return self.product_dao.get_property_and_available_categories(conn, seller_id)
+    
+    # 상품 categories list 가져오기
+    def get_sub_categories_list(self, conn, category_id):
+        return self.product_dao.get_sub_categories_list(conn, category_id)
     
     # 상품 등록 창에서 color list 뿌려주기
     def get_products_color_list(self, conn):

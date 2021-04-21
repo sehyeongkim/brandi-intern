@@ -46,11 +46,12 @@ class ProductView(MethodView):
         try:
             # request body의 data
             body = request.data
+            account_id = g.account_id
             conn = get_connection()
             if conn:
                 self.service.post_product_by_seller_or_master(conn, body)
                 
-            conn.commit()
+                conn.commit()
 
             return jsonify(''), 200
         
@@ -67,8 +68,8 @@ class ProductView(MethodView):
             conn = get_connection()
             if conn:
                 self.service.patch_product(conn, body)
-            
-            conn.commit()
+                
+                conn.commit()
 
             return jsonify(''), 200
         
@@ -89,45 +90,7 @@ class ProductDetailView(MethodView):
             if conn:
                 result = self.service.get_product_detail(conn, product_code)
             
-            return jsonify(result), 200
-        
-        finally:
-            conn.close()
-
-
-class ProductCategoryView(MethodView):
-    def __init__(self, service):
-        self.service = service
-
-    # 상품 등록 -> 2차 카테고리 선택
-    # @login_required
-    def get(self, category_id):
-        conn = None
-        try:
-            conn = get_connection()
-            if conn:
-                result = self.service.get_categories_list(conn, category_id)
-            
-            return jsonify(result), 200
-        
-        finally:
-            conn.close()
-
-
-class ProductSellerView(MethodView):
-    def __init__(self, service):
-        self.service = service
-    
-    # 상품 등록 -> 셀러 선택
-    # @login_required
-    def get(self, seller_id):
-        conn = None
-        try:
-            conn = get_connection()
-            if conn:
-                result = self.service.get_sellers_list(conn, seller_id)
-            
-            return jsonify(result), 200
+                return jsonify(result), 200
         
         finally:
             conn.close()
@@ -138,7 +101,6 @@ class ProductSellerSearchView(MethodView):
         self.service = service
 
     # 상품 등록 -> 셀러 검색
-    # @login_required
     @validate_params(
         Param('search', GET, str, required=False)
     )
@@ -146,14 +108,51 @@ class ProductSellerSearchView(MethodView):
         conn = None
         try:
             params = valid.get_params()
+            keyword = params['search']
             conn = get_connection()
             if conn:
-                result = self.service.search_seller(conn, params)
-            
-            return jsonify(result), 200
+                result = self.service.search_seller(conn, keyword)
+                return jsonify(result), 200
+        finally:
+            if conn:
+                conn.close()
+
+
+class ProductSellerView(MethodView):
+    def __init__(self, service):
+        self.service = service
+    
+    # 상품 등록 -> 셀러 선택
+    # seller 속성, 1차 카테고리
+    def get(self, seller_id):
+        conn = None
+        try:
+            conn = get_connection()
+            if conn:
+                result = self.service.get_property_and_available_categories(conn, seller_id)
+                return jsonify(result), 200
         
         finally:
-            conn.close()
+            if conn:
+                conn.close()
+
+
+class ProductSubCategoryView(MethodView):
+    def __init__(self, service):
+        self.service = service
+    
+    # 상품 등록 -> 2차 카테고리 선택
+    def get(self, category_id):
+        conn = None
+        try:
+            conn = get_connection()
+            if conn:
+                result = self.service.get_sub_categories_list(conn, category_id)
+                return jsonify(result), 200
+        
+        finally:
+            if conn:
+                conn.close()
 
 
 class ProductColorView(MethodView):
@@ -166,11 +165,11 @@ class ProductColorView(MethodView):
             conn = get_connection()
             if conn:
                 result = self.service.get_products_color_list(conn)
-            
-            return jsonify(result), 200
+                return jsonify(result), 200
         
         finally:
-            conn.close()
+            if conn:
+                conn.close()
 
 
 class ProductSizeView(MethodView):
@@ -183,8 +182,8 @@ class ProductSizeView(MethodView):
             conn = get_connection()
             if conn:
                 result = self.service.get_products_size_list(conn)
-            
-            return jsonify(result), 200
+                return jsonify(result), 200
         
         finally:
-            conn.close()
+            if conn:
+                conn.close()
