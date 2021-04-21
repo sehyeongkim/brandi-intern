@@ -1,4 +1,4 @@
-from model import ProductDao
+from admin.model import ProductDao
 
 class ProductService:
     def __new__(cls, *args, **kwargs):
@@ -9,6 +9,7 @@ class ProductService:
     def __init__(self):
         self.product_dao = ProductDao()
 
+    
     # 상품 리스트 가져오기
     def get_products_list(self, conn, params):
         return self.product_dao.get_products_list(conn, params)
@@ -36,3 +37,11 @@ class ProductService:
     # 상품 등록 창에서 seller 검색
     def search_seller(self, conn, params):
         return self.product_dao.search_seller(conn, params)
+    
+    # 상품 등록 창에서 color list 뿌려주기
+    def get_products_color_list(self, conn):
+        return self.product_dao.get_products_color_list(conn)
+
+    # 상품 등록 창에서 size list 뿌려주기
+    def get_products_size_list(self, conn):
+        return self.product_dao.get_products_size_list(conn)

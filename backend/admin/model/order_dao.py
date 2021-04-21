@@ -10,45 +10,120 @@ class OrderDao:
         pass
     
     def get_order_list(self, conn, params):
+        sql = """
+        SELECT
+            o.created_at, 
+            o.order_number, 
+            d.detail_order_number, 
+            s.korean_brand_name,
+            p.title,  
+            op.color_id, 
+            op.size_id, 
+            d.quantity,
+            o.order_username,
+            u.phone,
+            d.price,
+            d.order_status_type_id
+        FROM 
+            orders as o
+        INNER JOIN 
+            orders_detail as d ON o.id = d.order_id
+        INNER JOIN 
+            products as p ON p.id = d.product_id 
+        INNER JOIN 
+            sellers as s ON s.id = p.seller_id 
+        INNER JOIN 
+            options as op ON op.product_id = p.id
+        INNER JOIN 
+            users AS u ON u.id = o.user_id
+        INNER JOIN 
+            sub_property as sp ON sp.id = s.sub_property_id
+        WHERE 
+            o.created_at BETWEEN %(date_from)s AND %(date_to)s
+        AND 
+            d.order_status_type_id=%(order_status_id)s
+        """ 
+
+        if "sub_property_id" in params:
+            sql += """
+                AND 
+                    sp.id = %(sub_property_id)s
+            """
+        
+        if "order_number" in params:
+            sql += """
+                AND 
+                    o.order_number = %(order_number)s
+            """
+        
+        if "order_detail_number" in params:
+            sql += """
+                AND
+                    d.detail_order_number = %(order_detail_number)s
+            """
+
+        if "seller_name" in params:
+            sql += """
+                AND
+                    s.korean_brand_name = %(seller_name)s
+            """
+        
+        if "order_username" in params:
+            sql += """
+                AND 
+                    o.order_username = %(order_username)s
+            """
+        
+        if "phone" in params:
+            sql += """
+                AND
+                    u.phone = %(phone)s
+            """
+        
+        if "product_name" in params:
+            sql += """
+                AND
+                    p.title = %(product_name)s
+            """
+
         with conn.cursor() as cursor:
-            sql = """
-            SELECT o.created_at, o.order_number, d.detail_order_number, 
-            s.korean_brand_name, p.title, op.color_id, op.size_id, d.quantity,
-            u.email, u.phone, d.price, d.order_status_type_id
-            FROM 
-                orders as o
-            JOIN 
-                orders_detail as d ON o.id = d.order_id
-            JOIN 
-                products as p ON p.id = d.product_id 
-            JOIN 
-                sellers as s ON s.id = p.seller_id 
-            JOIN 
-                options as op ON op.product_id = p.id
-            JOIN 
-                users AS u ON u.id = o.user_id
-            WHERE 
-                o.created_at BETWEEN %(date_from)s AND %(date_to)s
-            AND 
-                d.order_status_type_id=%(order_status_id)s
-            """ 
-            results = cursor.execute(sql, {
-                'date_from': params["date_from"],
-                'date_to' : params["date_to"],
-                'order_status_id': params["order_status_id"],
-                # 'sub_property' : params['sub_property'],
-                # 'order_no' : params['order_no'],
-                # 'order_detail_no' : params['order_detail_no'],
-                # 'user_name' : params['user_name'],
-                # 'phone' : params['phone'],
-                # 'seller_name' : params['seller_name'],
-                # 'product_name' : params['product_name']
-            })
-            results = cursor.fetchall()
-            return results
+            cursor.execute(sql, params)
+            return cursor.fetchall()
 
     # def get_order_detail(self, conn, params):
     #     pass
 
     def patch_order_status_type(self, conn, body):
-        pass
+        """
+        body = 
+            [
+                {'order_detail_id': 1, 'order_status_id': 3}
+                {'order_detail_id': 2, 'order_status_id': 3}
+                {'order_detail_id': 3, 'order_status_id': 3}
+            ]
+        """
+
+        sql = """
+            UPDATE 
+                orders_detail
+            SET
+                order_status_type_id = %(order_status_id)s
+            WHERE 
+                orders_detail.id = %(order_detail_id)s  
+        """
+
+        with conn.cursor() as cursor:
+            cursor.executemany(sql, body)
+            # print(cursor._last_executed)
+            # UPDATE 
+            #     orders_detail
+            # SET
+            #     order_status_type_id = 2
+            # WHERE 
+            #     orders_detail.id = 3  
+        
+            
+
+
+            
+            

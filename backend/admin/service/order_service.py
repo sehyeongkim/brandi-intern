@@ -1,4 +1,4 @@
-from model import OrderDao
+from admin.model import OrderDao
 
 
 class OrderService:
@@ -16,4 +16,13 @@ class OrderService:
     
     # order_status_type 변경
     def patch_order_status_type(self, conn, body):
-        return self.order_dao.patch_order_status_type(conn, dbody)
+        """
+        body = 
+        [
+            {'order_detail_id': 1, 'order_status_id': 3}
+            {'order_detail_id': 2, 'order_status_id': 3}
+            {'order_detail_id': 3, 'order_status_id': 3}
+        ]
+        """
+
+        return self.order_dao.patch_order_status_type(conn, body)
