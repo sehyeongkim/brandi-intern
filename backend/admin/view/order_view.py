@@ -40,9 +40,16 @@ class OrderListView(MethodView):
         try:
             params = valid.get_params()
             conn = get_connection()
+<<<<<<< HEAD
 
             order_list_result = self.service.get_order_list(conn, params)
             return jsonify(order_list_result), 200
+=======
+            if conn:
+                order_list_result = self.service.get_order_list(conn, params)
+            # return jsonify(order_list_result), 200
+            return post_response(order_list_result), 200
+>>>>>>> admin
         
         finally:
             conn.close()
@@ -56,6 +63,7 @@ class OrderListView(MethodView):
         conn = None
         try:
             body = request.get_json()
+<<<<<<< HEAD
             conn = get_connection()
 
             self.service.patch_order_status_type(conn, body)
@@ -95,6 +103,23 @@ class OrderView(MethodView):
 
             order_detail = self.service.get_order(conn, params)
             return jsonify(order_detail), 200
+=======
+            
+            conn = get_connection()
+                
+            self.service.patch_order_status_type(conn, body)
+                        
+            conn.commit()
+            
+            # return jsonify({"message" : "SUCCESS"}), 200
+            return get_response("SUCCESS"), 200
+>>>>>>> admin
         
         finally:
             conn.close()
+
+
+
+    def get(self, request):
+        user_id = request.user
+        

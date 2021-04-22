@@ -1,11 +1,23 @@
 from flask import jsonify
-from flask_request_validator.exceptions import InvalidRequestError
-# from utils.custom_exceptions import (CustomUserError)
 
+from flask_request_validator import *
+from flask_request_validator.error_formatter import demo_error_formatter
+from flask_request_validator.exceptions import InvalidRequestError, InvalidHeadersError, RuleError
+from utils.custom_exception import CustomUserError
+from utils.response import error_response
 
-# start error handling
 def error_handle(app):
-    # pram customized exception
+    @app.errorhandler(Exception)
+    def handle_error(e):
+        pass
+    
     @app.errorhandler(InvalidRequestError)
-    def handle_invalid_usage(e):
-        return jsonify({'message': e.errors, 'error_message:': ", ".join(e.errors.keys()) + '가(이) 유효하지 않습니다.'}), 400
+    def data_error(e):
+        dev_error_message = demo_error_formatter(e)[0]['errors'] , "  " , demo_error_formatter(e)[0]['message']
+        return error_response("알 수 없는 오류 발생", dev_error_message, 400)
+    
+    @app.errorhandler(CustomUserError)
+    def handle_error(e):
+        return error_response(e.error_message, e.dev_error_message, e.status_code)
+    
+    
