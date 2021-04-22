@@ -14,9 +14,9 @@ from flask import current_app as app
 
 
 def error_handle(app):
-    @app.errorhandler(Exception)
-    def handle_error(e):
-        pass
+    # @app.errorhandler(Exception)
+    # def handle_error(e):
+    #     return 'good'
     
     @app.errorhandler(InvalidRequestError)
     def handle_invalid_usage(e):
@@ -25,3 +25,4 @@ def error_handle(app):
     @app.errorhandler(CustomUserError)
     def handle_error(e):
         return jsonify({"error_message": e.error_message, "dev_error_message": e.dev_error_message, "status" : e.status_code}), e.status_code
+    

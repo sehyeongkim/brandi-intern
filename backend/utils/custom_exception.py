@@ -22,3 +22,9 @@ class DatabaseConnectFail(CustomUserError):
         status_code = 500
         dev_error_message = "database.connect error"
         super().__init__(status_code, dev_error_message, error_message)
+    
+class StartDateFail(CustomUserError):
+    def __init__(self,error_message):
+        status_code = 400
+        dev_error_message = "start_date gt end_date error"
+        super().__init__(status_code, dev_error_message, error_message)
