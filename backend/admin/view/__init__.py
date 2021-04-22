@@ -56,10 +56,17 @@ def create_endpoints(app, services):
 
     # order
     app.add_url_rule("/order",
+<<<<<<< HEAD
                     view_func=OrderListView.as_view('order_list_view', order_service),
                     methods=['GET'])
     
     app.add_url_rule("/order/delivery",
+=======
+                    view_func=OrderListView.as_view('order_view', order_service),
+                    methods=['GET'])
+    
+    app.add_url_rule("/orders",
+>>>>>>> [상품관리 > 상품리스트]
                     view_func=OrderListView.as_view('order_delivery_view', order_service),
                     methods=['PATCH'])
 

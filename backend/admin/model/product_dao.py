@@ -110,36 +110,40 @@ class ProductDao:
                     p.id = %(product_number)s
             """
         # 조회 날짜 시작, 끝 모두 선택 됐을 때 검색
-        # if 'start_date' in params and 'end_date' in params:
-        #     sql += """
-        #         AND
-        #             p.created_at >= '%(end_date_str)s'
-        #     """
+        if 'start_date' in params and 'end_date' in params:
+            sql += """
+                AND
+                    p.created_at >= %(start_date_str)s AND p.created_at < %(end_date_str)s
+            """
         # 조회 날짜 시작 선택 됐을 때 검색
-        # if 'start_date' in params and 'end_date' not in params:
-        #     sql += """
-        #         AND
-        #             p.created_at >= %(start_date)s AND p.created_at < now()
-        #     """
+        if 'start_date' in params and 'end_date' not in params:
+            sql += """
+                AND
+                    p.created_at >= %(start_date_str)s
+            """
         # # 조회 날짜 끝 선택 됐을 때 검색
-        # if (not 'start_date' in params) and ('end_date' in params):
-        #     sql += """
-        #         AND
-        #             p.created_at >= '1111-01-01' AND p.created_at < %(end_date)s
-        #     """
-
+        if 'start_date' not in params and 'end_date' in params:
+            sql += """
+                AND
+                    p.created_at < %(end_date_str)s
+            """
+        if 'select_product_id' in params:
+            sql += """
+                AND
+                    p.id IN %(select_product_id)s
+            """
 
         product_sql = sql_select + sql + sql1
         total_sql = sql_select1 + sql
 
         with conn.cursor() as cursor:
             cursor.execute(product_sql, params)
-            result = cursor.fetchall()
+            product_result = cursor.fetchall()
 
-            cursor.execute(total_sql)
-            result1 = cursor.fetchone() 
+            cursor.execute(total_sql, params)
+            total_count_result = cursor.fetchone() 
 
-            return result, result1
+            return product_result, total_count_result
 
     def post_product_by_seller_or_master(self, conn, body):
         pass

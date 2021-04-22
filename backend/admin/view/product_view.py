@@ -3,6 +3,7 @@ from flask.views import MethodView
 from flask_request_validator import validate_params, Param, GET, Datetime, ValidRequest, CompositeRule, Min, Max, Enum
 from datetime import datetime
 from connection import get_connection
+from utils.response import *
 
 class ProductView(MethodView):
     def __init__(self, service):
@@ -23,9 +24,19 @@ class ProductView(MethodView):
         Param('page', GET, int, required=False, default=1, rules=[Min(1)]),
         Param('limit', GET, int, required=False, default=10, rules=[Enum(10, 20, 50)]),
         Param('start_date', GET, str, rules=[Datetime('%Y-%m-%d')], required=False),
-        Param('end_date', GET, str, rules=[Datetime('%Y-%m-%d')], required=False)
+        Param('end_date', GET, str, rules=[Datetime('%Y-%m-%d')], required=False),
+        Param('select_product_id', GET, list, required=False)
     )
     def get(self, valid: ValidRequest):
+        """상품 리스트 반환
+        admin 페이지의 조건에 맞는 상품리스트 반환
+
+        Args:
+            valid (ValidRequest): [description]
+
+        Returns:
+            [type]: [description]
+        """
         conn = None
         try:
             params = valid.get_params()
@@ -33,7 +44,7 @@ class ProductView(MethodView):
             if conn:
                 result = self.service.get_products_list(conn, params)
             
-            return jsonify(result), 200
+            return get_response(result), 200
         
         finally:
             conn.close()

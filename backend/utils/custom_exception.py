@@ -51,4 +51,9 @@ class TokenCreateError(CustomUserError):
         status_code = 400
         if not dev_error_message:
             dev_error_message = "TokenCreate error"
+    
+class StartDateFail(CustomUserError):
+    def __init__(self,error_message):
+        status_code = 400
+        dev_error_message = "start_date gt end_date error"
         super().__init__(status_code, dev_error_message, error_message)

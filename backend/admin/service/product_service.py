@@ -1,5 +1,6 @@
 from model import ProductDao
 from datetime import timedelta, datetime
+from utils.custom_exception import StartDateFail
 
 
 class ProductService:
@@ -13,10 +14,30 @@ class ProductService:
     
     # 상품 리스트 가져오기
     def get_products_list(self, conn, params):
+        
+        params['page'] = (params['page'] - 1) * params['limit']
         if 'end_date' in params:
             params['end_date'] +=  timedelta(days=1)
             params['end_date_str'] = params['end_date'].strftime('%Y-%m-%d')
+<<<<<<< HEAD
         return product_dao.get_products_list(conn, params)
+=======
+
+        if 'start_date' in params:
+            params['start_date_str'] = params['start_date'].strftime('%Y-%m-%d')
+        
+        if 'start_date' in params and 'end_date' in params and params['start_date'] > params['end_date']:
+            raise  StartDateFail('조회 시작 날짜가 끝 날짜보다 큽니다.')
+                
+        product_result, total_count_result = self.product_dao.get_products_list(conn, params)
+
+        result = {
+            'total_count' : total_count_result['total_count'],
+            'product' : product_result
+        }
+        
+        return result
+>>>>>>> [상품관리 > 상품리스트]
     
     # 상품 등록 (by seller or master)
     def post_product_by_seller_or_master(self, conn, body):
