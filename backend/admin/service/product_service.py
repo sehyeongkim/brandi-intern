@@ -1,4 +1,6 @@
-from admin.model import ProductDao
+from model import ProductDao
+from datetime import timedelta, datetime
+
 
 class ProductService:
     def __new__(cls, *args, **kwargs):
@@ -11,7 +13,10 @@ class ProductService:
     
     # 상품 리스트 가져오기
     def get_products_list(self, conn, params):
-        return self.product_dao.get_products_list(conn, params)
+        if 'end_date' in params:
+            params['end_date'] +=  timedelta(days=1)
+            params['end_date_str'] = params['end_date'].strftime('%Y-%m-%d')
+        return product_dao.get_products_list(conn, params)
     
     # 상품 등록 (by seller or master)
     def post_product_by_seller_or_master(self, conn, body):

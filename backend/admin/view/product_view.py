@@ -1,7 +1,7 @@
 from flask import request, jsonify, g
 from flask.views import MethodView
-from flask_request_validator import validate_params, Param, GET, Datetime, ValidRequest
-
+from flask_request_validator import validate_params, Param, GET, Datetime, ValidRequest, CompositeRule, Min, Max, Enum
+from datetime import datetime
 from connection import get_connection
 
 class ProductView(MethodView):
@@ -15,16 +15,15 @@ class ProductView(MethodView):
         Param('start_date', GET, str, required=False),
         Param('end_date', GET, str, required=False),
         Param('displayed', GET, str, required=False),
-        Param('sub_property', GET, str, required=False),
+        Param('sub_property', GET, list, required=False),
         Param('seller', GET, str, required=False),
-        Param('product_id', GET, list, required=False),
         Param('product_name', GET, str, required=False),
         Param('product_code', GET, str, required=False),
         Param('product_number', GET, int, required=False),
-        Param('page', GET, int, required=False),
-        Param('limit', GET, int, required=False),
-        Param('start_date', GET, str, rules=[Datetime('%Y-%m-%d')]),
-        Param('end_date', GET, str, rules=[Datetime('%Y-%m-%d')])
+        Param('page', GET, int, required=False, default=1, rules=[Min(1)]),
+        Param('limit', GET, int, required=False, default=10, rules=[Enum(10, 20, 50)]),
+        Param('start_date', GET, str, rules=[Datetime('%Y-%m-%d')], required=False),
+        Param('end_date', GET, str, rules=[Datetime('%Y-%m-%d')], required=False)
     )
     def get(self, valid: ValidRequest):
         conn = None
