@@ -10,7 +10,8 @@ from .product_view import (
 
 from .order_view import (
                             DashboardSellerView,
-                            OrderListView
+                            OrderListView,
+                            OrderView
 )
 
 from .account_view import (
@@ -55,11 +56,15 @@ def create_endpoints(app, services):
                     methods=['GET'])
 
     # order
+<<<<<<< HEAD
     app.add_url_rule("/order",
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
 >>>>>>> Order 주문관리 진행중
+=======
+    app.add_url_rule("/orders",
+>>>>>>> [Admin > order_dao, order_service, order_view]
                     view_func=OrderListView.as_view('order_list_view', order_service),
                     methods=['GET'])
     
@@ -80,6 +85,10 @@ def create_endpoints(app, services):
                     view_func=DashboardSellerView.as_view('dashboard_seller', order_service),
                     methods=['GET'])
     
+    app.add_url_rule("/order",
+                    view_func=OrderView.as_view('order_view', order_service),
+                    methods=['GET'])
+                    
     # account
     app.add_url_rule("/account/signup",
                     view_func=AccountSignUpView.as_view('account_signup_view', account_service),
