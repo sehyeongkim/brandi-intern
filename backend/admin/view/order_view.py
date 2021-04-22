@@ -5,7 +5,7 @@ from flask_request_validator import validate_params, Param, GET, ValidRequest
 from connection import get_connection
 from utils import DecimalEncoder
 
-class OrderView(MethodView):
+class OrderListView(MethodView):
     def __init__(self, service):
         self.service = service
     
@@ -14,11 +14,11 @@ class OrderView(MethodView):
     @validate_params(
         Param('date_from', GET, str, required=True),
         Param('date_to', GET, str, required=True),
-        Param('sub_property', GET, str, required=False),
-        Param('order_no', GET, str, required=True),
+        Param('sub_property_id', GET, int, required=False), # decorator에서 master인 경우에 True
+        Param('order_number', GET, str, required=False),
         Param('order_status_id', GET, int, required=True),
-        Param('order_detail_no', GET, str, required=False),
-        Param('user_name', GET, str, required=False),
+        Param('order_detail_number', GET, str, required=False),
+        Param('order_username', GET, str, required=False),
         Param('phone', GET, str, required=False),
         Param('seller_name', GET, str, required=False),
         Param('product_name', GET, str, required=False)
@@ -29,9 +29,9 @@ class OrderView(MethodView):
             params = valid.get_params()
             conn = get_connection()
             if conn:
-                result = self.service.get_order_list(conn, params)
-            
-            return jsonify(result), 200
+                order_list_result = self.service.get_order_list(conn, params)
+            # return jsonify(order_list_result), 200
+            return post_response(order_list_result), 200
         
         finally:
             conn.close()
@@ -41,14 +41,16 @@ class OrderView(MethodView):
     def patch(self):
         conn = None
         try:
-            body = request.data
-            conn = get_connection()
-            if conn:
-                self.service.patch_order_status_type(conn, body)
+            body = request.get_json()
             
+            conn = get_connection()
+                
+            self.service.patch_order_status_type(conn, body)
+                        
             conn.commit()
             
-            return jsonify(''), 200
+            # return jsonify({"message" : "SUCCESS"}), 200
+            return get_response("SUCCESS"), 200
         
         finally:
             conn.close()
