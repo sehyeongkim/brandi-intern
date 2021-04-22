@@ -4,6 +4,8 @@ from flask_request_validator import Param, Pattern, JSON, validate_params, Valid
 from flask_request_validator.error_formatter import demo_error_formatter
 from flask_request_validator.exceptions import InvalidRequestError, InvalidHeadersError, RuleError
 
+from utils.custom_exception import DatabaseCloseFail, DatabaseConnectFail
+
 from connection import get_connection
 
 class AccountSignUpView(MethodView):
@@ -29,16 +31,23 @@ class AccountSignUpView(MethodView):
             conn = get_connection()
             if conn:
                 self.service.post_account_signup(conn, body)
-            conn.commit()    
+            
+            conn.commit()
             return jsonify('성고고고고고고공'), 200
+        
+            conn.commit()    
+            return jsonify({'message':'success', 'status' : 200}), 200
         except Exception as e:
             if conn:
                 conn.rollback()
             raise e
-        
+
         finally:
-            if conn:
-                conn.close()
+            try:
+                if conn is not None:
+                    conn.close()
+            except Exception:
+                raise DatabaseCloseFail('서버에 알 수 없는 오류가 발생했습니다')
 
 class AccountLogInView(MethodView):
     def __init__(self, service):
