@@ -2,7 +2,6 @@ import pymysql
 
 from config import DB
 
-
 def get_connection():
     return pymysql.connect(
         host=DB["HOST"],
