@@ -18,6 +18,7 @@ from .account_view import (
 )
 
 from utils.error_handler import error_handle
+
 def create_endpoints(app, services):
     product_service = services.product_service
     order_service = services.order_service
