@@ -7,7 +7,7 @@ class ProductDao:
     def __init__(self):
         pass
 
-    def get_products_list(self, conn, params):
+    def get_products_list(self, conn):
         pass
 
     def post_product_by_seller_or_master(self, conn, body):

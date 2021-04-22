@@ -4,11 +4,12 @@ from flask_request_validator import validate_params, Param, GET, Datetime, Valid
 
 from connection import get_connection
 
+from utils.decorator import login_required
+
 class ProductView(MethodView):
     def __init__(self, service):
         self.service = service
     # 상품 리스트 조회
-    # @login_required
     @validate_params(
         Param('selling', GET, int, required=False),
         Param('discount', GET, int, required=False),
@@ -26,13 +27,14 @@ class ProductView(MethodView):
         Param('start_date', GET, str, rules=[Datetime('%Y-%m-%d')]),
         Param('end_date', GET, str, rules=[Datetime('%Y-%m-%d')])
     )
+    @login_required
     def get(self, valid: ValidRequest):
         conn = None
         try:
             params = valid.get_params()
             conn = get_connection()
             if conn:
-                result = self.service.get_products_list(conn, params)
+                result = self.service.get_products_list(conn)
             
             return jsonify(result), 200
         

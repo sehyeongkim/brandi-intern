@@ -4,9 +4,10 @@ from flask_request_validator import Param, Pattern, JSON, validate_params, Valid
 from flask_request_validator.error_formatter import demo_error_formatter
 from flask_request_validator.exceptions import InvalidRequestError, InvalidHeadersError, RuleError
 
-from utils.custom_exception import DatabaseCloseFail, DatabaseConnectFail
+#from utils.custom_exception import DatabaseCloseFail, DatabaseConnectFail
 
 from connection import get_connection
+from utils.decorator import login_required
 
 class AccountSignUpView(MethodView):
     def __init__(self, service):
@@ -24,16 +25,17 @@ class AccountSignUpView(MethodView):
         Param('english_brand_name', JSON, str, required=True, rules=[Pattern('[a-zA-Z0-9]+')]),
         Param('customer_center_number', JSON, str, required=True)
     )
-    def post(self, valid):
+
+    def post(self, valid: ValidRequest):
         conn = None
         try:
             body = valid.get_json()
             conn = get_connection()
             if conn:
-                self.service.post_account_signup(conn, body)
-        
+                result = self.service.post_account_signup(conn, body)
             conn.commit()    
             return jsonify({'message':'success', 'status' : 200}), 200
+        
         except Exception as e:
             if conn:
                 conn.rollback()
