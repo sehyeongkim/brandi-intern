@@ -230,15 +230,18 @@ class AccountDao:
             return cursor.fetchone()
 
     # decorator 가 account_id 비교하는 로직
-    def decorator_find_account(self, conn, account_id: int):
+    def decorator_find_account(self, conn, account_id):
+        sql = """
+            SELECT
+                a.id,
+                a.account_type_id
+            FROM
+                account AS a
+            WHERE
+                a.id = %(account_id)s
+        """
+        params = dict()
+        params['account_id'] = account_id
         with conn.cursor() as cursor:
-            sql = """
-                    SELECT
-                    *
-                    FROM
-                    account
-                    WHERE
-                    id = :account_id
-                """
-            cursor.execute(sql)
+            cursor.execute(sql, params)
             return cursor.fetchone()

@@ -8,6 +8,7 @@ from utils.custom_exception import DatabaseCloseFail, DatabaseConnectFail
 from utils.response import post_response
 
 from connection import get_connection
+from utils.decorator import login_required
 
 class AccountSignUpView(MethodView):
     def __init__(self, service):
@@ -26,7 +27,8 @@ class AccountSignUpView(MethodView):
         Param('english_brand_name', JSON, str, required=True, rules=[Pattern('[a-zA-Z0-9]+')]),
         Param('customer_center_number', JSON, str, required=True)
     )
-    def post(self, valid):
+
+    def post(self, valid: ValidRequest):
         conn = None
         try:
             body = valid.get_json()

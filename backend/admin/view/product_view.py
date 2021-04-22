@@ -8,11 +8,12 @@ from utils.custom_exception import IsInt, IsStr, IsFloat, IsRequired, DatabaseCo
 from flask_request_validator.exceptions import InvalidRequestError, RulesError
 import xlwt
 
+from utils.decorator import login_required
+
 class ProductView(MethodView):
     def __init__(self, service):
         self.service = service
     # 상품 리스트 조회
-    # @login_required
     @validate_params(
         Param('Content-Type', HEADER, str, required=False),
         Param('Authorization', HEADER, str, required=False),
@@ -32,6 +33,7 @@ class ProductView(MethodView):
         Param('end_date', GET, str, rules=[Datetime('%Y-%m-%d')], required=False),
         Param('select_product_id', GET, list, required=False)
     )
+    @login_required
     def get(self, valid: ValidRequest):
         """상품 조회 리스트
 

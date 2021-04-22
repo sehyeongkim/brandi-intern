@@ -12,10 +12,8 @@ from pytz import timezone
 from datetime import datetime, timedelta
 from admin.view import create_endpoints
 from utils.formatter import CustomJSONEncoder
+from utils.error_handler import error_handle
 
-def home():
-    date = datetime.now()
-    return str(date)
 class Service:
     pass
 
@@ -40,4 +38,6 @@ def create_app(test_config=None):
 
     app.json_encoder = CustomJSONEncoder
     
+    error_handle(app)
+
     return app

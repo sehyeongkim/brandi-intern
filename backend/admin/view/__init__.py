@@ -9,9 +9,13 @@ from .product_view import (
 )
 
 from .order_view import (
+<<<<<<< HEAD
                             DashboardSellerView,
                             OrderListView,
                             OrderView
+=======
+                            OrderListView
+>>>>>>> [로그인 데코레이터]
 )
 
 from .account_view import (
@@ -21,10 +25,16 @@ from .account_view import (
 
 from utils.error_handler import error_handle
 
+<<<<<<< HEAD
 def create_endpoints(app, services, ):
+=======
+
+def create_endpoints(app, services):
+>>>>>>> [로그인 데코레이터]
     product_service = services.product_service
     order_service = services.order_service
     account_service = services.account_service
+
 
     # product
     app.add_url_rule("/products",
@@ -60,15 +70,19 @@ def create_endpoints(app, services, ):
     app.add_url_rule("/order",
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> Order 주문관리 진행중
 =======
     app.add_url_rule("/orders",
 >>>>>>> [Admin > order_dao, order_service, order_view]
+=======
+>>>>>>> [로그인 데코레이터]
                     view_func=OrderListView.as_view('order_list_view', order_service),
                     methods=['GET'])
     
     app.add_url_rule("/order/delivery",
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
                     view_func=OrderListView.as_view('order_view', order_service),
@@ -78,6 +92,8 @@ def create_endpoints(app, services, ):
 >>>>>>> [상품관리 > 상품리스트]
 =======
 >>>>>>> Order 주문관리 진행중
+=======
+>>>>>>> [로그인 데코레이터]
                     view_func=OrderListView.as_view('order_delivery_view', order_service),
                     methods=['PATCH'])
 
@@ -107,6 +123,7 @@ def create_endpoints(app, services, ):
 <<<<<<< HEAD
                     methods=['POST'])
     
+<<<<<<< HEAD
     
     error_handle(app)
 =======
@@ -127,3 +144,6 @@ def create_endpoints(app, services, ):
 =======
                     methods=['POST'])
 >>>>>>> MOD: minor changes
+=======
+    error_handle(app)
+>>>>>>> [로그인 데코레이터]

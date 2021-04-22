@@ -16,6 +16,7 @@ class ProductService:
 <<<<<<< HEAD
     
     # 상품 리스트 가져오기
+<<<<<<< HEAD
     def get_products_list(self, conn, params, headers):
         # 페이지네이션 위한 OffSET 설정
         params['page'] = (params['page'] - 1) * params['limit']
@@ -92,6 +93,10 @@ class ProductService:
     def get_products_list(self, conn, params):
         return self.product_dao.get_products_list(conn, params)
 >>>>>>> Order 주문관리 진행중
+=======
+    def get_products_list(self, conn):
+        return self.product_dao.get_products_list(conn)
+>>>>>>> [로그인 데코레이터]
     
     # 상품 등록 (by seller or master)
     def post_product_by_seller_or_master(self, conn, body):
