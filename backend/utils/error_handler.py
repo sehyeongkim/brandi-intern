@@ -7,6 +7,7 @@ from utils.custom_exception import CustomUserError
 # start error handling
 from flask import current_app as app
 
+from utils.response import error_response
 
 def error_handle(app):
     @app.errorhandler(Exception)
@@ -15,10 +16,11 @@ def error_handle(app):
     
     @app.errorhandler(InvalidRequestError)
     def data_error(e):
-        # customize error messages as you wish
-        # Attention! We do not support demo_error_formatter. Demo is just a demo. Feel free to suggest a new formatter
-        return jsonify({ 'error_message': format(e)}), 500
+        dev_error_message = demo_error_formatter(e)[0]['errors'] , "  " , demo_error_formatter(e)[0]['message']
+        return error_response("알 수 없는 오류 발생", dev_error_message, 400)
     
     @app.errorhandler(CustomUserError)
     def handle_error(e):
-        return jsonify({"error_message": e.error_message, "dev_error_message": e.dev_error_message, "status" : e.status_code}), e.status_code
+        return error_response(e.error_message, e.dev_error_message, e.status_code)
+    
+    
