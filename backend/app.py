@@ -1,15 +1,14 @@
-import config
-
 from flask import Flask
 from flask_cors import CORS
 
-from service import (
-                        ProductService, 
-                        OrderService, 
-                        AccountService
+
+from admin.service import (
+    ProductService,
+    OrderService,
+    AccountService
 )
 
-from view import create_endpoints
+from admin.view import create_endpoints
 
 
 class Service:
