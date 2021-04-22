@@ -24,16 +24,13 @@ class AccountSignUpView(MethodView):
         Param('english_brand_name', JSON, str, required=True, rules=[Pattern('[a-zA-Z0-9]+')]),
         Param('customer_center_number', JSON, str, required=True)
     )
-    def post(self, valid: ValidRequest):
+    def post(self, valid):
         conn = None
         try:
             body = valid.get_json()
             conn = get_connection()
             if conn:
                 self.service.post_account_signup(conn, body)
-            
-            conn.commit()
-            return jsonify('성고고고고고고공'), 200
         
             conn.commit()    
             return jsonify({'message':'success', 'status' : 200}), 200

@@ -1,4 +1,3 @@
-# error handling
 '''
     dev_error_message : 개발자 에러 메시지
     error_message : 사용자 에러 메시지
