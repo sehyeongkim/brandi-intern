@@ -1,4 +1,4 @@
-from model import OrderDao
+from admin.model import OrderDao
 
 class OrderService:
     def __new__(cls, *args, **kwargs):
@@ -8,10 +8,9 @@ class OrderService:
 
     def __init__(self):
         self.order_dao = OrderDao()
-
     # 주문 조회
     def get_order_list(self, conn, params):
-        return order_dao.get_order_list(conn, params)
+        return self.order_dao.get_order_list(conn, params)
     
     # order_status_type 변경
     def patch_order_status_type(self, conn, body):

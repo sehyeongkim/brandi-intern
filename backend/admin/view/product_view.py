@@ -4,11 +4,9 @@ from flask_request_validator import validate_params, Param, GET, Datetime, Valid
 
 from connection import get_connection
 
-
 class ProductView(MethodView):
     def __init__(self, service):
         self.service = service
-
     # 상품 리스트 조회
     # @login_required
     @validate_params(
@@ -42,7 +40,7 @@ class ProductView(MethodView):
             conn.close()
     
     # 상품 등록 (by master or seller)
-    # @login_required 
+    # @login_required
     def post(self):
         conn = None
         try:
@@ -151,6 +149,40 @@ class ProductSellerSearchView(MethodView):
             conn = get_connection()
             if conn:
                 result = self.service.search_seller(conn, params)
+            
+            return jsonify(result), 200
+        
+        finally:
+            conn.close()
+
+
+class ProductColorView(MethodView):
+    def __init__(self, service):
+        self.service = service
+    
+    def get(self):
+        conn = None
+        try:
+            conn = get_connection()
+            if conn:
+                result = self.service.get_products_color_list(conn)
+            
+            return jsonify(result), 200
+        
+        finally:
+            conn.close()
+
+
+class ProductSizeView(MethodView):
+    def __init__(self, service):
+        self.service = service
+    
+    def get(self):
+        conn = None
+        try:
+            conn = get_connection()
+            if conn:
+                result = self.service.get_products_size_list(conn)
             
             return jsonify(result), 200
         

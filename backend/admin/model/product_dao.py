@@ -27,3 +27,29 @@ class ProductDao:
 
     def search_seller(self, conn, params):
         pass
+
+    def get_products_color_list(self, conn):
+        with conn.cursor() as cursor:
+            sql = """
+                    SELECT 
+                    *
+                    FROM
+                    color
+                """
+            cursor.execute(sql)
+            result = cursor.fetchall()
+
+            return result
+
+    def get_products_size_list(self, conn):
+        with conn.cursor() as cursor:
+            sql = """
+                    SELECT
+                    *
+                    FROM
+                    size
+                """
+            cursor.execute(sql)
+            result = cursor.fetchall()
+            
+            return result
