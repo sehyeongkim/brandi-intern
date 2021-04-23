@@ -14,7 +14,7 @@ def error_handle(app):
     @app.errorhandler(InvalidRequestError)
     def data_error(e):
         dev_error_message = demo_error_formatter(e)[0]['errors'] , "  " , demo_error_formatter(e)[0]['message']
-        return error_response("알 수 없는 오류 발생", dev_error_message, 400)
+        return error_response("부적절한 값 요청", dev_error_message, 400)
     
     @app.errorhandler(CustomUserError)
     def handle_error(e):

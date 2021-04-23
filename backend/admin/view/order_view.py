@@ -1,8 +1,13 @@
+from utils.response import error_response, get_response, post_response, post_response_with_return
+
 from flask import request, jsonify
 from flask.views import MethodView
 from flask_request_validator import validate_params, Param, GET, ValidRequest
 
 from connection import get_connection
+
+
+
 
 class OrderListView(MethodView):
     def __init__(self, service):
@@ -13,7 +18,7 @@ class OrderListView(MethodView):
     @validate_params(
         Param('date_from', GET, str, required=True),
         Param('date_to', GET, str, required=True),
-        Param('sub_property_id', GET, int, required=False), # decorator에서 master인 경우에 True
+        Param('sub_property_id', GET, int, required=False),
         Param('order_number', GET, str, required=False),
         Param('order_status_id', GET, int, required=True),
         Param('order_detail_number', GET, str, required=False),
@@ -22,7 +27,7 @@ class OrderListView(MethodView):
         Param('seller_name', GET, str, required=False),
         Param('product_name', GET, str, required=False)
     )
-    def get(self, valid):
+    def get(self, valid: ValidRequest):
         """주문 조회 리스트 뷰
 
         어드민 페이지의 주문관리 페이지에서 필터 조건에 맞는 주문 리스트 출력
@@ -40,16 +45,8 @@ class OrderListView(MethodView):
         try:
             params = valid.get_params()
             conn = get_connection()
-<<<<<<< HEAD
-
             order_list_result = self.service.get_order_list(conn, params)
-            return jsonify(order_list_result), 200
-=======
-            if conn:
-                order_list_result = self.service.get_order_list(conn, params)
-            # return jsonify(order_list_result), 200
-            return post_response(order_list_result), 200
->>>>>>> admin
+            return get_response(order_list_result), 200
         
         finally:
             conn.close()
@@ -63,14 +60,13 @@ class OrderListView(MethodView):
         conn = None
         try:
             body = request.get_json()
-<<<<<<< HEAD
             conn = get_connection()
-
-            self.service.patch_order_status_type(conn, body)
-            conn.commit()
             
-            return jsonify({"message" : "SUCCESS"}), 200
-        
+            not_possible_change_values = self.service.patch_order_status_type(conn, body)
+            conn.commit()
+              
+            # return jsonify({"message" : "SUCCESS", "fail_change_values": not_possible_change_values, "status_code": 200}), 200
+            return post_response_with_return("SUCCESS", not_possible_change_values)
         finally:
             conn.close()
 
@@ -102,24 +98,7 @@ class OrderView(MethodView):
             conn = get_connection()
 
             order_detail = self.service.get_order(conn, params)
-            return jsonify(order_detail), 200
-=======
-            
-            conn = get_connection()
-                
-            self.service.patch_order_status_type(conn, body)
-                        
-            conn.commit()
-            
-            # return jsonify({"message" : "SUCCESS"}), 200
-            return get_response("SUCCESS"), 200
->>>>>>> admin
+            return get_response(order_detail), 200
         
         finally:
             conn.close()
-
-
-
-    def get(self, request):
-        user_id = request.user
-        

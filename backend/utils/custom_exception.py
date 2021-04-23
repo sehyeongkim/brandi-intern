@@ -12,13 +12,22 @@ class CustomUserError(Exception):
         self.error_message = error_message
 
 class DatabaseCloseFail(CustomUserError):
-    def __init__(self, error_message):
+    def __init__(self, error_message, dev_error_message=None):
         status_code = 500
-        dev_error_message = "database.close() error"
+        if not dev_error_message:
+            dev_error_message = "database.close() error"
         super().__init__(status_code, dev_error_message, error_message)
 
 class DatabaseConnectFail(CustomUserError):
-    def __init__(self,error_message):
+    def __init__(self,error_message, dev_error_message=None):
         status_code = 500
-        dev_error_message = "database.connect error"
+        if not dev_error_message:
+            dev_error_message = "database.connect error"
+        super().__init__(status_code, dev_error_message, error_message)
+
+class DataNotExists(CustomUserError):
+    def __init__(self, error_message, dev_error_message=None):
+        status_code = 500
+        if not dev_error_message:
+            dev_error_message = "order status type id doesn't exist"
         super().__init__(status_code, dev_error_message, error_message)
