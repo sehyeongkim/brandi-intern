@@ -14,7 +14,6 @@ class ProductService:
     
     # 상품 리스트 가져오기
     def get_products_list(self, conn, params):
-        
         params['page'] = (params['page'] - 1) * params['limit']
         if 'end_date' in params:
             params['end_date'] +=  timedelta(days=1)

@@ -4,6 +4,8 @@
 '''
 
 from flask import jsonify
+from flask_request_validator import AbstractRule
+from flask_request_validator.exceptions import RuleError
 
 class CustomUserError(Exception):
     def __init__(self, status_code, dev_error_message, error_message):
@@ -28,3 +30,9 @@ class StartDateFail(CustomUserError):
         status_code = 400
         dev_error_message = "start_date gt end_date error"
         super().__init__(status_code, dev_error_message, error_message)
+
+class IsInt(AbstractRule):
+    def validate(self, value):
+        if not isinstance(value, int):
+            raise RuleError('invalid request')
+        return value
