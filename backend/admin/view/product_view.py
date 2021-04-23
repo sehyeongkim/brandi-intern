@@ -4,7 +4,7 @@ from flask_request_validator import validate_params, Param, GET, Datetime, Valid
 from datetime import datetime
 from connection import get_connection
 from utils.response import get_response, post_response
-from utils.custom_exception import IsInt
+from utils.custom_exception import IsInt, IsStr, IsFloat, IsRequired
 from flask_request_validator.exceptions import InvalidRequestError, RulesError
 
 class ProductView(MethodView):
@@ -58,10 +58,36 @@ class ProductView(MethodView):
     # @login_required
     @validate_params(
         JsonParam({
-            'basic_info': JsonParam({
-                'seller_id' : [IsInt()]
+            'basic_info' : JsonParam({
+                'seller_id' : [IsInt()],
+                "selling" : [IsInt()],
+                "displayed" : [IsInt()],
+                "property" : [IsInt()],
+                "category" : [IsInt()],
+                "sub_category" : [IsInt()],
+                "product_info_notice" : JsonParam({
+                    "manufacturer" : [IsStr()],
+                    "date of manufacture" : [IsStr()],
+                    "origin" : [IsStr()]
+                }),
+                "title" : [IsStr()],
+                "description" : [IsStr()],
+                "detail_description" : [IsStr()]
             }, required=True),
-        }, required=True)
+            "option_info" : JsonParam({
+                "color_id" : [IsInt()],
+                "size_id" : [IsInt()],
+                "stock" : [IsInt()]
+            }, as_list=True, required=True),
+            "selling_info" : JsonParam({
+                "price" : [IsInt()],
+                "discount_rate" : [IsFloat()],
+                "discount_start_date" : [Datetime('%Y-%m-%d %H:%M')],
+                "discount_end_date" : [Datetime('%Y-%m-%d %H:%M')],
+                "min_amount" : [IsInt()],
+                "max_amount" : [IsInt()]
+            }, required=True),
+        })
     )
     def post(self, valid: ValidRequest):
         conn = None

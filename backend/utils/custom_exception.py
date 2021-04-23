@@ -14,7 +14,7 @@
 
 from flask import jsonify
 from flask_request_validator import AbstractRule
-from flask_request_validator.exceptions import RuleError
+from flask_request_validator.exceptions import RuleError, RequiredJsonKeyError, RequestError
 
 class CustomUserError(Exception):
     def __init__(self, status_code, dev_error_message, error_message):
@@ -63,5 +63,23 @@ class StartDateFail(CustomUserError):
 class IsInt(AbstractRule):
     def validate(self, value):
         if not isinstance(value, int):
+            raise RuleError('invalid request')
+        return value
+
+class IsStr(AbstractRule):
+    def validate(self, value):
+        if not isinstance(value, str):
+            raise RuleError('invalid request')
+        return value
+
+class IsFloat(AbstractRule):
+    def validate(self, value):
+        if not isinstance(value, float):
+            raise RuleError('invalid request')
+        return value
+
+class IsRequired(AbstractRule):
+    def validate(self, value):
+        if not value:
             raise RuleError('invalid request')
         return value
