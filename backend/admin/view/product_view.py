@@ -1,9 +1,11 @@
 from flask import request, jsonify, g
 from flask.views import MethodView
-from flask_request_validator import validate_params, Param, GET, Datetime, ValidRequest, CompositeRule, Min, Max, Enum
+from flask_request_validator import validate_params, Param, GET, Datetime, ValidRequest, CompositeRule, Min, Max, Enum, JsonParam, JSON
 from datetime import datetime
 from connection import get_connection
-from utils.response import *
+from utils.response import get_response, post_response
+from utils.custom_exception import IsInt
+from flask_request_validator.exceptions import InvalidRequestError, RulesError
 
 class ProductView(MethodView):
     def __init__(self, service):
@@ -28,14 +30,17 @@ class ProductView(MethodView):
         Param('select_product_id', GET, list, required=False)
     )
     def get(self, valid: ValidRequest):
-        """상품 리스트 반환
-        admin 페이지의 조건에 맞는 상품리스트 반환
+        """상품 조회 리스트
+
+        어드민 페이지의 상품관리 페이지에서 필터 조건에 맞는 주문 리스트가 출력됨.
 
         Args:
-            valid (ValidRequest): [description]
+            conn (pymysql.connections.Connection): DB 커넥션 객체
+            params (dict): 상품번호, 상품명, 상품코드, 판매여부, 진열여부 등의 정보가 담긴 딕셔너리
 
         Returns:
-            [type]: [description]
+            200: 상품 조회 리스트 가져오기 성공
+            500: Exception
         """
         conn = None
         try:
@@ -44,18 +49,26 @@ class ProductView(MethodView):
             if conn:
                 result = self.service.get_products_list(conn, params)
             
-            return get_response(result), 200
+            return get_response(result)
         
         finally:
             conn.close()
     
     # 상품 등록 (by master or seller)
     # @login_required
-    def post(self):
+    @validate_params(
+        JsonParam({
+            'basic_info': JsonParam({
+                'seller_id' : [IsInt()]
+            }, required=True),
+        }, required=True)
+    )
+    def post(self, valid: ValidRequest):
         conn = None
         try:
             # request body의 data
             body = request.data
+            params = valid.get_json()
             conn = get_connection()
             if conn:
                 self.service.post_product_by_seller_or_master(conn, body)
