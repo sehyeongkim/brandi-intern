@@ -10,8 +10,10 @@ class OrderDao:
         pass
     
     def get_order_list(self, conn, params):
-        sql = """
-            SELECT
+        select = """ 
+            SELECT 
+        """
+        order_info = """
                 o.created_at, 
                 o.order_number, 
                 d.detail_order_number, 
@@ -24,6 +26,9 @@ class OrderDao:
                 u.phone,
                 d.price,
                 d.order_status_type_id
+        """
+
+        condition = """    
             FROM 
                 orders as o
             INNER JOIN 
@@ -43,49 +48,57 @@ class OrderDao:
                 AND 
                     d.order_status_type_id=%(order_status_id)s
         """ 
+        
+        sql_1 = select + order_info + condition
 
         if "sub_property_id" in params:
-            sql += """
+            sql_1 += """
                 AND 
                     sp.id = %(sub_property_id)s
             """
         
         if "order_number" in params:
-            sql += """
+            sql_1 += """
                 AND 
                     o.order_number = %(order_number)s
             """
         
         if "order_detail_number" in params:
-            sql += """
+            sql_1 += """
                 AND
                     d.detail_order_number = %(order_detail_number)s
             """
 
         if "seller_name" in params:
-            sql += """
+            sql_1 += """
                 AND
                     s.korean_brand_name = %(seller_name)s
             """
         
         if "order_username" in params:
-            sql += """
+            sql_1 += """
                 AND 
                     o.order_username = %(order_username)s
             """
         
         if "phone" in params:
-            sql += """
+            sql_1 += """
                 AND
                     u.phone = %(phone)s
             """
         
         if "product_name" in params:
-            sql += """
+            sql_1 += """
                 AND
                     p.title = %(product_name)s
             """
 
+        count = """
+                COUNT(*) as count 
+        """
+        
+        sql_2 = select + count + condition
+        
         with conn.cursor() as cursor:
             sql = """
             SELECT o.created_at, o.order_number, d.detail_order_number, 
@@ -189,19 +202,60 @@ class OrderDao:
 
             return result1, result2, result3
 
-       
+    def patch_order_status_type(self, conn, possible_change_order_status):
         sql = """
             UPDATE 
                 orders_detail
             SET
-                order_status_type_id = %(order_status_id)s
+                order_status_type_id = %(order_status_type_id)s
             WHERE 
                 orders_detail.id = %(order_detail_id)s  
         """
 
         with conn.cursor() as cursor:
+            cursor.executemany(sql, possible_change_order_status)
+    
+    # DB에 값이 있는지 확인하기
+    def check_appropriate_order_status_type(self, conn, body):
+        sql = """
+            SELECT 
+                1
+            FROM 
+                order_status_type
+            WHERE 
+                id = %(order_status_id)s
+        """
+
+        with conn.cursor() as cursor:
             cursor.executemany(sql, body)
+            results = cursor.fetchall()
+
+            return results
+    
+    # 구매확정, 주문취소인 경우 바꿀 수 없음
+    def check_current_order_status(self, conn, body):
+
+        checked_current_order_status_list = list()
+        for data in body:
+            sql = """
+                SELECT
+                    id as order_detail_id,
+                    order_status_type_id
+                FROM 
+                    orders_detail
+                WHERE 
+                    id = %(order_detail_id)s
+            """
+
+            with conn.cursor() as cursor:
+                cursor.execute(sql, data)
+                result = cursor.fetchone()
+                checked_current_order_status_list.append(result)
+        return checked_current_order_status_list
         
+        
+            
+    
     def get_order(self, conn, params):
         sql_1 = """
             SELECT 
@@ -226,6 +280,7 @@ class OrderDao:
                 ad.zip_code, 
                 ad.address, 
                 ad.detail_address, 
+                ad.phone as recipient_phone,
                 u.phone as recipient_phone, 
                 dm.name as delivery_memo, 
                 o.delivery_memo_request as delivery_memo_custom

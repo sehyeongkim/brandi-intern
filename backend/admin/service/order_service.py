@@ -26,12 +26,34 @@ class OrderService:
             params (dict): query parameter로 받은 정보 (셀러명, 조회 기간 등)
             
         Returns:
-            self.order_dao.get_order_list(conn, params): order_dao에서 리턴한 값
+
         """
-        return self.order_dao.get_order_list(conn, params)
+        result_1, result_2 = self.order_dao.get_order_list(conn, params)
+        order_list_info = {
+                "order_list" : [
+                    {
+                        "color_id": result["color_id"],
+                        "order_created_at": result["created_at"],
+                        "order_detail_number": result["detail_order_number"],
+                        "brand_name": result["korean_brand_name"],
+                        "order_number": result["order_number"],
+                        "order_status_type_id": result["order_status_type_id"],
+                        "order_username": result["order_username"],
+                        "orderer_phone": result["phone"],
+                        "price": result["price"],
+                        "quantity": result["quantity"],
+                        "size_id": result["size_id"],
+                        "product_name": result["title"]
+                    } for result in result_1
+                ],
+                "total_count": result_2["count"]
+        }
+
+        return order_list_info
     
     # order_status_type 변경
     def patch_order_status_type(self, conn, body):
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -49,9 +71,39 @@ class OrderService:
 >>>>>>> Order 주문관리 진행중
 =======
         # DB에 없는 주문 상태를 전달할 때 -> dao에서 처리하기 or view 혹은 service에서 처리하기
+=======
+
+        appropriate_id = self.order_dao.check_appropriate_order_status_type(conn, body) # order_status_type이 11보다 큰지 확인
+        # DB에 order_status_type이 존재하는지 확인
+        # 어차피 하나의 버튼을 누르면 바뀌는 것이기 때문에 존재여부만 파악하면 될듯
+        if not appropriate_id:
+            raise DataNotExists("처리할 수 없는 데이터 값입니다.")
+
+        checked_current_order_status_list = self.order_dao.check_current_order_status(conn, body) 
+
+>>>>>>> [Admin > order]
         # 주문 취소가 된 상품인 경우 -> 수정을 못하도록 에러발생
         # 이미 구매확정이 된 상품인 경우 -> 수정을 못하도록 에러발생
-        return self.order_dao.patch_order_status_type(conn, body)
+        possible_change_order_status = list()
+        not_possible_change_order_status = list()
+        for current_order_status_type in checked_current_order_status_list:
+            if current_order_status_type["order_status_type_id"] in (4, 6, 9):
+                not_possible_change_order_status.append(current_order_status_type)
+            else:
+                possible_change_order_status.append(current_order_status_type)
+
+        results = list()
+        for order_status in possible_change_order_status:
+            order_status["order_status_type_id"] = body[0]["order_status_id"]
+
+            results.append(order_status)
+        
+        self.order_dao.patch_order_status_type(conn, results)
+
+        if not_possible_change_order_status:
+            return not_possible_change_order_status
+
+        
     
     def get_order(self, conn, params):
         result_1, result_2 = self.order_dao.get_order(conn, params)
