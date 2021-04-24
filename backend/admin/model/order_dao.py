@@ -23,7 +23,7 @@ class OrderDao:
                 op.size_id, 
                 d.quantity,
                 o.order_username,
-                u.phone,
+                u.phone as orderer_phone,
                 d.price,
                 d.order_status_type_id
         """
@@ -44,9 +44,9 @@ class OrderDao:
             INNER JOIN 
                 sub_property as sp ON sp.id = s.sub_property_id
             WHERE 
-                    o.created_at BETWEEN %(date_from)s AND %(date_to)s
+                    o.created_at BETWEEN %(start_date)s AND %(end_date)s
                 AND 
-                    d.order_status_type_id=%(order_status_id)s
+                    d.order_status_type_id=%(order_status_type_id)s
         """ 
         
         sql_1 = select + order_info + condition
@@ -84,7 +84,7 @@ class OrderDao:
         if "phone" in params:
             sql_1 += """
                 AND
-                    u.phone = %(phone)s
+                    u.phone = %(orderer_phone)s
             """
         
         if "product_name" in params:
@@ -92,13 +92,62 @@ class OrderDao:
                 AND
                     p.title = %(product_name)s
             """
+        
+        sql_1 += """
+                LIMIT
+                    %(limit)s
+                OFFSET
+                    %(page)s
+        """
 
         count = """
                 COUNT(*) as count 
         """
         
         sql_2 = select + count + condition
+
+        if "sub_property_id" in params:
+            sql_2 += """
+                AND 
+                    sp.id = %(sub_property_id)s
+            """
         
+        if "order_number" in params:
+            sql_2 += """
+                AND 
+                    o.order_number = %(order_number)s
+            """
+        
+        if "order_detail_number" in params:
+            sql_2 += """
+                AND
+                    d.detail_order_number = %(order_detail_number)s
+            """
+
+        if "seller_name" in params:
+            sql_2 += """
+                AND
+                    s.korean_brand_name = %(seller_name)s
+            """
+        
+        if "order_username" in params:
+            sql_2 += """
+                AND 
+                    o.order_username = %(order_username)s
+            """
+        
+        if "phone" in params:
+            sql_2 += """
+                AND
+                    u.phone = %(orderer_phone)s
+            """
+        
+        if "product_name" in params:
+            sql_2 += """
+                AND
+                    p.title = %(product_name)s
+            """
+
         with conn.cursor() as cursor:
             sql = """
             SELECT o.created_at, o.order_number, d.detail_order_number, 
@@ -209,7 +258,7 @@ class OrderDao:
             SET
                 order_status_type_id = %(order_status_type_id)s
             WHERE 
-                orders_detail.id = %(order_detail_id)s  
+                orders_detail.id = %(orders_detail_id)s  
         """
 
         with conn.cursor() as cursor:
@@ -223,7 +272,7 @@ class OrderDao:
             FROM 
                 order_status_type
             WHERE 
-                id = %(order_status_id)s
+                id = %(order_status_type_id)s
         """
 
         with conn.cursor() as cursor:
@@ -239,12 +288,12 @@ class OrderDao:
         for data in body:
             sql = """
                 SELECT
-                    id as order_detail_id,
+                    id as orders_detail_id,
                     order_status_type_id
                 FROM 
                     orders_detail
                 WHERE 
-                    id = %(order_detail_id)s
+                    id = %(orders_detail_id)s
             """
 
             with conn.cursor() as cursor:
@@ -253,7 +302,45 @@ class OrderDao:
                 checked_current_order_status_list.append(result)
         return checked_current_order_status_list
         
-        
+    def insert_order_detail_history(self, conn, results):
+        # account_id는 로그인 데코레이터로 파악
+        for data in results:
+            sql_1 = """
+                SELECT 
+                    id,
+                    order_status_type_id,
+                    address_id,
+                    price
+                FROM
+                    orders_detail
+                WHERE 
+                    id = %(orders_detail_id)s
+            """
+
+            with conn.cursor() as cursor:
+                cursor.execute(sql_1, data)
+                result = cursor.fetchone()
+                
+            sql_2 = """
+                INSERT INTO order_detail_history ( 
+                    order_detail_id,
+                    order_status_type_id,
+                    address_id,
+                    modify_account_id,
+                    price
+                )
+                VALUES (
+                    %(id)s,
+                    %(order_status_type_id)s,
+                    %(address_id)s,
+                    
+                    %(price)s
+                )
+            """
+
+            with conn.cursor() as cursor:
+                cursor.execute(sql_2, result)
+
             
     
     def get_order(self, conn, params):
