@@ -2,7 +2,7 @@ from utils.response import error_response, get_response, post_response, post_res
 
 from flask import request, jsonify
 from flask.views import MethodView
-from flask_request_validator import validate_params, Param, GET, ValidRequest
+from flask_request_validator import validate_params, Param, GET, ValidRequest, JsonParam, Min, Enum
 
 from connection import get_connection
 
@@ -16,16 +16,18 @@ class OrderListView(MethodView):
     # 주문 조회
     # @login_required
     @validate_params(
-        Param('date_from', GET, str, required=True),
-        Param('date_to', GET, str, required=True),
+        Param('start_date', GET, str, required=True),
+        Param('end_date', GET, str, required=True),
         Param('sub_property_id', GET, int, required=False),
         Param('order_number', GET, str, required=False),
-        Param('order_status_id', GET, int, required=True),
+        Param('order_status_type_id', GET, int, required=True),
         Param('order_detail_number', GET, str, required=False),
         Param('order_username', GET, str, required=False),
-        Param('phone', GET, str, required=False),
+        Param('orderer_phone', GET, str, required=False),
         Param('seller_name', GET, str, required=False),
-        Param('product_name', GET, str, required=False)
+        Param('product_name', GET, str, required=False),
+        Param('page', GET, int, required=False, default=1, rules=[Min(1)]),
+        Param('limit', GET, int, required=False, default=10, rules=[Enum(10, 20, 50)])
     )
     def get(self, valid: ValidRequest):
         """주문 조회 리스트 뷰
@@ -54,7 +56,7 @@ class OrderListView(MethodView):
     # order_status_type 변경
     # @login_required
     # @validate_params(
-    #     Param('')
+    #     JsonParam('')
     # )
     def patch(self):
         conn = None
@@ -65,8 +67,7 @@ class OrderListView(MethodView):
             not_possible_change_values = self.service.patch_order_status_type(conn, body)
             conn.commit()
               
-            # return jsonify({"message" : "SUCCESS", "fail_change_values": not_possible_change_values, "status_code": 200}), 200
-            return post_response_with_return("SUCCESS", not_possible_change_values)
+            return post_response_with_return("SUCCESS", not_possible_change_values), 200
         finally:
             conn.close()
 

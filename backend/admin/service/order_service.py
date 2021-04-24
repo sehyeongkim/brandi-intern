@@ -1,6 +1,6 @@
 from admin.model import OrderDao
 
-from utils.custom_exception import DataNotExists, DatabaseConnectFail
+from utils.custom_exception import DataNotExists, DatabaseConnectFail, StartDateFail
 
 class OrderService:
     def __new__(cls, *args, **kwargs):
@@ -24,6 +24,9 @@ class OrderService:
         Returns:
 
         """
+        if 'start_date' in params and 'end_date' in params and params['start_date'] > params['end_date']:
+                    raise  StartDateFail('조회 시작 날짜가 끝 날짜보다 큽니다.')
+        
         result_1, result_2 = self.order_dao.get_order_list(conn, params)
         order_list_info = {
                 "order_list" : [
@@ -35,7 +38,7 @@ class OrderService:
                         "order_number": result["order_number"],
                         "order_status_type_id": result["order_status_type_id"],
                         "order_username": result["order_username"],
-                        "orderer_phone": result["phone"],
+                        "orderer_phone": result["orderer_phone"],
                         "price": result["price"],
                         "quantity": result["quantity"],
                         "size_id": result["size_id"],
@@ -70,11 +73,13 @@ class OrderService:
 
         results = list()
         for order_status in possible_change_order_status:
-            order_status["order_status_type_id"] = body[0]["order_status_id"]
+            order_status["order_status_type_id"] = body[0]["order_status_type_id"]
 
             results.append(order_status)
-        
+
         self.order_dao.patch_order_status_type(conn, results)
+        self.order_dao.insert_order_detail_history(conn, results)
+
 
         if not_possible_change_order_status:
             return not_possible_change_order_status
