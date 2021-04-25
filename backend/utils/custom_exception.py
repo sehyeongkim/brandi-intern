@@ -125,3 +125,15 @@ class JwtDecodeError(CustomUserError):
         status_code = 500
         dev_error_message = "token is damaged"
         super().__init__(status_code, dev_error_message, error_message)
+
+class MasterLoginRequired(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        dev_error_message = "master login required"
+        super().__init__(status_code, dev_error_message, error_message)
+
+class SellerLoginRequired(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        dev_error_message = "seller login required"
+        super().__init__(status_code, dev_error_message, error_message)

@@ -14,13 +14,14 @@ from utils.custom_exception import (
                                     DatabaseConnectFail, 
                                     DatabaseCloseFail, 
                                     JwtInvalidSignatureError,
-                                    JwtDecodeError
+                                    JwtDecodeError,
+                                    MasterLoginRequired,
+                                    SellerLoginRequired
 )
 
 
-def login_required(f):
-    @wraps(f)
-    def decorated_function(self, *args, **kwargs):
+def login_required(account_type, *args, **kwargs):
+    def decorated_function(func):
         conn = None
         try:
             token = request.headers.get('Authorization')
@@ -35,13 +36,21 @@ def login_required(f):
                 raise DatabaseConnectFail('서버와 연결이 불가능합니다.')
 
             result = AccountDao().decorator_find_account(conn, account_id)
-            if not account:
+            if not result:
                 raise UserNotFoundError('존재하지 않는 사용자입니다.')
-            
+
+            if account_type == 'master' and 
+                result['account_type_id'] != 1:
+                    raise MasterLoginRequired('마스터 계정 로그인이 필요합니다.')
+
+            if account_type == 'seller' and
+                result['account_type_id'] == 3:
+                    raise SellerLoginRequired('판매자 계정 로그인이 필요합니다.')
+
             g.account_id = result['id']
             g.account_type_id = result['account_type_id']
             
-            return f(self, *args, **kwargs)
+            return func
         
         except jwt.exceptions.InvalidSignatureError:
             raise JwtInvalidSignatureError('토큰이 손상되었습니다.')
