@@ -15,7 +15,6 @@ def post_response(message, status_code=200):
 
 def get_response(result, status_code=200):
     response = {
-                    "result" : result,
                     "status_code": status_code
                 }
     return response
