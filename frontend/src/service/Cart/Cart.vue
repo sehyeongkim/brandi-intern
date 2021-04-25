@@ -5,7 +5,9 @@
       <div>
         <label>
           <CheckBox v-model="allCheckBtn" />
-          <span> 전체선택 ({{ this.selectItems.length }}/{{ this.totalCount }})</span>
+          <span>
+            전체선택 ({{ this.selectItems.length }}/{{ this.totalCount }})</span
+          >
         </label>
       </div>
       <div>
@@ -28,8 +30,19 @@
     <div class="price-box">
       <span class="price-title">총 결재 예상 금액</span>
       <div>
-        <span>총 상품 금액 {{ this.totalPrice | makeComma }}원 - 즉시할인 + 총 배송비 {{ this.totalPrice > 30000 ? 0 : 3000 | makeComma}}원</span>
-        <span>총 결재 예상 금액 <span class="price">{{ this.totalPrice > 30000 ? this.totalPrice : this.totalPrice + 3000 | makeComma }}</span>원</span>
+        <span
+          >총 상품 금액 {{ this.totalPrice | makeComma }}원 - 즉시할인 + 총
+          배송비 {{ this.totalPrice > 30000 ? 0 : 3000 | makeComma }}원</span
+        >
+        <span
+          >총 결재 예상 금액
+          <span class="price">{{
+            this.totalPrice > 30000
+              ? this.totalPrice
+              : (this.totalPrice + 3000) | makeComma
+          }}</span
+          >원</span
+        >
       </div>
     </div>
 
@@ -38,134 +51,138 @@
 </template>
 
 <script>
-import CheckBox from '@/service/Components/CheckBox'
-import CartOption from '@/service/Cart/CartOption'
+import CheckBox from "@/service/Components/CheckBox";
+import CartOption from "@/service/Cart/CartOption";
 // eslint-disable-next-line no-unused-vars
-import SERVER from '@/config'
+import SERVER from "@/config";
 // eslint-disable-next-line no-unused-vars
-import API from '@/service/util/service-api'
+import API from "@/service/util/service-api";
 // import mock from '@/Data/Cart'
-import { EventBus } from '@/service/util/event-bus'
+import { EventBus } from "@/service/util/event-bus";
 
 // const thisTarget = this
 
 export default {
-  created () {
-    API.methods
-      .get(`${SERVER.IP}/cart`)
-      .then((res) => {
-        // 한번 수정하기
-        const result = res.data.result.data.cartList
-        for (let i = 0, len = result.length; i < len; i++) {
-          for (let z = 0, len2 = result[i].detail.length; z < len2; z++) {
-            result[i].detail[z].checked = false
-          }
+  created() {
+    API.methods.get(`${SERVER.IP}/cart`).then((res) => {
+      // 한번 수정하기
+      const result = res.data.result.data.cartList;
+      for (let i = 0, len = result.length; i < len; i++) {
+        for (let z = 0, len2 = result[i].detail.length; z < len2; z++) {
+          result[i].detail[z].checked = false;
         }
-        this.cartList = result
-        this.totalCount = res.data.result.totalCount
-      })
+      }
+      this.cartList = result;
+      this.totalCount = res.data.result.totalCount;
+    });
 
-    EventBus.$on('check-item', item => {
-      this.selectItems.push(item)
+    EventBus.$on("check-item", (item) => {
+      this.selectItems.push(item);
 
       if (this.totalCount === this.selectItems.length) {
-        document.getElementById('allSelect').arrt('checked')
+        document.getElementById("allSelect").arrt("checked");
       } else {
-        document.getElementById('allSelect').removeAttribute('checked')
+        document.getElementById("allSelect").removeAttribute("checked");
       }
-    })
+    });
 
-    EventBus.$on('unCheck-item', item => {
+    EventBus.$on("unCheck-item", (item) => {
       for (let i = 0; i < this.selectItems.length; i++) {
         if (this.selectItems[i].id === item.id) {
-          this.selectItems.splice(i, 1)
-          break
+          this.selectItems.splice(i, 1);
+          break;
         }
       }
-    })
+    });
   },
-  updated () {
+  updated() {
     // this.totalPrice = this.calTotalPrice()
   },
-  data () {
+  data() {
     return {
-      cartList: []
+      cartList: [],
       // totalCount: 0
       // totalPrice: 0
-    }
+    };
   },
   computed: {
-    selectItems () {
-      const list = []
+    selectItems() {
+      const list = [];
       for (let i = 0, len = this.cartList.length; i < len; i++) {
         for (let z = 0, len2 = this.cartList[i].detail.length; z < len2; z++) {
           if (this.cartList[i].detail[z].checked) {
-            list.push(this.cartList[i].detail[z])
+            list.push(this.cartList[i].detail[z]);
           }
         }
       }
-      return list
+      return list;
     },
-    totalCount () {
-      let total = 0
+    totalCount() {
+      let total = 0;
       for (let i = 0, len = this.cartList.length; i < len; i++) {
         for (let z = 0, len2 = this.cartList[i].detail.length; z < len2; z++) {
-          total++
+          total++;
         }
       }
-      return total
+      return total;
     },
-    totalPrice () {
-      let sum = 0
+    totalPrice() {
+      let sum = 0;
       for (let i = 0; i < this.selectItems.length; i++) {
-        sum += (this.selectItems[i].price * this.selectItems[i].quantity)
+        sum += this.selectItems[i].price * this.selectItems[i].quantity;
       }
 
-      return sum
+      return sum;
     },
     allCheckBtn: {
-      get () {
-        return this.selectItems.length === this.totalCount
+      get() {
+        return this.selectItems.length === this.totalCount;
       },
-      set (v) {
+      set(v) {
         for (let i = 0, len = this.cartList.length; i < len; i++) {
-          for (let z = 0, len2 = this.cartList[i].detail.length; z < len2; z++) {
-            this.cartList[i].detail[z].checked = v
+          for (
+            let z = 0, len2 = this.cartList[i].detail.length;
+            z < len2;
+            z++
+          ) {
+            this.cartList[i].detail[z].checked = v;
           }
         }
-      }
-    }
+      },
+    },
   },
   components: {
     CheckBox,
-    CartOption
+    CartOption,
   },
   methods: {
-    selectDelete () {
+    selectDelete() {
       if (this.selectItems.length > 0) {
         API.methods
           .delete(`${SERVER.IP}/cart`, {
             data: {
-              productOptionIds: this.selectItems.map(d => { return d.id })
-            }
+              productOptionIds: this.selectItems.map((d) => {
+                return d.id;
+              }),
+            },
           })
           .then((res) => {
-            if (res.data.message === 'SUCCESS') {
+            if (res.data.message === "SUCCESS") {
               // 삭제 하였다면 리스트 삭제
               for (let i = 0, len = this.cartList.length; i < len; i++) {
                 for (let z = 0; z < this.cartList[i].detail.length; z++) {
                   if (this.cartList[i].detail[z].checked) {
-                    this.cartList[i].detail.splice(z, 1)
-                    z--
+                    this.cartList[i].detail.splice(z, 1);
+                    z--;
                   }
                 }
               }
             }
             // alert(res)
-          })
+          });
       }
     },
-    buyBtn () {
+    buyBtn() {
       if (this.selectItems.length > 0) {
         // const cartArray = []
         // for (let i = 0; i < this.selectItems.length; i++) {
@@ -173,24 +190,24 @@ export default {
         // }
 
         const data = {
-          userId: localStorage.getItem('userId'),
+          userId: localStorage.getItem("userId"),
           items: this.selectItems,
-          totalPrice: this.totalPrice
-        }
-        localStorage.removeItem('cart')
-        localStorage.setItem('cart', JSON.stringify(data))
-        this.$router.push('/order')
+          totalPrice: this.totalPrice,
+        };
+        localStorage.removeItem("cart");
+        localStorage.setItem("cart", JSON.stringify(data));
+        this.$router.push("/order");
       } else {
         this.$toast.open({
-          message: '옵션을 한개 이상 선택해주세요.',
-          position: 'bottom',
+          message: "옵션을 한개 이상 선택해주세요.",
+          position: "bottom",
           duration: 3000,
-          type: 'default'
-        })
+          type: "default",
+        });
       }
-    }
-  }
-}
+    },
+  },
+};
 </script>
 
 <style lang="scss" scoped>
@@ -232,9 +249,9 @@ export default {
         margin-left: 10px;
       }
       span:hover {
-          background-color: black;
-          color: white;
-          cursor: pointer;
+        background-color: black;
+        color: white;
+        cursor: pointer;
       }
     }
   }
