@@ -10,6 +10,19 @@ class OrderDao:
         pass
     
     def get_order_list(self, conn, params):
+        """ 주문 조회 리스트 dao
+
+        주문 조회 리스트 정보를 DB에서 가져오기 위한 함수
+
+        Args:
+            conn (Connection): DB 커넥션 객체
+            params (dict) : query parameter로 받은 정보 (셀러명, 조회 기간 등)
+        
+        Returns:
+            dict : 주문 리스트 정보
+            dict : 주문 전체 개수
+        """
+
         select = """ 
             SELECT 
         """
@@ -252,6 +265,15 @@ class OrderDao:
             return result1, result2, result3
 
     def patch_order_status_type(self, conn, possible_change_order_status):
+        """ DB에서 주문 및 배송처리 함수
+
+        DB에서 해당하는 row의 주문 상태를 변경해줌
+
+        Args: 
+            conn (Connection): DB 커넥션 객체
+            possible_change_order_status (list): order_service에서 걸러진 주문들 (주문 상태를 변경하지 못하는 주문들은 제외됨)
+        """
+
         sql = """
             UPDATE 
                 orders_detail
@@ -266,6 +288,23 @@ class OrderDao:
     
     # DB에 값이 있는지 확인하기
     def check_appropriate_order_status_type(self, conn, body):
+        """DB에 값이 있는지 확인
+
+        주문 상태를 바꾸려고 할 때, DB에 실제로 존재하는 값인지 확인함 (주문상태에 11개가 있는데 12번이 들어오는 경우를 막아줌)
+
+        Args:
+            conn (Connection): DB 커넥션 객체
+            body (dict):  
+                [
+                    {"orders_detail_id" : 주문 상세 아이디, "order_status_type_id": 변경할 주문 상태 아이디},
+                    {"orders_detail_id" : 주문 상세 아이디, "order_status_type_id": 변경할 주문 상태 아이디},
+                    {"orders_detail_id" : 주문 상세 아이디, "order_status_type_id": 변경할 주문 상태 아이디}
+                    ...
+                ]
+        
+        Returns:
+            Int : 존재하면 1 반환, 존재하지 않으면 0 반환
+        """
         sql = """
             SELECT 
                 1
@@ -277,12 +316,29 @@ class OrderDao:
 
         with conn.cursor() as cursor:
             cursor.executemany(sql, body)
-            results = cursor.fetchall()
-
-            return results
+            result = cursor.fetchone()
+            
+            return result
     
     # 구매확정, 주문취소인 경우 바꿀 수 없음
     def check_current_order_status(self, conn, body):
+        """현재 주문 상태 확인
+
+        현재 주문 상태가 구매확정, 주문취소, 환불완료 등일 경우인지 확인
+
+        Args:
+            conn (Connection): DB 커넥션 객체
+            body (dict):  
+                [
+                    {"orders_detail_id" : 주문 상세 아이디, "order_status_type_id": 변경할 주문 상태 아이디},
+                    {"orders_detail_id" : 주문 상세 아이디, "order_status_type_id": 변경할 주문 상태 아이디},
+                    {"orders_detail_id" : 주문 상세 아이디, "order_status_type_id": 변경할 주문 상태 아이디}
+                    ...
+                ]
+
+        Returns:
+            dict: 확인한 후 다시 원래 형태(json body)로 반환
+        """
 
         checked_current_order_status_list = list()
         for data in body:
@@ -303,6 +359,20 @@ class OrderDao:
         return checked_current_order_status_list
         
     def insert_order_detail_history(self, conn, results):
+        """주문 히스토리 데이터 삽입
+
+        주문 상태 변경 후 주문 히스토리에 row를 추가함
+
+        Args:
+            conn (Connection) : DB 커넥션 객체
+            results (list) : 
+                [
+                    {"orders_detail_id" : 주문 상세 아이디, "order_status_type_id": 변경할 주문 상태 아이디},
+                    {"orders_detail_id" : 주문 상세 아이디, "order_status_type_id": 변경할 주문 상태 아이디},
+                    {"orders_detail_id" : 주문 상세 아이디, "order_status_type_id": 변경할 주문 상태 아이디}
+                    ...
+                ]
+        """
         # account_id는 로그인 데코레이터로 파악
         for data in results:
             sql_1 = """
@@ -344,6 +414,19 @@ class OrderDao:
             
     
     def get_order(self, conn, params):
+        """ 주문 상세 확인 
+
+        주문 상세 정보를 가져옴
+
+        Args:
+            conn (Connection) : DB 커넥션 객체
+            params (dict) : 
+                {"detail_order_number" : 주문 상세 번호}
+        
+        Returns:
+            dict : 주문과 관련된 상세 정보 반환 
+            list : 주문 이력 반환
+        """
         sql_1 = """
             SELECT 
                 o.order_number, 
@@ -368,7 +451,7 @@ class OrderDao:
                 ad.address, 
                 ad.detail_address, 
                 ad.phone as recipient_phone,
-                u.phone as recipient_phone, 
+                u.phone as orderer_phone, 
                 dm.name as delivery_memo, 
                 o.delivery_memo_request as delivery_memo_custom
             FROM 
