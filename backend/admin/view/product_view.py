@@ -2,30 +2,16 @@ from flask import request, jsonify, g
 from flask.views import MethodView
 from flask_request_validator import validate_params, Param, GET, Datetime, ValidRequest
 
-from connection import get_connection
+from utils.custom_exception import DatabaseCloseFail, DatabaseConnectFail, RequiredDataError
+
+from connection import get_connection, get_s3_connection
+from config import BUCKET_NAME
 
 class ProductView(MethodView):
     def __init__(self, service):
         self.service = service
+
     # 상품 리스트 조회
-    # @login_required
-    @validate_params(
-        Param('selling', GET, int, required=False),
-        Param('discount', GET, int, required=False),
-        Param('start_date', GET, str, required=False),
-        Param('end_date', GET, str, required=False),
-        Param('displayed', GET, str, required=False),
-        Param('sub_property', GET, str, required=False),
-        Param('seller', GET, str, required=False),
-        Param('product_id', GET, list, required=False),
-        Param('product_name', GET, str, required=False),
-        Param('product_code', GET, str, required=False),
-        Param('product_number', GET, int, required=False),
-        Param('page', GET, int, required=False),
-        Param('limit', GET, int, required=False),
-        Param('start_date', GET, str, rules=[Datetime('%Y-%m-%d')]),
-        Param('end_date', GET, str, rules=[Datetime('%Y-%m-%d')])
-    )
     def get(self, valid: ValidRequest):
         conn = None
         try:
@@ -38,26 +24,85 @@ class ProductView(MethodView):
         
         finally:
             conn.close()
-    
+
     # 상품 등록 (by master or seller)
-    # @login_required
-    def post(self):
+    # @login_required -------> seller or master
+    @validate_params(
+    JsonParam({
+        'basic_info' : JsonParam({
+            "seller_id" : [IsInt()],
+            "is_selling" : [IsInt()],
+            "is_displayed" : [IsInt()],
+            "property_id" : [IsInt()],
+            "category_id" : [IsInt()],
+            "sub_category_id" : [IsInt()],
+            "product_info_notice" : JsonParam({
+                "manufacturer" : [IsStr()],
+                "date of manufacture" : [IsStr()],
+                "origin" : [IsStr()]
+            }),
+            "title" : [IsStr()],
+            "description" : [IsStr()],
+            "content" : [IsStr()]
+        }, required=True),
+        "option_info" : JsonParam({
+            "color_id" : [IsInt()],
+            "size_id" : [IsInt()],
+            "stock" : [IsInt()]
+        }, as_list=True, required=True),
+        "selling_info" : JsonParam({
+            "price" : [IsInt()],
+            "discount_rate" : [IsFloat()],
+            "discount_start_date" : [Datetime('%Y-%m-%d %H:%M')],
+            "discount_end_date" : [Datetime('%Y-%m-%d %H:%M')],
+            "min_amount" : [IsInt()],
+            "max_amount" : [IsInt()]
+        }, required=True),
+    })
+    )   
+    def post(self, valid: ValidRequest):
         conn = None
         try:
-            # request body의 data
-            body = request.data
-            account_id = g.account_id
+            body = valid.get_json()
+
+            basic_info = body['basic_info']
+            selling_info = body['selling_info']
+            option_info = body['option_info'] if body['option_info'] else None
+            files = request.form.getlist('image')
+            
             conn = get_connection()
-            if conn:
-                self.service.post_product_by_seller_or_master(conn, body)
-                
-                conn.commit()
 
-            return jsonify(''), 200
+            if not conn:
+                raise DatabaseConnectFail('서버와 연결할 수 없습니다.')
+            
+            # create basic information
+            product_id = self.service.create_basic_info(conn, basic_info)
+
+            # create selling information
+            self.service.create_selling_info(conn, selling_info)
+
+            # create options if exists
+            if option_info:
+                self.service.create_option_info(conn, product_id, option_info)
+            
+            #upload image to s3
+            self.service.create_image_url(conn, product_id, files)
+            
+            conn.commit()
         
-        finally:
-            conn.close()
+            return "SUCCESS"
+        
+        except Exception:
+            conn.rollback()
 
+        finally:
+            if conn:
+                try:
+                    conn.close()
+                except Exception:
+                    conn.rollback()
+                    raise DatabaseCloseFail('서버와 연결을 끊는 도중 알 수 없는 에러가 발생했습니다.')
+    
     # 상품 리스트에서 상품의 판매여부, 진열여부 수정
     # @login_required
     def patch(self):
@@ -69,7 +114,7 @@ class ProductView(MethodView):
             if conn:
                 self.service.patch_product(conn, body)
                 
-                conn.commit()
+            conn.commit()
 
             return jsonify(''), 200
         
@@ -90,7 +135,7 @@ class ProductDetailView(MethodView):
             if conn:
                 result = self.service.get_product_detail(conn, product_code)
             
-                return jsonify(result), 200
+            return jsonify(result), 200
         
         finally:
             conn.close()
@@ -110,12 +155,17 @@ class ProductSellerSearchView(MethodView):
             params = valid.get_params()
             keyword = params['search']
             conn = get_connection()
-            if conn:
-                result = self.service.search_seller(conn, keyword)
-                return jsonify(result), 200
+            if not conn:
+                raise DatabaseConnectFail('서버와 연결할 수 없습니다.')
+            
+            return self.service.search_seller(conn, keyword)
+
         finally:
             if conn:
-                conn.close()
+                try:
+                    conn.close()
+                except Exception:
+                    raise DatabaseCloseFail('서버와 연결을 끊는 도중 알 수 없는 에러가 발생했습니다.')
 
 
 class ProductSellerView(MethodView):
@@ -128,13 +178,17 @@ class ProductSellerView(MethodView):
         conn = None
         try:
             conn = get_connection()
-            if conn:
-                result = self.service.get_property_and_available_categories(conn, seller_id)
-                return jsonify(result), 200
+            if not conn:
+                raise DatabaseConnectFail('서버와 연결할 수 없습니다.')
+            
+            return self.service.get_property_and_available_categories(conn, seller_id)
         
         finally:
             if conn:
-                conn.close()
+                try:
+                    conn.close()
+                except Exception:
+                    raise DatabaseCloseFail('서버와 연결을 끊는 도중 알 수 없는 에러가 발생했습니다.')
 
 
 class ProductSubCategoryView(MethodView):
@@ -146,13 +200,17 @@ class ProductSubCategoryView(MethodView):
         conn = None
         try:
             conn = get_connection()
-            if conn:
-                result = self.service.get_sub_categories_list(conn, category_id)
-                return jsonify(result), 200
+            if not conn:
+                raise DatabaseConnectFail('서버와 연결할 수 없습니다.')
+
+            return self.service.get_sub_categories_list(conn, category_id)
         
         finally:
             if conn:
-                conn.close()
+                try:
+                    conn.close()
+                except Exception:
+                    raise DatabaseCloseFail('서버와 연결을 끊는 도중 알 수 없는 에러가 발생했습니다.')
 
 
 class ProductColorView(MethodView):
@@ -163,13 +221,17 @@ class ProductColorView(MethodView):
         conn = None
         try:
             conn = get_connection()
-            if conn:
-                result = self.service.get_products_color_list(conn)
-                return jsonify(result), 200
+            if not conn:
+                raise DatabaseConnectFail('서버와 연결할 수 없습니다.')
+
+            return self.service.get_products_color_list(conn)
         
         finally:
             if conn:
-                conn.close()
+                try:
+                    conn.close()
+                except Exception:
+                    raise DatabaseCloseFail('서버와 연결을 끊는 도중 알 수 없는 에러가 발생했습니다.')
 
 
 class ProductSizeView(MethodView):
@@ -180,10 +242,14 @@ class ProductSizeView(MethodView):
         conn = None
         try:
             conn = get_connection()
-            if conn:
-                result = self.service.get_products_size_list(conn)
-                return jsonify(result), 200
+            if not conn:
+                raise DatabaseConnectFail('서버와 연결할 수 없습니다.')
+
+            return self.service.get_products_size_list(conn)
         
         finally:
             if conn:
-                conn.close()
+                try:
+                    conn.close()
+                except Exception:
+                    raise DatabaseCloseFail('서버와 연결을 끊는 도중 알 수 없는 에러가 발생했습니다.')

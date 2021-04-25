@@ -22,3 +22,9 @@ class DatabaseConnectFail(CustomUserError):
         status_code = 500
         dev_error_message = "database.connect error"
         super().__init__(status_code, dev_error_message, error_message)
+
+class RequiredDataError(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        dev_error_message = "required data is needed"
+        super().__init__(status_code, dev_error_message, error_message)
