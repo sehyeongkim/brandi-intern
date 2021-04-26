@@ -1,6 +1,5 @@
 from model import ProductDao
 
-product_dao = ProductDao()
 class ProductService:
     def __new__(cls, *args, **kwargs):
         if not hasattr(cls, '_instance'):
@@ -8,7 +7,7 @@ class ProductService:
         return cls._instance
 
     def __init__(self):
-        pass
+        self.product_dao = ProductDao()
     
     # 상품 리스트 가져오기
     def get_products_list(self, conn, params):

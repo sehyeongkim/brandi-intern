@@ -1,8 +1,9 @@
-from flask import request, jsonify
+from flask import request, jsonify, g
 from flask.views import MethodView
 from flask_request_validator import validate_params, Param, GET, ValidRequest
 
 from connection import get_connection
+from utils import DecimalEncoder
 
 class OrderView(MethodView):
     def __init__(self, service):
@@ -49,5 +50,27 @@ class OrderView(MethodView):
             
             return jsonify(''), 200
         
+        finally:
+            conn.close()
+
+class DashboardSellerView(MethodView):
+    def __init__(self, service):
+        self.service = service
+    
+    #배송완료, 상품준비, 전체상품, 노출상품
+    # @login_required
+    def get(self):
+        #account_id = g.account_id
+        account_id=1
+        conn = None
+        try:
+            conn = get_connection()
+            results = self.service.get_dashboard_seller(conn, account_id)
+            result = {"data" : results}
+        # except Exception as e:
+        #     return jsonify({'message': 'UNSUCCESS'}),400
+        # else:
+        #     return jsonify(result), 200
+            return jsonify(result), 200        
         finally:
             conn.close()

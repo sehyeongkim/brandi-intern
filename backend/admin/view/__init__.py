@@ -3,11 +3,13 @@ from .product_view import (
                             ProductDetailView, 
                             ProductCategoryView,
                             ProductSellerView,
-                            ProductSellerSearchView
+                            ProductSellerSearchView,
+                            
 )
 
 from .order_view import (
-                            OrderView
+                            OrderView,
+                            DashboardSellerView
 )
 
 from .account_view import (
@@ -50,6 +52,10 @@ def create_endpoints(app, services):
     app.add_url_rule("/order/delivery",
                     view_func=OrderView.as_view('order_delivery_view', order_service),
                     methods=['PATCH'])
+
+    app.add_url_rule("/dashboard/seller",
+                    view_func=DashboardSellerView.as_view('dashboard_seller', order_service),
+                    methods=['GET'])
     
     # account
     app.add_url_rule("/account/signup",

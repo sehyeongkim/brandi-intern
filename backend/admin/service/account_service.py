@@ -1,6 +1,5 @@
 from model import AccountDao
 
-account_dao = AccountDao()
 class AccountService:
     def __new__(cls, *args, **kwargs):
         if not hasattr(cls, '_instance'):
@@ -8,7 +7,7 @@ class AccountService:
         return cls._instance
 
     def __init__(self):
-        pass
+        self.account_dao = AccountDao()
 
     # account 회원가입
     def post_account_signup(self, conn, body):
