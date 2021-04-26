@@ -10,9 +10,9 @@ from utils.response import error_response
 
 def error_handle(app):
     """에러 핸들러
-    
+
     에러 처리하는 함수
-    
+
     Args:
         app  : __init__.py에서 파라미터로 app을 전달 받은 값
     Returns:
@@ -37,7 +37,7 @@ def error_handle(app):
     def handle_type_error(e):
         traceback.print_exc()
         return error_response("데이터의 값이 잘못 입력되었습니다", "Data Type Error", 500)
- 
+
     @app.errorhandler(ValueError)
     def handle_value_error(e):
         traceback.print_exc()
@@ -53,11 +53,12 @@ def error_handle(app):
         """validate_params 정규식 에러
         validate_params rules에 위배될 경우 발생되는 에러 메시지를 처리하는 함수
         """
-        dev_error_message = demo_error_formatter(e)[0]['errors'] , demo_error_formatter(e)[0]['message']
+        traceback.print_exc()
+        dev_error_message = demo_error_formatter(
+            e)[0]['errors'], demo_error_formatter(e)[0]['message']
         return error_response("형식에 맞는 값을 입력해주세요", dev_error_message, 400)
 
     @app.errorhandler(CustomUserError)
     def handle_error(e):
-        return jsonify({"error_message": e.error_message, "dev_error_message": e.dev_error_message, "status" : e.status_code}), e.status_code
+        traceback.print_exc()
         return error_response(e.error_message, e.dev_error_message, e.status_code)
-    

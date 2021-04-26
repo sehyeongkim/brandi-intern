@@ -10,6 +10,8 @@ from utils.custom_exception import IsInt, IsStr, IsFloat, IsRequired, DatabaseCl
 
 from connection import get_connection
 
+from utils.decorator import LoginRequired
+
 
 class ProductView(MethodView):
     def __init__(self, service):
@@ -35,6 +37,7 @@ class ProductView(MethodView):
         Param('end_date', GET, str, rules=[Datetime('%Y-%m-%d')], required=False),
         Param('select_product_id', GET, list, required=False)
     )
+    @LoginRequired('seller')
     def get(self, valid: ValidRequest):
         """상품 조회 리스트
 
@@ -53,8 +56,6 @@ class ProductView(MethodView):
             params = valid.get_params()
             headers = valid.get_headers()
             conn = get_connection()
-            if not conn:
-                raise DatabaseConnectFail('데이터베이스 연결 실패')
             
             result = self.service.get_products_list(conn, params, headers)
             
@@ -113,9 +114,6 @@ class ProductView(MethodView):
             files = request.form.getlist('image')
             
             conn = get_connection()
-
-            if not conn:
-                raise DatabaseConnectFail('서버와 연결할 수 없습니다.')
             
             # create basic information
             product_id = self.service.create_basic_info(conn, basic_info)
@@ -146,7 +144,7 @@ class ProductView(MethodView):
                     raise DatabaseCloseFail('서버와 연결을 끊는 도중 알 수 없는 에러가 발생했습니다.')
     
     # 상품 리스트에서 상품의 판매여부, 진열여부 수정
-    # @login_required
+    # @LoginRequired
     def patch(self):
         conn = None
         try:
@@ -155,11 +153,11 @@ class ProductView(MethodView):
             conn = get_connection()
             if conn:
                 self.service.patch_product(conn, body)
-                
+            
             conn.commit()
 
             return jsonify(''), 200
-        
+
         finally:
             conn.close()
 
@@ -169,16 +167,16 @@ class ProductDetailView(MethodView):
         self.service = service
 
     # 상품 상세 가져오기
-    # @login_required
+    # @LoginRequired
     def get(self, product_code):
         conn = None
         try:
             conn = get_connection()
             if conn:
                 result = self.service.get_product_detail(conn, product_code)
-            
+
             return jsonify(result), 200
-        
+
         finally:
             conn.close()
 
@@ -197,8 +195,6 @@ class ProductSellerSearchView(MethodView):
             params = valid.get_params()
             keyword = params['search']
             conn = get_connection()
-            if not conn:
-                raise DatabaseConnectFail('서버와 연결할 수 없습니다.')
             
             return self.service.search_seller(conn, keyword)
 
@@ -213,18 +209,15 @@ class ProductSellerSearchView(MethodView):
 class ProductSellerView(MethodView):
     def __init__(self, service):
         self.service = service
-    
-    # 상품 등록 -> 셀러 선택
+
     # seller 속성, 1차 카테고리
     def get(self, seller_id):
         conn = None
         try:
             conn = get_connection()
-            if not conn:
-                raise DatabaseConnectFail('서버와 연결할 수 없습니다.')
             
             return self.service.get_property_and_available_categories(conn, seller_id)
-        
+
         finally:
             if conn:
                 try:
@@ -236,17 +229,17 @@ class ProductSellerView(MethodView):
 class ProductSubCategoryView(MethodView):
     def __init__(self, service):
         self.service = service
-    
+
     # 상품 등록 -> 2차 카테고리 선택
     def get(self, category_id):
         conn = None
         try:
             conn = get_connection()
-            if not conn:
-                raise DatabaseConnectFail('서버와 연결할 수 없습니다.')
-
-            return self.service.get_sub_categories_list(conn, category_id)
         
+            result = self.service.get_sub_categories_list(conn, category_id)
+
+            return jsonify(result), 200
+
         finally:
             if conn:
                 try:
@@ -258,16 +251,14 @@ class ProductSubCategoryView(MethodView):
 class ProductColorView(MethodView):
     def __init__(self, service):
         self.service = service
-    
+
     def get(self):
         conn = None
         try:
             conn = get_connection()
-            if not conn:
-                raise DatabaseConnectFail('서버와 연결할 수 없습니다.')
 
             return self.service.get_products_color_list(conn)
-        
+
         finally:
             if conn:
                 try:
@@ -279,13 +270,11 @@ class ProductColorView(MethodView):
 class ProductSizeView(MethodView):
     def __init__(self, service):
         self.service = service
-    
+
     def get(self):
         conn = None
         try:
             conn = get_connection()
-            if not conn:
-                raise DatabaseConnectFail('서버와 연결할 수 없습니다.')
 
             return self.service.get_products_size_list(conn)
         

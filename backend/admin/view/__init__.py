@@ -20,10 +20,12 @@ from .account_view import (
 
 from utils.error_handler import error_handle
 
+
 def create_endpoints(app, services):
     product_service = services.product_service
     order_service = services.order_service
     account_service = services.account_service
+
 
     # product
     app.add_url_rule("/products",
@@ -79,6 +81,5 @@ def create_endpoints(app, services):
     app.add_url_rule("/seller/signin",
                     view_func=AccountLogInView.as_view('seller_login_view', account_service),
                     methods=['POST'])
-    
     
     error_handle(app)

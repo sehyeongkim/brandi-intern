@@ -8,6 +8,7 @@ class ProductDao:
     def __init__(self):
         pass
 
+<<<<<<< HEAD
     def get_products_list(self, conn, params, headers):
         sql_select = """
             SELECT
@@ -254,6 +255,9 @@ class ProductDao:
         pass
     
     def get_product_detail(self, conn, product_code):
+        pass
+
+    def get_categories_list(self, conn, category_id):
         pass
 
     def search_seller_dao(self, conn, keyword: str):

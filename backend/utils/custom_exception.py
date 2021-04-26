@@ -30,20 +30,46 @@ class DatabaseCloseFail(CustomUserError):
             dev_error_message = "database.close() error"
         super().__init__(status_code, dev_error_message, error_message)
 
-
-class DatabaseConnectFail(CustomUserError):
-    def __init__(self,error_message, dev_error_message=None):
-        status_code = 500
-        if not dev_error_message:
-            dev_error_message = "database.connect error"
+class TokenIsEmptyError(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        dev_error_message = "token is empty"
         super().__init__(status_code, dev_error_message, error_message)
+
+class UserNotFoundError(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 404
+        dev_error_message = "user not found"
+        super().__init__(status_code, dev_error_message, error_message)
+
+class JwtInvalidSignatureError(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        dev_error_message = "signature is damaged"
+        super().__init__(status_code, dev_error_message, error_message)
+
+class JwtDecodeError(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 500
+        dev_error_message = "token is damaged"
+        super().__init__(status_code, dev_error_message, error_message)
+
+class MasterLoginRequired(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        dev_error_message = "master login required"
+        super().__init__(status_code, dev_error_message, error_message)
+
+class SellerLoginRequired(CustomUserError):
+    def __init__(self, error_message):
+        status_code = 400
+        dev_error_message = "seller login required"
 
 class StartDateFail(CustomUserError):
     def __init__(self,error_message):
         status_code = 400
         dev_error_message = "start_date gt end_date error"
         super().__init__(status_code, dev_error_message, error_message)
-
 
 class DataNotExists(CustomUserError):
     def __init__(self, error_message, dev_error_message=None):
@@ -58,7 +84,6 @@ class RequiredDataError(CustomUserError):
         super().__init__(status_code, dev_error_message, error_message)
         if not dev_error_message:
             dev_error_message = "order status type id doesn't exist"
-
 
 class IsInt(AbstractRule):
     def validate(self, value):
