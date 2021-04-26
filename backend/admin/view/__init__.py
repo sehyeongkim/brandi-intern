@@ -104,6 +104,7 @@ def create_endpoints(app, services):
     
     app.add_url_rule("/seller/signin",
                     view_func=AccountLogInView.as_view('seller_login_view', account_service),
+<<<<<<< HEAD
                     methods=['POST'])
     
     
@@ -123,3 +124,6 @@ def create_endpoints(app, services):
     error_handle(app)
     
 >>>>>>> [error_handle 작성]
+=======
+                    methods=['POST'])
+>>>>>>> MOD: minor changes

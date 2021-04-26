@@ -3,11 +3,12 @@ from utils.response import error_response, get_response, post_response, post_res
 from flask import request, jsonify
 from flask.views import MethodView
 from flask_request_validator import validate_params, Param, GET, ValidRequest, JsonParam, Min, Enum, Datetime
+from flask.json import JSONEncoder
 
 from connection import get_connection
-from utils import DecimalEncoder
-
+from utils.response import error_response, get_response, post_response, post_response_with_return
 from utils.custom_exception import DataNotExists, DatabaseConnectFail, StartDateFail
+
 
 class OrderListView(MethodView):
     def __init__(self, service):
@@ -126,5 +127,27 @@ class OrderView(MethodView):
             order_detail = self.service.get_order(conn, params)
             return get_response(order_detail), 200
         
+        finally:
+            conn.close()
+
+class DashboardSellerView(MethodView):
+    def __init__(self, service):
+        self.service = service
+    
+    # @login_required
+    def get(self):
+    
+        #account_id = g.account_id
+        account_id=1
+        conn = None
+        try:
+            conn = get_connection()
+            results = self.service.get_dashboard_seller(conn, account_id)
+            result = {"data" : results}
+        # except Exception as e:
+        #     return jsonify({'message': 'UNSUCCESS'}),400
+        # else:
+        #     return jsonify(result), 200
+            return jsonify(result), 200        
         finally:
             conn.close()

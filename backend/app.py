@@ -1,6 +1,6 @@
 from flask import Flask
 from flask_cors import CORS
-
+from flask.json import JSONEncoder
 
 from admin.service import (
     ProductService,
@@ -23,7 +23,7 @@ def create_app(test_config=None):
         app.config.from_pyfile("config.py")
     else:
         app.config.update(test_config)
-    
+  
     services = Service()
 
     services.product_service = ProductService()
@@ -32,5 +32,4 @@ def create_app(test_config=None):
 
     # endpoint 생성
     create_endpoints(app, services)
-
     return app
