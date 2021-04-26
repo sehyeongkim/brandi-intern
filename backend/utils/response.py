@@ -28,10 +28,10 @@ def get_response(result, status_code=200):
                 }
     return response
 
-def post_response_with_return(message, *args, status_code=200):
+def post_response_with_return(message, fail_return, status_code=200):
     response = {
                     "message": message,
-                    "post_fail": args,
+                    "post_fail": fail_return,
                     "status_code": status_code
                 }
     return response
