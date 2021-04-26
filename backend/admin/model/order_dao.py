@@ -27,18 +27,21 @@ class OrderDao:
             SELECT 
         """
         order_info = """
-                o.created_at, 
+                DATE_FORMAT(o.created_at, '%%Y-%%m-%%d %%h:%%i:%%s') AS created_at,
                 o.order_number, 
                 d.detail_order_number, 
                 s.korean_brand_name,
                 p.title,  
-                op.color_id, 
-                op.size_id, 
+                p.discount_rate,
+                p.discount_start_date,
+                p.discount_end_date,
+                si.name AS size_name, 
+                c.name AS color_name, 
                 d.quantity,
                 o.order_username,
-                u.phone as orderer_phone,
+                u.phone AS orderer_phone,
                 d.price,
-                d.order_status_type_id
+                ost.name AS order_status_type
         """
 
         condition = """    
@@ -56,6 +59,12 @@ class OrderDao:
                 users AS u ON u.id = o.user_id
             INNER JOIN 
                 sub_property as sp ON sp.id = s.sub_property_id
+            INNER JOIN
+                color as c ON op.color_id = c.id
+            INNER JOIN
+                size as si ON si.id = op.size_id
+            INNER JOIN 
+                order_status_type as ost ON ost.id = d.order_status_type_id
             WHERE 
                     o.created_at BETWEEN %(start_date)s AND %(end_date)s
                 AND 
@@ -171,7 +180,57 @@ class OrderDao:
             return result_1, result_2
         
 
-    def patch_order_status_type(self, conn, possible_change_order_status):
+    def check_if_status_type_exists(self, conn, body):
+        exist_list = list()
+        non_exist_list = list()
+        for data in body:
+            sql = """
+                SELECT
+                   1
+                FROM
+                    order_status_type
+                WHERE 
+                    id = %(order_status_type_id)s
+            """
+            with conn.cursor() as cursor:
+                cursor.execute(sql, data)
+                if cursor.fetchone():
+                    exist_list.append(data)
+                else:
+                    non_exist_list.append(data)
+                
+        return exist_list, non_exist_list
+
+
+    def check_if_possible_change(self, conn, body):
+        PURCHASE_COMPLETE = 4
+        CANCEL_COMPLETE = 7
+        REFUND_COMPLETE = 9
+
+        possible_list = list()
+        impossible_list = list()
+        for data in body:
+            sql = """
+                SELECT
+                    id AS order_detail_id,
+                    order_status_type_id
+                FROM
+                    orders_detail
+                WHERE
+                    id = %(orders_detail_id)s
+            """
+
+            with conn.cursor() as cursor:
+                cursor.execute(sql, data)
+                if cursor.fetchone()["order_status_type_id"] in (PURCHASE_COMPLETE, CANCEL_COMPLETE, REFUND_COMPLETE):
+                    impossible_list.append(data)
+                else:
+                    possible_list.append(data)
+        
+        return possible_list, impossible_list
+
+
+    def patch_order_status_type(self, conn, possible_to_patch):
         """ DB에서 주문 및 배송처리 함수
 
         DB에서 해당하는 row의 주문 상태를 변경해줌
@@ -191,79 +250,8 @@ class OrderDao:
         """
 
         with conn.cursor() as cursor:
-            cursor.executemany(sql, possible_change_order_status)
-    
-    # DB에 값이 있는지 확인하기
-    def check_appropriate_order_status_type(self, conn, body):
-        """DB에 값이 있는지 확인
+            cursor.executemany(sql, possible_to_patch)
 
-        주문 상태를 바꾸려고 할 때, DB에 실제로 존재하는 값인지 확인함 (주문상태에 11개가 있는데 12번이 들어오는 경우를 막아줌)
-
-        Args:
-            conn (Connection): DB 커넥션 객체
-            body (dict):  
-                [
-                    {"orders_detail_id" : 주문 상세 아이디, "order_status_type_id": 변경할 주문 상태 아이디},
-                    {"orders_detail_id" : 주문 상세 아이디, "order_status_type_id": 변경할 주문 상태 아이디},
-                    {"orders_detail_id" : 주문 상세 아이디, "order_status_type_id": 변경할 주문 상태 아이디}
-                    ...
-                ]
-        
-        Returns:
-            Int : 존재하면 1 반환, 존재하지 않으면 0 반환
-        """
-        sql = """
-            SELECT 
-                1
-            FROM 
-                order_status_type
-            WHERE 
-                id = %(order_status_type_id)s
-        """
-
-        with conn.cursor() as cursor:
-            cursor.executemany(sql, body)
-            result = cursor.fetchone()
-            
-            return result
-    
-    # 구매확정, 주문취소인 경우 바꿀 수 없음
-    def check_current_order_status(self, conn, body):
-        """현재 주문 상태 확인
-
-        현재 주문 상태가 구매확정, 주문취소, 환불완료 등일 경우인지 확인
-
-        Args:
-            conn (Connection): DB 커넥션 객체
-            body (dict):  
-                [
-                    {"orders_detail_id" : 주문 상세 아이디, "order_status_type_id": 변경할 주문 상태 아이디},
-                    {"orders_detail_id" : 주문 상세 아이디, "order_status_type_id": 변경할 주문 상태 아이디},
-                    {"orders_detail_id" : 주문 상세 아이디, "order_status_type_id": 변경할 주문 상태 아이디}
-                    ...
-                ]
-
-        Returns:
-            dict: 확인한 후 다시 원래 형태(json body)로 반환
-        """
-
-        checked_current_order_status_list = list()
-        for data in body:
-            sql = """
-                SELECT
-                    id as orders_detail_id,
-                    order_status_type_id
-                FROM 
-                    orders_detail
-                WHERE 
-                    id = %(orders_detail_id)s
-            """
-
-            with conn.cursor() as cursor:
-                cursor.execute(sql, data)
-                result = cursor.fetchone()
-                checked_current_order_status_list.append(result)
-        return checked_current_order_status_list
         
     def insert_order_detail_history(self, conn, results):
         """주문 히스토리 데이터 삽입
@@ -319,7 +307,6 @@ class OrderDao:
                 cursor.execute(sql_2, result)
 
             
-    
     def get_order(self, conn, params):
         """ 주문 상세 확인 
 
@@ -337,9 +324,9 @@ class OrderDao:
         sql_1 = """
             SELECT 
                 o.order_number, 
-                o.created_at, 
+                DATE_FORMAT(o.created_at, '%%Y-%%m-%%d %%h:%%i:%%s') AS created_at,
                 od.detail_order_number, 
-                od.order_status_type_id, 
+                ost.name AS order_status_type, 
                 u.phone as order_phone,
                 p.id as product_id, 
                 op.id as option_id, 
@@ -349,12 +336,13 @@ class OrderDao:
                 p.discount_end_date, 
                 p.title, 
                 s.korean_brand_name, 
-                op.color_id, 
-                op.size_id, 
+                c.name AS color, 
+                si.name AS size, 
                 od.quantity,  
                 u.id as user_id, 
                 ad.recipient, 
                 ad.zip_code, 
+                o.order_username as orderer_name,
                 ad.address, 
                 ad.detail_address, 
                 ad.phone as recipient_phone,
@@ -377,18 +365,26 @@ class OrderDao:
                 address as ad ON ad.id = od.address_id
             INNER JOIN
                 delivery_memo as dm ON dm.id = o.delivery_memo_id
+            INNER JOIN
+                color as c ON op.color_id = c.id
+            INNER JOIN
+                size as si ON si.id = op.size_id
+            INNER JOIN 
+                order_status_type as ost ON ost.id = od.order_status_type_id
             WHERE  
                 od.detail_order_number = %(detail_order_number)s;
         """
 
         sql_2 = """
             SELECT 
-                odh.updated_at,
-                odh.order_status_type_id
+                DATE_FORMAT(odh.updated_at, '%%Y-%%m-%%d %%h:%%i:%%s') AS updated_at,
+                ost.name AS order_status_type
             FROM 
-                orders_detail as od
+                orders_detail AS od
             INNER JOIN
-                order_detail_history as odh ON od.id = odh.order_detail_id
+                order_detail_history AS odh ON od.id = odh.order_detail_id
+            INNER JOIN
+                order_status_type AS ost ON ost.id = odh.order_status_type_id
             WHERE 
                 od.detail_order_number = %(detail_order_number)s;
         """

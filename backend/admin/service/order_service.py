@@ -4,7 +4,7 @@ from utils.response import error_response
 from utils.custom_exception import DataNotExists, DatabaseConnectFail, StartDateFail
 
 import traceback
-from datetime import timedelta
+from datetime import timedelta, date
 
 class OrderService:
     def __new__(cls, *args, **kwargs):
@@ -52,9 +52,6 @@ class OrderService:
                 KeyError : 데이터베이스의 key값이 맞지 않을 때 발생하는 에러
         """
         
-        if not conn:
-            raise DatabaseConnectFail(500, "DB connection 에러")
-        
         if 'end_date' in params:
             params['end_date'] +=  timedelta(days=1)
             params['end_date_str'] = params['end_date'].strftime('%Y-%m-%d')
@@ -62,29 +59,29 @@ class OrderService:
         if 'start_date' in params:
             params['start_date_str'] = params['start_date'].strftime('%Y-%m-%d')
 
-        # end_date에 1추가??
         if 'start_date' in params and 'end_date' in params and params['start_date'] > params['end_date']:
             raise StartDateFail('조회 시작 날짜가 끝 날짜보다 큽니다.')
 
-        result_1, result_2 = self.order_dao.get_order_list(conn, params)
+        orders_info, order_count = self.order_dao.get_order_list(conn, params)
+        
         order_list_info = {
                 "order_list" : [
                     {
-                        "color_id": result["color_id"],
+                        "color": result["color_name"],
                         "order_created_at": result["created_at"],
                         "order_detail_number": result["detail_order_number"],
                         "brand_name": result["korean_brand_name"],
                         "order_number": result["order_number"],
-                        "order_status_type_id": result["order_status_type_id"],
+                        "order_status_type": result["order_status_type"],
                         "order_username": result["order_username"],
                         "orderer_phone": result["orderer_phone"],
-                        "price": result["price"],
                         "quantity": result["quantity"],
-                        "size_id": result["size_id"],
-                        "product_name": result["title"]
-                    } for result in result_1
+                        "size": result["size_name"],
+                        "product_name": result["title"],
+                        "total_price": int(result["price"] * result["quantity"]) if result["discount_rate"] == 0 else int(result["price"] * (1-result["discount_rate"]) * result["quantity"])
+                    } for result in orders_info # 이름
                 ],
-                "total_count": result_2["count"]
+                "total_count": order_count["count"]
         }
     
         return order_list_info
@@ -111,34 +108,19 @@ class OrderService:
         Returns:
             list : 주문 상태를 변경하는데 실패한 값 반환
         """
+        status_type_exist, status_type_not_exist = self.order_dao.check_if_status_type_exists(conn, body)
 
-        appropriate_id = self.order_dao.check_appropriate_order_status_type(conn, body)
+        possible_to_patch, impossible_to_patch = self.order_dao.check_if_possible_change(conn, status_type_exist)
 
-        if not appropriate_id:
-            raise DataNotExists("처리할 수 없는 데이터 값입니다.")
+        possible_to_patch += status_type_exist
+        impossible_to_patch += status_type_not_exist
 
-        checked_current_order_status_list = self.order_dao.check_current_order_status(conn, body) 
-
-        possible_change_order_status = list()
-        not_possible_change_order_status = list()
+        self.order_dao.patch_order_status_type(conn, possible_to_patch)
+        # self.order_dao.insert_order_detail_history(conn, possible_to_patch)
+        return impossible_to_patch
+    
         
-        for current_order_status_type in checked_current_order_status_list:
-            if current_order_status_type["order_status_type_id"] in (4, 6, 9):
-                not_possible_change_order_status.append(current_order_status_type)
-            else:
-                possible_change_order_status.append(current_order_status_type)
 
-        results = list()
-        for order_status in possible_change_order_status:
-            order_status["order_status_type_id"] = body[0]["order_status_type_id"]
-
-            results.append(order_status)
-
-        self.order_dao.patch_order_status_type(conn, results)
-        self.order_dao.insert_order_detail_history(conn, results)
-
-        if not_possible_change_order_status:
-            return not_possible_change_order_status
 
         
     def get_order(self, conn, params):
@@ -160,18 +142,18 @@ class OrderService:
                     "order_number": result_1["order_number"],
                     "order_detail_number": result_1["detail_order_number"],
                     "order_created_at": result_1["created_at"],
-                    "order_status_type_id": result_1["order_status_type_id"],
+                    "order_status_type": result_1["order_status_type"],
                     "orderer_phone": result_1["order_phone"],
+                    "orderer_name": result_1["orderer_name"],
                     "product_id": result_1["product_id"],
-                    "option_id": result_1["option_id"],
                     "price": result_1["price"],
-                    "discount_rate": result_1["discount_rate"],
-                    "discount_start_date": result_1["discount_start_date"],
-                    "discount_end_date": result_1["discount_end_date"],
+                    "discount_rate": int(100 * result_1["discount_rate"]),
+                    "discounted_price": int(result_1["price"] if result_1["discount_rate"] == 0 else (result_1["price"] * (1-result_1["discount_rate"]))),
+                    "total_price": int(result_1["price"] * result_1["quantity"] if result_1["discount_rate"] == 0 else result_1["price"] * result_1["discount_rate"] * result_1["quantity"]),
                     "product_name": result_1["title"],
                     "brand_name": result_1["korean_brand_name"],
-                    "color_id": result_1["color_id"],
-                    "size_id": result_1["size_id"],
+                    "color": result_1["color"],
+                    "size": result_1["size"],
                     "quantity": result_1["quantity"],
                     "user_id": result_1["user_id"],
                     "recipient": result_1["recipient"],
@@ -183,7 +165,7 @@ class OrderService:
                 "order_history": [
                             {
                                 "update_time": result["updated_at"],
-                                "order_status_type": result["order_status_type_id"]
+                                "order_status_type": result["order_status_type"]
                             }
                             for result in result_2
                         ]
