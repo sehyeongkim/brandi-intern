@@ -26,8 +26,7 @@ class AccountDao:
         """
         with conn.cursor() as cursor:
             cursor.execute(sql_select, data)
-            result = cursor.fetchall()
-            return result
+            return cursor.fetchall()
         
     def get_korean_brand_name(self, conn, data):
         """한글 브랜드 이름 중복확인 함수
@@ -46,8 +45,7 @@ class AccountDao:
         """
         with conn.cursor() as cursor:
             cursor.execute(sql_select, data)
-            result = cursor.fetchall()
-            return result
+            return cursor.fetchall()
         
     def get_english_brand_name(self, conn, data):
         """영어 브랜드 이름 중복확인 함수
@@ -66,8 +64,7 @@ class AccountDao:
         """
         with conn.cursor() as cursor:
             cursor.execute(sql_select, data)
-            result = cursor.fetchall()
-            return result
+            return cursor.fetchall()
         
     def get_property_id(self, conn, data):
         """property_id 가져오는 함수
@@ -88,8 +85,7 @@ class AccountDao:
         """
         with conn.cursor() as cursor:
             cursor.execute(sql_select, data)
-            property_id = cursor.fetchone()
-            return property_id
+            return cursor.fetchone()
     
     def create_account(self, conn, data):
         """account 생성하는 함수
@@ -110,8 +106,7 @@ class AccountDao:
         """
         with conn.cursor() as cursor:
             cursor.execute(sql_insert, data)
-            account_id = cursor.lastrowid
-            return account_id
+            return cursor.lastrowid
     
     def create_managers_history(self, conn, data):
         """account history 생성하는 함수
@@ -132,8 +127,7 @@ class AccountDao:
         """
         with conn.cursor() as cursor:
             cursor.execute(sql_insert, data)
-            manager_id = cursor.lastrowid
-            return manager_id
+            return cursor.lastrowid
         
     def create_seller_signup(self, conn, data):
         """seller 생성하는 함수
@@ -166,8 +160,7 @@ class AccountDao:
         """
         with conn.cursor() as cursor:
             cursor.execute(sql_insert, data)
-            seller_id = cursor.lastrowid
-            return seller_id
+            return cursor.lastrowid
 
     def create_manager(self, conn, data):
         """manager 테이블에 seller 정보 입력
@@ -186,8 +179,7 @@ class AccountDao:
         """
         with conn.cursor() as cursor:
             cursor.execute(sql_insert, data)
-            managers_id = cursor.lastrowid
-            return managers_id
+            return cursor.lastrowid
     
     def create_seller_history(self, conn, data):
         """seller history 생성하는 함수
@@ -215,11 +207,27 @@ class AccountDao:
         """
         with conn.cursor() as cursor:
             cursor.execute(sql_insert, data)
-            sellers_id = cursor.lastrowid
-            return sellers_id
+            return cursor.lastrowid
     
     def post_account_login(self, conn, data):
-        pass
+        """seller, master 로그인 하는 함수
+
+        Args:
+            conn (class): DB 클래스
+            data ([type]): BODY에서 넘어온 seller, master 로그인 정보
+        """
+        sql_select = """
+            SELECT 
+                seller_identification, password, is_deleted, account_id
+            FROM 
+                sellers
+            WHERE 
+                is_deleted = 0
+                AND seller_identification = %(id)s
+        """
+        with conn.cursor() as cursor:
+            cursor.execute(sql_select, data)
+            return cursor.fetchone()
 
     # decorator 가 account_id 비교하는 로직
     def decorator_find_account(self, conn, account_id: int):

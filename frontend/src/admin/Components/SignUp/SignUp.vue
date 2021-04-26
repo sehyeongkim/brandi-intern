@@ -33,8 +33,8 @@
         <div
           v-if="
             !infoInput.account.state &&
-            infoInput.account.value.length !== 0 &&
-            infoInput.account.value.length < 5
+              infoInput.account.value.length !== 0 &&
+              infoInput.account.value.length < 5
           "
           class="error"
         >
@@ -243,12 +243,12 @@ export default {
       // 조건문을 이용하여 axios body에 넣을 값들을 정리합니다.
       if (filterResult.length === 0) {
         this.sendSubmit({
-          account: this.infoInput.account.value,
+          id: this.infoInput.account.value,
           password: this.infoInput.password.value,
-          phone_number: this.infoInput.phone_number.value,
-          brand_name_korean: this.infoInput.brand_name_korean.value,
-          brand_name_english: this.infoInput.brand_name_english.value,
-          brand_crm_number: this.infoInput.brand_crm_number.value,
+          phone: this.infoInput.phone_number.value,
+          korean_brand_name: this.infoInput.brand_name_korean.value,
+          english_brand_name: this.infoInput.brand_name_english.value,
+          customer_center_number: this.infoInput.brand_crm_number.value,
           sub_property_id: this.infoInput.sub_property_id.value,
         });
       }
@@ -256,13 +256,18 @@ export default {
     sendSubmit(value) {
       console.log("보내기 직전", value);
       axios
-        .post(this.constants.apiDomain + "/signup", value)
+        // .post(this.constants.apiDomain + "/signup", value)
+        .post("/account/signup", value)
         .then((res) => {
-          console.log("백엔드 응답", res.data);
-          if (res.status === 200) {
+          console.log("백엔드 응답", res);
+          if (res.data.status_code === 200) {
             Message.success("회원가입을 축하합니다!");
             this.isLoading = false;
             this.$router.push("/");
+          } else {
+            Message.error(String(res.data.user_error_message));
+            this.isLoading = false;
+            this.$router.push("/admin/signup");
           }
         })
         .catch((error) => {

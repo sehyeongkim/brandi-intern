@@ -5,6 +5,7 @@ from flask_request_validator.error_formatter import demo_error_formatter
 from flask_request_validator.exceptions import InvalidRequestError, InvalidHeadersError, RuleError
 
 from utils.custom_exception import DatabaseCloseFail, DatabaseConnectFail
+from utils.response import post_response
 
 from connection import get_connection
 
@@ -48,17 +49,24 @@ class AccountLogInView(MethodView):
     def __init__(self, service):
         self.service = service
     
-    # seller or master 로그인
-    def post(self):
+    @validate_params(
+        Param('id', JSON, str, rules=[Pattern("^[a-z]+[a-z0-9]{4,19}$")], required=True),
+        Param('password', JSON, str, rules=[Pattern('^[A-Za-z0-9@#$]{6,12}$')], required=True)
+    )
+    def post(self, valid):
         conn = None
         try:
-            body = request.data
+            body = valid.get_json()
             conn = get_connection()
             if conn:
                 result = self.service.post_account_login(conn, body)
-                
-            conn.commit()
-            return jsonify('access_token'), 200
-
+            return post_response({
+                        "message" : "success", 
+                        "accessToken" : result['accessToken'], 
+                        "account_id" : result['account_id'],
+                        "status_code" : 200
+                        }
+                 ), 200
+        
         finally:
             conn.close()
