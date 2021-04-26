@@ -33,7 +33,8 @@ class AccountSignUpView(MethodView):
             conn = get_connection()
             self.service.post_account_signup(conn, body)
             conn.commit()
-            return jsonify({'message':'success', 'status' : 200}), 200
+            return post_response({"message": "success", "status_code" : 200}), 200
+            # return jsonify({'message':'success', 'status' : 200}), 200
         except Exception as e:
             if conn:
                 conn.rollback()
