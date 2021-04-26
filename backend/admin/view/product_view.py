@@ -15,6 +15,7 @@ class ProductView(MethodView):
     # @login_required
     @validate_params(
         Param('Content-Type', HEADER, str, required=False),
+        Param('Authorization', HEADER, str, required=False),
         Param('selling', GET, int, required=False),
         Param('discount', GET, int, required=False),
         Param('start_date', GET, str, required=False),
@@ -54,6 +55,7 @@ class ProductView(MethodView):
             
             result = self.service.get_products_list(conn, params, headers)
             
+            # HEADERS로 엑셀파일 요청
             if 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' in headers.values():
                 today = datetime.today().strftime('%Y-%m-%d')
                 return send_file(result, attachment_filename=f'{today}product_list.xls', as_attachment=True)
