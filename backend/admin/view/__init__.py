@@ -76,5 +76,10 @@ def create_endpoints(app, services):
                     view_func=AccountLogInView.as_view('account_login_view', account_service),
                     methods=['POST'])
     
+    app.add_url_rule("/seller/signin",
+                    view_func=AccountLogInView.as_view('seller_login_view', account_service),
+                    methods=['POST'])
+    
+    
     error_handle(app)
     
