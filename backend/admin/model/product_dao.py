@@ -8,10 +8,6 @@ class ProductDao:
     def __init__(self):
         pass
 
-<<<<<<< HEAD
-    def get_products_list(self, conn):
-        pass
-=======
     def get_products_list(self, conn, params, headers):
         sql_select = """
             SELECT
@@ -22,8 +18,7 @@ class ProductDao:
                 p.id,
                 p.seller_id,
                 p.price,
-                p.discount_rate,
-                p.price - (p.price * p.discount_rate) DIV 1 as discount_price,
+                IF(p.discount_start_date <= NOW() AND p.discount_end_date <= NOW(), 0, round(p.discount_rate, 2)) as discount_rate,
                 p.is_displayed,
                 p.is_selling,
                 s.korean_brand_name,
@@ -151,7 +146,6 @@ class ProductDao:
             total_count_result = cursor.fetchone() 
 
             return product_result, total_count_result
->>>>>>> admin
 
     def post_product_by_seller_or_master(self, conn, body):
         pass

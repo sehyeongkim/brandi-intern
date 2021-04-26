@@ -71,6 +71,9 @@ class ProductService:
             return output
         
         product_result, total_count_result = self.product_dao.get_products_list(conn, params, headers)
+        
+        for product in product_result:
+            product['discount_price'] = product['price'] - (product['price'] * product['discount_rate'])
 
         result = {
             'total_count' : total_count_result['total_count'],

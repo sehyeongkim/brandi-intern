@@ -69,7 +69,7 @@ class AccountLogInView(MethodView):
                         "account_id" : result['account_id'],
                         "status_code" : 200
                         }
-
+            )
         finally:
             try:
                 conn.close()

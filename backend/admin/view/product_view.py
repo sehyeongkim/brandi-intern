@@ -35,7 +35,7 @@ class ProductView(MethodView):
         Param('end_date', GET, str, rules=[Datetime('%Y-%m-%d')], required=False),
         Param('select_product_id', GET, list, required=False)
     )
-    @LoginRequired('seller')
+    # @LoginRequired('seller')
     def get(self, valid: ValidRequest):
         """상품 조회 리스트
 
