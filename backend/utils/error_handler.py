@@ -6,6 +6,8 @@ from flask_request_validator.exceptions import InvalidRequestError, InvalidHeade
 from utils.custom_exception import CustomUserError
 from utils.response import error_response
 
+# start error handling
+from flask import current_app as app
 from pymysql import err
 import traceback
 
