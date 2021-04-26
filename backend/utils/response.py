@@ -23,6 +23,7 @@ def post_response(data, status_code=200):
 
 def get_response(result, status_code=200):
     response = {
+                    "result" : result,
                     "status_code": status_code
                 }
     return response
@@ -34,3 +35,5 @@ def post_response_with_return(message, *args, status_code=200):
                     "status_code": status_code
                 }
     return response
+
+
