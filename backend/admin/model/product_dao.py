@@ -165,7 +165,16 @@ class ProductDao:
                 products as p
             INNER JOIN
                 sellers as s
-                ON  s.id = p.seller_id
+                ON  p.seller_id = s.id
+            INNER JOIN
+                sub_property as sp
+                ON  s.sub_property_id = sp.id
+            INNER JOIN
+                category as c
+                ON  p.category_id = c.id
+            INNER JOIN
+                sub_category as sc
+                ON  p.sub_category_id = sc.id
             WHERE
                 p.product_code = %('product_code')s
             """
