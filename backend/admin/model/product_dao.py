@@ -7,7 +7,7 @@ class ProductDao:
     def __init__(self):
         pass
 
-    def get_products_list(self, conn, params):
+    def get_products_list(self, conn):
         pass
 
     def post_product_by_seller_or_master(self, conn, body):
@@ -18,7 +18,7 @@ class ProductDao:
 
     def get_product_detail(self, conn, product_code):
         pass
-    
+
     def get_categories_list(self, conn, category_id):
         pass
 
@@ -51,5 +51,5 @@ class ProductDao:
                 """
             cursor.execute(sql)
             result = cursor.fetchall()
-            
+
             return result
