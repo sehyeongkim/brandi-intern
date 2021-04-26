@@ -41,9 +41,7 @@ class LoginRequired:
                 account_id = payload['account_id']
 
                 conn = get_connection()
-                if not conn:
-                    raise DatabaseConnectFail('서버와 연결이 불가능합니다.')
-
+                
                 result = AccountDao().decorator_find_account(conn, account_id)
                 if not result:
                     raise UserNotFoundError('존재하지 않는 사용자입니다.')
