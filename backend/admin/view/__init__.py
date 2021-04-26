@@ -80,6 +80,11 @@ def create_endpoints(app, services):
 <<<<<<< HEAD
 <<<<<<< HEAD
     
+    app.add_url_rule("/seller/signin",
+                    view_func=AccountLogInView.as_view('seller_login_view', account_service),
+                    methods=['POST'])
+    
+    
     error_handle(app)
 =======
 >>>>>>> Add : 회원가입 API 작성중

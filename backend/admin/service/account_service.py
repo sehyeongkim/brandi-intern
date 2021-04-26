@@ -1,4 +1,5 @@
 import bcrypt, jwt
+<<<<<<< HEAD
 
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -13,6 +14,11 @@ from admin.model import AccountDao
 =======
 from utils.custom_exception import SignUpFail
 >>>>>>> seller 회원가입 기능 구현
+=======
+from config import SECRET_KEY
+from admin.model import AccountDao
+from utils.custom_exception import SignUpFail, SignInError, TokenCreateError
+>>>>>>> [프론트]
 
 class AccountService:
     def __new__(cls, *args, **kwargs):
@@ -68,7 +74,7 @@ class AccountService:
         data['seller_id'] = get_seller_id
         if not get_seller_id:
             raise SignUpFail("아이디를 생성하는데 오류가 발생했습니다.", "create_seller_signup error")
-
+        
         # manager 생성 ( seller id를 이용해서 )
         get_managers_id = self.account_dao.create_manager(conn, data)
         if not get_managers_id:
@@ -84,9 +90,25 @@ class AccountService:
         get_sellers_history_id = self.account_dao.create_seller_history(conn, data)
         if not get_sellers_history_id:
             raise SignUpFail("아이디를 생성하는데 오류가 발생했습니다.", "create_seller_history error")
-
-    # seller or master 로그인
+        
+    # seller 로그인
     def post_account_login(self, conn, data):
+        seller_info = self.account_dao.post_account_login(conn, data)
+        print(seller_info)
+        if not seller_info or not bcrypt.checkpw(data['password'].encode('utf-8'), seller_info['password'].encode('utf-8')):
+            raise SignInError("정확한 아이디, 비밀번호를 입력해주세요", "post_account_login error")
         
+        token = self.create_token(seller_info)
+        result = {
+            "account_id" : seller_info['account_id'],
+            "accessToken" : token
+        }
+        return result
         
-        return self.account_dao.post_account_login(conn, data)
+    def create_token(self, seller_info):
+        token = jwt.encode({"account_id": seller_info['account_id']},
+                                SECRET_KEY,
+                                algorithm="HS256")
+        # encode 예외 처리 찾으면 try 문 사용해서 추가 할 수 있도록
+        # raise TokenCreateError("뜻하지 않은 에러가 발생했습니다. 다시 시도 해주세요.", "create_token error")
+        return token
