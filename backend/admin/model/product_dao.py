@@ -8,7 +8,7 @@ class ProductDao:
     def __init__(self):
         pass
 
-    def get_products_list(self, conn, params):
+    def get_products_list(self, conn, params, headers):
         sql_select = """
             SELECT
                 p.created_at as upload_date,
@@ -139,6 +139,9 @@ class ProductDao:
         with conn.cursor() as cursor:
             cursor.execute(product_sql, params)
             product_result = cursor.fetchall()
+
+            if 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' in headers.values():
+                return product_result
 
             cursor.execute(total_sql, params)
             total_count_result = cursor.fetchone() 

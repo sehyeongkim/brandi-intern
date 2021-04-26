@@ -1,11 +1,12 @@
-from flask import request, jsonify, g
+from flask import request, jsonify, g, send_file
 from flask.views import MethodView
-from flask_request_validator import validate_params, Param, GET, Datetime, ValidRequest, CompositeRule, Min, Max, Enum, JsonParam, JSON
+from flask_request_validator import validate_params, Param, GET, Datetime, ValidRequest, CompositeRule, Min, Max, Enum, JsonParam, JSON, HEADER
 from datetime import datetime
 from connection import get_connection
 from utils.response import get_response, post_response
-from utils.custom_exception import IsInt, IsStr, IsFloat, IsRequired
+from utils.custom_exception import IsInt, IsStr, IsFloat, IsRequired, DatabaseConnectFail
 from flask_request_validator.exceptions import InvalidRequestError, RulesError
+import xlwt
 
 class ProductView(MethodView):
     def __init__(self, service):
@@ -13,6 +14,7 @@ class ProductView(MethodView):
     # 상품 리스트 조회
     # @login_required
     @validate_params(
+        Param('Content-Type', HEADER, str, required=False),
         Param('selling', GET, int, required=False),
         Param('discount', GET, int, required=False),
         Param('start_date', GET, str, required=False),
@@ -45,50 +47,24 @@ class ProductView(MethodView):
         conn = None
         try:
             params = valid.get_params()
+            headers = valid.get_headers()
             conn = get_connection()
-            if conn:
-                result = self.service.get_products_list(conn, params)
+            if not conn:
+                raise DatabaseConnectFail('데이터베이스 연결 실패')
             
+            result = self.service.get_products_list(conn, params, headers)
+            
+            if 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' in headers.values():
+                today = datetime.today().strftime('%Y-%m-%d')
+                return send_file(result, attachment_filename=f'{today}product_list.xls', as_attachment=True)
+
             return get_response(result)
-        
+
         finally:
             conn.close()
     
     # 상품 등록 (by master or seller)
     # @login_required
-    @validate_params(
-        JsonParam({
-            'basic_info' : JsonParam({
-                'seller_id' : [IsInt()],
-                "selling" : [IsInt()],
-                "displayed" : [IsInt()],
-                "property" : [IsInt()],
-                "category" : [IsInt()],
-                "sub_category" : [IsInt()],
-                "product_info_notice" : JsonParam({
-                    "manufacturer" : [IsStr()],
-                    "date of manufacture" : [IsStr()],
-                    "origin" : [IsStr()]
-                }),
-                "title" : [IsStr()],
-                "description" : [IsStr()],
-                "detail_description" : [IsStr()]
-            }, required=True),
-            "option_info" : JsonParam({
-                "color_id" : [IsInt()],
-                "size_id" : [IsInt()],
-                "stock" : [IsInt()]
-            }, as_list=True, required=True),
-            "selling_info" : JsonParam({
-                "price" : [IsInt()],
-                "discount_rate" : [IsFloat()],
-                "discount_start_date" : [Datetime('%Y-%m-%d %H:%M')],
-                "discount_end_date" : [Datetime('%Y-%m-%d %H:%M')],
-                "min_amount" : [IsInt()],
-                "max_amount" : [IsInt()]
-            }, required=True),
-        })
-    )
     def post(self, valid: ValidRequest):
         conn = None
         try:
