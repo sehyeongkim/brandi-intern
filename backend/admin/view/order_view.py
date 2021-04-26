@@ -2,7 +2,7 @@ from utils.response import error_response, get_response, post_response, post_res
 
 from flask import request, jsonify
 from flask.views import MethodView
-from flask_request_validator import validate_params, Param, GET, ValidRequest, JsonParam, Min, Enum
+from flask_request_validator import validate_params, Param, GET, ValidRequest, JsonParam, Min, Enum, Datetime
 
 from connection import get_connection
 
@@ -15,8 +15,8 @@ class OrderListView(MethodView):
     # 주문 조회
     # @login_required
     @validate_params(
-        Param('start_date', GET, str, required=True),
-        Param('end_date', GET, str, required=True),
+        Param('start_date', GET, str, rules=[Datetime('%Y-%m-%d')], required=True),
+        Param('end_date', GET, str, rules=[Datetime('%Y-%m-%d')], required=True),
         Param('sub_property_id', GET, int, required=False),
         Param('order_number', GET, str, required=False),
         Param('order_status_type_id', GET, int, required=True),
@@ -28,7 +28,7 @@ class OrderListView(MethodView):
         Param('page', GET, int, required=False, default=1, rules=[Min(1)]),
         Param('limit', GET, int, required=False, default=10, rules=[Enum(10, 20, 50)])
     )
-    def get(self, valid: ValidRequest):
+    def get(self, valid):
         """주문 조회 리스트
 
         어드민 페이지의 주문관리 페이지에서 필터 조건에 맞는 주문 리스트 출력
@@ -83,7 +83,7 @@ class OrderView(MethodView):
     @validate_params(
         Param('detail_order_number', GET, str, required=True)
     )
-    def get(self, valid: ValidRequest):
+    def get(self, valid):
         """주문 상세 뷰
 
         어드민 페이지의 주문관리 페이지에서 주문상세번호를 클릭했을 때, 주문 상세 정보를 출력
@@ -99,7 +99,7 @@ class OrderView(MethodView):
         conn = None
         try:
             params = valid.get_params()
-            conn = get_connection()
+            conn = get_connection() 
 
             order_detail = self.service.get_order(conn, params)
             return get_response(order_detail), 200
