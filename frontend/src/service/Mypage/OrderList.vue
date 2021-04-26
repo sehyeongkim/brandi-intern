@@ -80,10 +80,10 @@ import SERVER from '@/config.js'
 const serviceStore = 'serviceStore'
 
 export default {
-  created () {
+  created() {
     this.getOrderData()
   },
-  data () {
+  data() {
     return {
       orderList: [],
       order: { data: [] },
@@ -92,7 +92,7 @@ export default {
     }
   },
   methods: {
-    getOrderData () {
+    getOrderData() {
       // const token = this.getToken
       // this.orderList = this.orderList.concat(mockup.result.data)
       API.methods
@@ -106,34 +106,34 @@ export default {
         })
     },
     // 2020-08-29 형태로 변환
-    getDate (x) {
+    getDate(x) {
       const dates = new Date(x)
       const month =
         (dates.getMonth() + 1 < 10 ? '0' : '') + (dates.getMonth() + 1)
       const date = (dates.getDate() < 10 ? '0' : '') + dates.getDate()
       return `${dates.getFullYear()}.${month}.${date}`
     },
-    getOrderDetailNo (orderdate, orderid) {
+    getOrderDetailNo(orderdate, orderid) {
       const dates = new Date(orderdate)
       const month =
         (dates.getMonth() + 1 < 10 ? '0' : '') + (dates.getMonth() + 1)
       const date = (dates.getDate() < 10 ? '0' : '') + dates.getDate()
       return `${dates.getFullYear()}${month}${date}${orderid}`
     },
-    numberWithCommas (x) {
+    numberWithCommas(x) {
       return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
     },
     // 상품 상세페이지로 이동
-    linkToProductDetail (no) {
+    linkToProductDetail(no) {
       this.$router.push(`/detail/${no}`)
     },
     // 주문 상세페이지로 이동
-    linkToOrderDetail (orderDetailId) {
+    linkToOrderDetail(orderDetailId) {
       // console.log(orderDetailId)
       this.$router.push(`/mypage/orderDetail/${orderDetailId}`)
     },
 
-    getDiscountPrice (price, discountRate) {
+    getDiscountPrice(price, discountRate) {
       return price * ((100 - discountRate) / 100)
     }
   },

@@ -16,7 +16,7 @@
 
 <script>
 export default {
-  data () {
+  data() {
     return {
       point: 0
     }

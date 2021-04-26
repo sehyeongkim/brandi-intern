@@ -7,9 +7,9 @@
 import QnA from '@/service/Detail/QnA'
 
 export default {
-  created () {
+  created() {
   },
-  data () {
+  data() {
     return {
       qnaList: [],
       isMypage: true,
@@ -21,7 +21,7 @@ export default {
     QnA
   },
   methods: {
-    togleAnswer (answer) {
+    togleAnswer(answer) {
       answer.answerShow = !answer.answerShow
     }
   }

@@ -30,12 +30,12 @@ export default {
   },
   props: {
     dataStore: {
-      default () {
+      default() {
         return {}
       }
     }
   },
-  data () {
+  data() {
     return {
     }
   },
