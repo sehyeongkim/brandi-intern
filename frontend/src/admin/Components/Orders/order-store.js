@@ -7,7 +7,7 @@ import Message from '@/admin/utils/message'
 export default {
   store: store,
   mixins: [AdminApiMixin, CommonMixin],
-  data () {
+  data() {
     return {
       list: [],
       page: 1,
@@ -19,54 +19,52 @@ export default {
       sellerAttribute: []
     }
   },
-  created () {
-    this.getMeta()
+  created() {
+    // this.getMeta()
   },
   computed: {
-    prefixUrl () {
-      if (this.isMaster()) {
-        return this.constants.apiDomain + '/master'
-      } else {
-        return this.constants.apiDomain + '/seller'
-      }
+    prefixUrl() {
+      return this.constants.apiDomain
     },
-    maxPage () {
+    maxPage() {
       return Math.ceil(this.total / this.pageLen)
     },
-    constants () {
+    constants() {
       return this.$store.state.const
     },
     // 주문 리스트
-    listUrl () {
-      return this.prefixUrl + '/order/ready'
+    listUrl() {
+      return this.prefixUrl + '/orders'
     },
     // 주문 상세 / 수정
-    detailUrl () {
-      return this.prefixUrl + '/order'
+    detailUrl() {
+      return this.prefixUrl + '/orders'
     },
     // 셀러 리스트 / 수정
-    metaUrl () {
-      return this.prefixUrl + '/order/ready/init'
+    metaUrl() {
+      return this.prefixUrl + '/orders/ready/init'
     },
     // 배송처리
-    deliveryUrl () {
-      return this.prefixUrl + '/order/ready/'
+    deliveryUrl() {
+      return this.prefixUrl + '/orders/ready/'
     },
-    offset () {
+    offset() {
       return (this.page - 1) * this.pageLen
     },
-    checkedList () {
+    checkedList() {
       const newList = []
       this.list.forEach(d => { if (d.checked) newList.push(d) })
       return newList
     }
   },
   methods: {
-    load () {
+    load() {
       this.loading = true
       const params = JSON.parse(JSON.stringify(this.filter))
       params.limit = this.pageLen
       params.offset = this.offset
+      params.order_status_type_id = 1 // 상품 준비 상태
+      // {{domain}}/orders?order_status_type_id=1&start_date=2021-04-30&end_date=2021-04-01&sub_property_id=1
 
       // new Promise((resolve, reject) => {
       //   setTimeout(() => {
@@ -78,11 +76,11 @@ export default {
         params: params
       })
         .then((res) => {
-          const orderList = res.data.result.data
+          const orderList = res.data.result.order_list
           orderList.forEach((d) => {
             d.checked = false
           })
-          this.total = res.data.result.totalCount
+          this.total = res.data.result.total_count
           this.list = orderList
         }).catch((e) => {
           if (e.code === 'ECONNABORTED') {
@@ -95,7 +93,7 @@ export default {
           this.loading = false
         })
     },
-    getDetail (orderNo) {
+    getDetail(orderNo) {
       this.loading = true
       this.get(this.detailUrl + '/' + orderNo)
         .then((res) => {
@@ -114,14 +112,14 @@ export default {
           this.loading = false
         })
     },
-    changePage (page) {
+    changePage(page) {
       this.page = page
       this.load()
     },
-    setFilter (filter) {
+    setFilter(filter) {
       this.filter = filter
     },
-    getMeta () {
+    getMeta() {
       this.get(this.metaUrl)
         .then((res) => {
           if (res.data) {
@@ -139,7 +137,7 @@ export default {
           // this.loading = false
         })
     },
-    async setDelivery (list) {
+    async setDelivery(list) {
       if (list.length > 0) {
         try {
           for (let i = 0, len = list.length; i < len; i++) {
@@ -160,7 +158,7 @@ export default {
     }
   },
   watch: {
-    pageLen (v) {
+    pageLen(v) {
       this.changePage(1)
     }
   }

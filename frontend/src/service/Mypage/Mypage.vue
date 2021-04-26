@@ -87,7 +87,7 @@
 
 <script>
 export default {
-  data () {
+  data() {
     return {
       currentPage: '',
       point: 0,
@@ -95,7 +95,7 @@ export default {
     }
   },
   methods: {
-    getCurrentPage () {
+    getCurrentPage() {
       const currentUrl = this.$router.currentRoute.path
 
       if (currentUrl === '/mypage/point') {
@@ -112,7 +112,7 @@ export default {
       return this.currentPage
     },
 
-    linkToPage (event) {
+    linkToPage(event) {
       let linkPage = ''
       if (event.target.name) {
         linkPage = event.target.name
