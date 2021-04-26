@@ -16,7 +16,18 @@ class ProductDao:
     def patch_product_selling_or_display_status(self, conn, body):
         pass
 
-    def get_product_detail(self, conn, product_code):
+    def get_product_detail(self, conn, params):
+        sql = """
+            SELECT
+                *
+            FROM 
+                products as p
+        """
+
+        with conn.cursor() as cursor:
+            cursor.execute(product_sql, params)
+            product_result = cursor.fetchall()
+        
         return 'aaaa'
     
     def get_categories_list(self, conn, category_id):

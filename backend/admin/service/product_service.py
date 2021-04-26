@@ -23,7 +23,7 @@ class ProductService:
     
     # 상품 상세 가져오기
     def get_product_detail(self, conn, product_code):
-        return self.product_dao.get_product_detail(conn, product_code)
+        return self.product_dao.get_product_detail(conn, params)
     
     # 상품 categories list 가져오기
     def get_categories_list(self, conn, category_id):

@@ -86,15 +86,16 @@ class ProductDetailView(MethodView):
     @validate_params(
         Param('product_code', PATH, str)
     )
-    def get(self,product_code):
+    def get(self, valid: ValidRequest, product_code):
         conn = None
         try:
             conn = get_connection()
             
             if not conn:
                 raise DatabaseConnectFail('데이터베이스 연결에 실패했습니다.')
-            product_code = valid.get_path_params()
-            result = self.service.get_product_detail(conn, product_code)
+            
+            params = valid.get_path_params()
+            result = self.service.get_product_detail(conn, params)
             
             return get_response(result)
         

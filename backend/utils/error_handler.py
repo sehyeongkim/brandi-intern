@@ -14,9 +14,9 @@ from flask import current_app as app
 
 
 def error_handle(app):
-    @app.errorhandler(Exception)
-    def handle_error(e):
-        pass
+#     @app.errorhandler(Exception)
+#     def handle_error(e):
+#         pass
     
     @app.errorhandler(InvalidRequestError)
     def handle_invalid_usage(e):
