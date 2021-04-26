@@ -26,7 +26,12 @@ def error_handle(app):
     @app.errorhandler(Exception)
     def handle_error(e):
         pass
-    
+
+    @app.errorhandler(AttributeError)
+    def handle_error(e):
+        traceback.print_exc()
+        return error_response("서버 상에서 오류가 발생했습니다.", "NoneType Error", 500)
+
     @app.errorhandler(KeyError)
     def handle_key_error(e):
         traceback.print_exc()
