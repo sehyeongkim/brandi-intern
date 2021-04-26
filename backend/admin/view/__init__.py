@@ -9,7 +9,8 @@ from .product_view import (
 )
 
 from .order_view import (
-                            OrderListView
+                            OrderListView,
+                            OrderView
 )
 
 from .account_view import (
@@ -54,14 +55,18 @@ def create_endpoints(app, services):
                     methods=['GET'])
 
     # order
-    app.add_url_rule("/order",
-                    view_func=OrderListView.as_view('order_view', order_service),
+    app.add_url_rule("/orders",
+                    view_func=OrderListView.as_view('order_list_view', order_service),
                     methods=['GET'])
     
     app.add_url_rule("/orders",
                     view_func=OrderListView.as_view('order_delivery_view', order_service),
                     methods=['PATCH'])
     
+    app.add_url_rule("/order",
+                    view_func=OrderView.as_view('order_view', order_service),
+                    methods=['GET'])
+                    
     # account
     app.add_url_rule("/account/signup",
                     view_func=AccountSignUpView.as_view('account_signup_view', account_service),
@@ -70,6 +75,11 @@ def create_endpoints(app, services):
     app.add_url_rule("/account/login",
                     view_func=AccountLogInView.as_view('account_login_view', account_service),
                     methods=['POST'])
+    
+    app.add_url_rule("/seller/signin",
+                    view_func=AccountLogInView.as_view('seller_login_view', account_service),
+                    methods=['POST'])
+    
     
     error_handle(app)
     
