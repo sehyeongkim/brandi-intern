@@ -157,13 +157,21 @@ class ProductDao:
     def get_product_detail(self, conn, params):
         sql = """
             SELECT
-                *
+                p.product_code,
+                p.is_selling,
+                p.is_displayed,
+
             FROM 
                 products as p
-        """
+            INNER JOIN
+                sellers as s
+                ON  s.id = p.seller_id
+            WHERE
+                p.product_code = %('product_code')s
+            """
 
         with conn.cursor() as cursor:
-            cursor.execute(product_sql, params)
+            cursor.execute(sql, params)
             product_result = cursor.fetchall()
         
         return 'aaaa'

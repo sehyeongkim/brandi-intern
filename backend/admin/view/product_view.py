@@ -1,6 +1,6 @@
 from flask import request, jsonify, g, send_file
 from flask.views import MethodView
-from flask_request_validator import validate_params, Param, GET, Datetime, ValidRequest, CompositeRule, Min, Max, Enum, JsonParam, JSON, HEADER
+from flask_request_validator import validate_params, Param, GET, Datetime, ValidRequest, CompositeRule, Min, Max, Enum, JsonParam, JSON, HEADER, PATH
 from datetime import datetime
 from connection import get_connection
 from utils.response import get_response, post_response

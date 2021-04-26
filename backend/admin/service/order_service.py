@@ -1,7 +1,7 @@
 from admin.model import OrderDao
 
 from utils.response import error_response
-from utils.custom_exception import DataNotExists, DatabaseConnectFail, StartDateFail
+from utils.custom_exception import DataNotExists, StartDateFail
 
 import traceback
 from datetime import timedelta
