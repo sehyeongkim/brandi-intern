@@ -233,7 +233,6 @@ class OrderDao:
         sql3 = """
                 SELECT 
                     COUNT(case when oh.order_status_type_id=11 then 1 end) AS order_month,
-                    SUM(od.price*od.quantity) AS price_month
                 FROM account AS ac
                 INNER JOIN sellers AS se
                     ON ac.id = se.account_id
