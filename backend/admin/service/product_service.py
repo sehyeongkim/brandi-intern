@@ -16,17 +16,20 @@ class ProductService:
     
     # 상품 리스트 가져오기
     def get_products_list(self, conn, params, headers):
+        # 페이지네이션 위한 OffSET 설정
         params['page'] = (params['page'] - 1) * params['limit']
+
         if 'end_date' in params:
             params['end_date'] +=  timedelta(days=1)
             params['end_date_str'] = params['end_date'].strftime('%Y-%m-%d')
-
+        
         if 'start_date' in params:
             params['start_date_str'] = params['start_date'].strftime('%Y-%m-%d')
         
         if 'start_date' in params and 'end_date' in params and params['start_date'] > params['end_date']:
             raise  StartDateFail('조회 시작 날짜가 끝 날짜보다 큽니다.')
         
+        # HEADERS로 엑셀파일 요청
         if 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' in headers.values():
             result = self.product_dao.get_products_list(conn, params, headers)
             output = BytesIO()
@@ -48,7 +51,7 @@ class ProductService:
 
             idx = 1
             for row in result:
-                worksheet.write(idx, 0, row['upload_date'])
+                worksheet.write(idx, 0, str(row['upload_date']))
                 worksheet.write(idx, 1, row['image_url'])
                 worksheet.write(idx, 2, row['title'])
                 worksheet.write(idx, 3, row['product_code'])
