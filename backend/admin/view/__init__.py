@@ -9,7 +9,7 @@ from .product_view import (
 )
 
 from .order_view import (
-                            OrderView
+                            OrderListView
 )
 
 from .account_view import (
@@ -55,11 +55,11 @@ def create_endpoints(app, services):
 
     # order
     app.add_url_rule("/order",
-                    view_func=OrderView.as_view('order_view', order_service),
+                    view_func=OrderListView.as_view('order_view', order_service),
                     methods=['GET'])
     
     app.add_url_rule("/order/delivery",
-                    view_func=OrderView.as_view('order_delivery_view', order_service),
+                    view_func=OrderListView.as_view('order_delivery_view', order_service),
                     methods=['PATCH'])
     
     # account

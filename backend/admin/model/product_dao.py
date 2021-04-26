@@ -17,7 +17,7 @@ class ProductDao:
         pass
 
     def get_product_detail(self, conn, product_code):
-        pass
+        return 'aaaa'
     
     def get_categories_list(self, conn, category_id):
         pass

@@ -1,7 +1,8 @@
 from flask import request, jsonify, g
 from flask.views import MethodView
-from flask_request_validator import validate_params, Param, GET, Datetime, ValidRequest
-
+from flask_request_validator import validate_params, Param, GET, Datetime, ValidRequest, PATH
+from utils.custom_exception import DatabaseConnectFail
+from utils.response import get_response
 from connection import get_connection
 
 class ProductView(MethodView):
@@ -82,14 +83,20 @@ class ProductDetailView(MethodView):
 
     # 상품 상세 가져오기
     # @login_required
-    def get(self, product_code):
+    @validate_params(
+        Param('product_code', PATH, str)
+    )
+    def get(self,product_code):
         conn = None
         try:
             conn = get_connection()
-            if conn:
-                result = self.service.get_product_detail(conn, product_code)
             
-            return jsonify(result), 200
+            if not conn:
+                raise DatabaseConnectFail('데이터베이스 연결에 실패했습니다.')
+            product_code = valid.get_path_params()
+            result = self.service.get_product_detail(conn, product_code)
+            
+            return get_response(result)
         
         finally:
             conn.close()
