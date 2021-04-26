@@ -33,8 +33,8 @@
         <div
           v-if="
             !infoInput.account.state &&
-            infoInput.account.value.length !== 0 &&
-            infoInput.account.value.length < 5
+              infoInput.account.value.length !== 0 &&
+              infoInput.account.value.length < 5
           "
           class="error"
         >
@@ -156,7 +156,7 @@
 </template>
 
 <script>
-import axios from "axios";
+import axios from 'axios'
 import {
   idReg,
   pwReg,
@@ -164,119 +164,124 @@ import {
   nameReg,
   engNameReg,
   telReg,
-  urlReg,
-} from "@/assets/data/reg";
-import ButtonBlue from "@/admin/Components/Common/ButtonBlue";
-import ButtonRed from "@/admin/Components/Common/ButtonRed";
-import RadioBtn from "@/admin/Components/Common/RadioBtn";
-import Spinner from "@/admin/Components/Common/Spinner";
-import Message from "@/admin/utils/message";
-import CommonMixin from "@/admin/mixins/common-mixin";
+  urlReg
+} from '@/assets/data/reg'
+import ButtonBlue from '@/admin/Components/Common/ButtonBlue'
+import ButtonRed from '@/admin/Components/Common/ButtonRed'
+import RadioBtn from '@/admin/Components/Common/RadioBtn'
+import Spinner from '@/admin/Components/Common/Spinner'
+import Message from '@/admin/utils/message'
+import CommonMixin from '@/admin/mixins/common-mixin'
 
 export default {
-  name: "Signup",
+  name: 'Signup',
   mixins: [CommonMixin],
   components: {
     bluebutton: ButtonBlue,
     redbutton: ButtonRed,
-    "radio-btn": RadioBtn,
-    Spinner,
+    'radio-btn': RadioBtn,
+    Spinner
   },
   data() {
     return {
       regs: { idReg, pwReg, phReg, nameReg, engNameReg, telReg, urlReg },
-      test: "",
+      test: '',
       infoInput: {
-        account: { value: "", state: true }, // seller_loginID
-        password: { value: "", state: true }, // password
-        password2: { value: "", state: true }, // password2
-        phone_number: { value: "", state: true }, // phone_number
-        brand_name_korean: { value: "", state: true }, // korean_name
-        brand_name_english: { value: "", state: true }, // eng_name
-        brand_crm_number: { value: "", state: true }, // center_number
-        sub_property_id: { value: "", state: true },
+        account: { value: '', state: true }, // seller_loginID
+        password: { value: '', state: true }, // password
+        password2: { value: '', state: true }, // password2
+        phone_number: { value: '', state: true }, // phone_number
+        brand_name_korean: { value: '', state: true }, // korean_name
+        brand_name_english: { value: '', state: true }, // eng_name
+        brand_crm_number: { value: '', state: true }, // center_number
+        sub_property_id: { value: '', state: true }
       },
       radioList: [
-        "쇼핑몰",
-        "마켓",
-        "로드샵",
-        "디자이너브랜드",
-        "제너럴브랜드",
-        "내셔널브랜드",
-        "뷰티",
+        '쇼핑몰',
+        '마켓',
+        '로드샵',
+        '디자이너브랜드',
+        '제너럴브랜드',
+        '내셔널브랜드',
+        '뷰티'
       ],
-      serverID: "",
-      isLoading: false,
-    };
+      serverID: '',
+      isLoading: false
+    }
   },
 
   methods: {
     // 각 인풋창의 정규식을 이용한 체크, 인자로 해당 정규식과 data접근 경로를 써주면 된다.
     regCheck(reg, name) {
-      name.state = reg.test(name.value);
+      name.state = reg.test(name.value)
     },
 
     // 라디오 버튼에서 v-model이 안되는 버그가 발생하여, 임시로 값 변환 하는 함수
     change(value) {
-      this.infoInput.sub_property_id.value = value;
+      this.infoInput.sub_property_id.value = value
     },
 
     alertWarn(e) {
       // console.log('hoi')
-      const result = confirm("브랜디 가입을 취소하시겠습니까?");
+      const result = confirm('브랜디 가입을 취소하시겠습니까?')
       if (result) {
-        e.preventDefault();
-        this.$router.push("/admin/login");
+        e.preventDefault()
+        this.$router.push('/admin/login')
       }
     },
 
     onSubmit() {
-      this.isLoading = true;
-      const arr = Object.entries(this.infoInput);
+      this.isLoading = true
+      const arr = Object.entries(this.infoInput)
       // filter 함수를 통해, valdiation 결과가 모두 true인지 확인합니다.
       const filterResult = arr.filter((item) => {
-        const result = item[1].state === false;
-        return result;
-      });
+        const result = item[1].state === false
+        return result
+      })
 
       // 위 filter 함수에서 결과가 모두 true인지 조건을 넣어 모두 true일 경우 0이므로,
       // 조건문을 이용하여 axios body에 넣을 값들을 정리합니다.
       if (filterResult.length === 0) {
         this.sendSubmit({
-          account: this.infoInput.account.value,
+          id: this.infoInput.account.value,
           password: this.infoInput.password.value,
-          phone_number: this.infoInput.phone_number.value,
-          brand_name_korean: this.infoInput.brand_name_korean.value,
-          brand_name_english: this.infoInput.brand_name_english.value,
-          brand_crm_number: this.infoInput.brand_crm_number.value,
-          sub_property_id: this.infoInput.sub_property_id.value,
-        });
+          phone: this.infoInput.phone_number.value,
+          korean_brand_name: this.infoInput.brand_name_korean.value,
+          english_brand_name: this.infoInput.brand_name_english.value,
+          customer_center_number: this.infoInput.brand_crm_number.value,
+          sub_property_id: this.infoInput.sub_property_id.value
+        })
       }
     },
     sendSubmit(value) {
-      console.log("보내기 직전", value);
+      console.log('보내기 직전', value)
       axios
-        .post(this.constants.apiDomain + "/signup", value)
+        // .post(this.constants.apiDomain + "/signup", value)
+        .post('/account/signup', value)
         .then((res) => {
-          console.log("백엔드 응답", res.data);
-          if (res.status === 200) {
-            Message.success("회원가입을 축하합니다!");
-            this.isLoading = false;
-            this.$router.push("/");
+          console.log('백엔드 응답', res)
+          if (res.data.status_code === 200) {
+            Message.success('회원가입을 축하합니다!')
+            this.isLoading = false
+            this.$router.push('/')
+          } else {
+            Message.error(String(res.data.user_error_message))
+            this.isLoading = false
+            this.$router.push('/admin/signup')
           }
         })
         .catch((error) => {
-          console.log("err", error);
-          this.isLoading = true;
-        });
-    },
-  },
-};
+          console.log('err', error)
+          this.isLoading = true
+        })
+    }
+  }
+}
 </script>
 
 <style scoped lang="scss">
 //@import "../../styles/_reset.scss";
-@import "@/styles/commonD.scss";
+@import '@/styles/commonD.scss';
 
 h1 {
   margin-bottom: 20px;
@@ -297,8 +302,8 @@ p {
   font-size: 14px;
 }
 
-input[type="text"],
-input[type="password"] {
+input[type='text'],
+input[type='password'] {
   width: 360px;
   height: 35px;
   margin-bottom: 7px;

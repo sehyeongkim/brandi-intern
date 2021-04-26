@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <!-- <Header v-if="$route.path.indexOf('admin') == -1" /> -->
-    <router-view/>
+    <router-view />
     <!-- <Footer v-if="$route.path.indexOf('admin') == -1" /> -->
   </div>
 </template>
@@ -30,5 +30,4 @@ export default {
 //   // // text-align: center;
 //   // color: #2c3e50;
 // }
-
 </style>
