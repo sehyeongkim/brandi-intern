@@ -7,8 +7,8 @@
       <div class="option">
         <div class="left">
           <label>
-          <input type="checkbox"/>
-          <span>아이디 / 비밀번호 기억하기</span>
+            <input type="checkbox" />
+            <span>아이디 / 비밀번호 기억하기</span>
           </label>
         </div>
         <div class="right">
@@ -25,56 +25,63 @@
 </template>
 
 <script>
-import Message from '@/admin/utils/message'
-import CommonMixin from '@/admin/mixins/common-mixin'
-import AdminApiMixin from '@/admin/mixins/admin-api'
+import Message from "@/admin/utils/message";
+import CommonMixin from "@/admin/mixins/common-mixin";
+import AdminApiMixin from "@/admin/mixins/admin-api";
 
 export default {
-  name: 'login',
+  name: "login",
   mixins: [AdminApiMixin, CommonMixin],
-  data () {
+  data() {
     return {
-      account: '',
-      password: ''
-    }
+      account: "",
+      password: "",
+    };
   },
   methods: {
-    goSignUp () {
-      this.$router.push('/admin/signup')
+    goSignUp() {
+      this.$router.push("/admin/signup");
     },
-    checkValid () {
-      console.log('enter')
+    checkValid() {
+      console.log("enter");
       if ((this.account.length !== 0) | (this.password.length !== 0)) {
-        this.sendSumbit()
+        this.sendSumbit();
       }
     },
 
     // token 물어보기
-    sendSumbit () {
-      this.post(this.constants.apiDomain + '/seller/signin', {
-        username: this.account,
-        password: this.password
+    sendSumbit() {
+      // this.post(this.constants.apiDomain + "/seller/signin", {
+      this.post("/seller/signin", {
+        id: this.account,
+        password: this.password,
       })
-        .then(response => {
-          console.log('response', response)
+        .then((response) => {
+          console.log("response", response);
           if (response.data.result.accessToken) {
-            localStorage.setItem('access_token', response.data.result.accessToken)
-            localStorage.setItem('user_type_id', response.data.result.userTypeId)
+            localStorage.setItem(
+              "access_token",
+              response.data.result.accessToken
+            );
+            localStorage.setItem(
+              "user_type_id",
+              response.data.result.userTypeId
+            );
           }
         })
         .then(() => {
-          this.$router.push('/admin/sellerdashboard')
+          this.$router.push("/admin/sellerdashboard");
         })
-        .catch(err => {
+        .catch((err) => {
           if (err.response) {
-            console.log(err.response)
-            console.log(err.response.message)
+            console.log(err.response);
+            console.log(err.response.message);
           }
-          Message.error('로그인에 실패하였습니다.')
-        })
-    }
-  }
-}
+          Message.error("로그인에 실패하였습니다.");
+        });
+    },
+  },
+};
 </script>
 
 <style lang="scss">
@@ -119,7 +126,8 @@ export default {
       }
     }
 
-    input[type="text"],input[type="password"] {
+    input[type="text"],
+    input[type="password"] {
       margin-bottom: 7px;
       border: 1px solid lightgrey;
       border-radius: 8px;

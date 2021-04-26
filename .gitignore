@@ -270,7 +270,7 @@ Temporary Items
 # gitignore template for Vue.js projects
 #
 # Recommended template: Node.gitignore
-
+node_modules
 # TODO: where does this rule come from?
 docs/_book
 
