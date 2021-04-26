@@ -18,7 +18,7 @@ class ProductDao:
 
     def get_product_detail(self, conn, product_code):
         pass
-    
+
     def get_categories_list(self, conn, category_id):
         pass
 
@@ -51,5 +51,5 @@ class ProductDao:
                 """
             cursor.execute(sql)
             result = cursor.fetchall()
-            
+
             return result

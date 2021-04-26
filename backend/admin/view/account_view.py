@@ -7,7 +7,8 @@ from flask_request_validator.exceptions import InvalidRequestError, InvalidHeade
 #from utils.custom_exception import DatabaseCloseFail, DatabaseConnectFail
 
 from connection import get_connection
-from utils.decorator import login_required
+from utils.decorator import LoginRequired
+
 
 class AccountSignUpView(MethodView):
     def __init__(self, service):
@@ -16,17 +17,21 @@ class AccountSignUpView(MethodView):
     # router => class => validate_params
     # rules 최상단에서 에러 처리
     # 최종적인 메시지 처리는 최상단에서
-    # 어떤 문제가 있는지 멘트 처리 알아보기 
+    # 어떤 문제가 있는지 멘트 처리 알아보기
+
     @validate_params(
-        Param('id', JSON, str, rules=[Pattern("^[a-z]+[a-z0-9]{4,19}$")], required=True),
-        Param('password', JSON, str, rules=[Pattern('^[A-Za-z0-9@#!$]{6,12}$')], required=True),
+        Param('id', JSON, str, rules=[
+              Pattern("^[a-z]+[a-z0-9]{4,19}$")], required=True),
+        Param('password', JSON, str, rules=[
+              Pattern('^[A-Za-z0-9@#!$]{6,12}$')], required=True),
         Param('phone', JSON, str, required=True),
         Param('sub_property_id', JSON, int, required=True),
-        Param('korean_brand_name', JSON, str, required=True, rules=[Pattern('[가-힣a-zA-Z0-9]+')]),
-        Param('english_brand_name', JSON, str, required=True, rules=[Pattern('[a-zA-Z0-9]+')]),
+        Param('korean_brand_name', JSON, str, required=True,
+              rules=[Pattern('[가-힣a-zA-Z0-9]+')]),
+        Param('english_brand_name', JSON, str, required=True,
+              rules=[Pattern('[a-zA-Z0-9]+')]),
         Param('customer_center_number', JSON, str, required=True)
     )
-
     def post(self, valid: ValidRequest):
         conn = None
         try:
@@ -34,8 +39,8 @@ class AccountSignUpView(MethodView):
             conn = get_connection()
             self.service.post_account_signup(conn, body)
             conn.commit()
-            return jsonify({'message':'success', 'status' : 200}), 200
-        
+            return jsonify({'message': 'success', 'status': 200}), 200
+
         except Exception as e:
             if conn:
                 conn.rollback()
@@ -47,10 +52,11 @@ class AccountSignUpView(MethodView):
             except Exception as e:
                 raise DatabaseCloseFail('서버에 알 수 없는 오류가 발생했습니다')
 
+
 class AccountLogInView(MethodView):
     def __init__(self, service):
         self.service = service
-    
+
     # seller or master 로그인
     def post(self):
         conn = None
@@ -59,7 +65,7 @@ class AccountLogInView(MethodView):
             conn = get_connection()
             if conn:
                 result = self.service.post_account_login(conn, body)
-                
+
             conn.commit()
             return jsonify('access_token'), 200
 
