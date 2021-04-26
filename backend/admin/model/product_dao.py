@@ -11,7 +11,7 @@ class ProductDao:
     def get_products_list(self, conn, params, headers):
         sql_select = """
             SELECT
-                p.created_at as upload_date,
+                DATE_FORMAT(p.created_at, '%%Y-%%m-%%d %%h:%%i:%%s') as upload_date,
                 pi.image_url,
                 p.title,
                 p.product_code,
@@ -140,7 +140,7 @@ class ProductDao:
             cursor.execute(product_sql, params)
             product_result = cursor.fetchall()
 
-            if 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' in headers.values():
+            if 'application/vnd.ms-excel' in headers.values():
                 return product_result
 
             cursor.execute(total_sql, params)

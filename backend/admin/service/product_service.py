@@ -31,7 +31,7 @@ class ProductService:
             raise  StartDateFail('조회 시작 날짜가 끝 날짜보다 큽니다.')
         
         # HEADERS로 엑셀파일 요청
-        if 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' in headers.values():
+        if 'application/vnd.ms-excel' in headers.values():
             result = self.product_dao.get_products_list(conn, params, headers)
             output = BytesIO()
 

@@ -22,9 +22,9 @@ def error_handle(app):
     Returns:
         json : error_response() 함수로 에러 메시지를 전달해서 반환 받고 return
     """
-    @app.errorhandler(Exception)
-    def handle_error(e):
-        pass
+    # @app.errorhandler(Exception)
+    # def handle_error(e):
+    #     pass
 
     @app.errorhandler(AttributeError)
     def handle_error(e):
