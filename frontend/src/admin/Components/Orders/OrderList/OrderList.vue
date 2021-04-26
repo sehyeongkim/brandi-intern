@@ -60,16 +60,16 @@
         <!--        <th>헬피구분</th>-->
         <!--        <th>배송구분</th>-->
         <td>{{ item.product_name }}</td> <!-- 상품명 -->
-        <td>{{ item.color_id }} / {{ item.size_id }}</td> <!-- 옵션정보 -->
+        <td>{{ item.color }} / {{ item.size }}</td> <!-- 옵션정보 -->
         <!--        <th>옵션추가금액</th>-->
         <td>{{ item.quantity }}</td> <!-- 수량 -->
         <td>{{ item.order_username }}</td> <!-- 주문자명 -->
         <td>{{ item.orderer_phone }}</td> <!-- 핸드폰번호 -->
-        <td>{{ item.price | makeComma }}</td> <!-- 결제금액 -->
+        <td>{{ item.total_price | makeComma }}</td> <!-- 결제금액 -->
         <!--        <th>사용포인트</th>-->
         <!--        <th>쿠폰할인</th>-->
         <!--        <th>결제수단</th>-->
-        <td>{{ item.order_status_type_id }}</td> <!-- 주문상태 -->
+        <td>{{ item.order_status_type }}</td> <!-- 주문상태 -->
       </template>
     </board-list>
   </div>
