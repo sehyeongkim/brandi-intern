@@ -26,7 +26,11 @@ import VueTheMask from 'vue-the-mask'
 
 const pluginOptions = {
   /* see config reference */
-  globalOptions: { currency: { distractionFree: { hidecrrencySymbol: true } }, locale: 'en', precision: 0 }
+  globalOptions: {
+    currency: { distractionFree: { hidecrrencySymbol: true } },
+    locale: 'en',
+    precision: 0
+  }
 }
 // import VueMoney from 'v-money'
 
@@ -36,7 +40,7 @@ Vue.use(VueTheMask)
 Vue.config.productionTip = false
 Vue.use(Antd)
 Vue.use(VueCurrencyInput, pluginOptions)
-Vue.filter('emptyDash', val => {
+Vue.filter('emptyDash', (val) => {
   if (val === undefined) return '-'
   if (val === null) return '-'
   if (val === '') return '-'
@@ -48,14 +52,16 @@ export default {
     Header,
     Aside
   },
-  data () {
+  data() {
     return {
       locale: koKr
     }
   },
-  created () {
+  created() {
     Vue.filter('typeToName', (val, type) => {
-      const statusItem = this.$store.state.const[type].filter((d) => { return d.value === val })
+      const statusItem = this.$store.state.const[type].filter((d) => {
+        return d.value === val
+      })
       if (statusItem.length > 0) return statusItem[0].label
       return ''
     })
@@ -81,7 +87,6 @@ export default {
     }
   }
 }
-
 </style>
 <style lang="scss" scoped>
 /*@import './styles/_reset.scss';*/
@@ -95,7 +100,7 @@ span.info {
   color: #298ae6;
 }
 .required {
-  color: red
+  color: red;
 }
 .large-size {
   width: 400px;
@@ -109,7 +114,8 @@ span.info {
 table.bordered th {
   background: #fafafa;
 }
-table.bordered th, table.bordered td{
+table.bordered th,
+table.bordered td {
   border: 1px solid #e8e8e8;
   padding: 10px 15px;
   font-size: 13px;
