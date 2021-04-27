@@ -33,7 +33,6 @@ class AccountSignUpView(MethodView):
             conn.commit()
 
             return post_response({"message": "success", "status_code" : 200}), 200
-
         except Exception as e:
             if conn:
                 conn.rollback()
@@ -52,26 +51,32 @@ class AccountLogInView(MethodView):
 
     
     @validate_params(
-        Param('id', JSON, str, rules=[Pattern("^[a-z]+[a-z0-9]{4,19}$")], required=True),
+        Param('id', JSON, str, rules=[Pattern("^[a-z]+[a-z0-9@.]{4,19}$")], required=True),
         Param('password', JSON, str, rules=[Pattern('^[A-Za-z0-9@#$]{6,12}$')], required=True)
     )
     def post(self, valid):
         conn = None
         try:
-            body = valid.get_json()
+            body = valid.get_json()        
             conn = get_connection()
-            if conn:
+            # 계정을 먼저 가져와서 처리하는게 더 안전
+            if body['id'].find("@") == -1 :
+                print("Seller 로그인")
                 result = self.service.post_account_login(conn, body)
-
+            else:
+                print("Master 로그인")
+                result = self.service.post_master_login(conn, body)
+                
             return post_response({
                         "message" : "success", 
-                        "accessToken" : result['accessToken'], 
-                        "account_id" : result['account_id'],
+                        "accessToken" : result['accessToken'],
+                        "account_type_id" : result['account_type_id'],
                         "status_code" : 200
                         }
-
+                 ), 200
         finally:
             try:
                 conn.close()
             except Exception as e:
                 raise DatabaseCloseFail('서버에 알 수 없는 오류가 발생했습니다.')
+
