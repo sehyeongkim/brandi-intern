@@ -65,7 +65,7 @@ def create_endpoints(app, services):
                     view_func=OrderListView.as_view('order_delivery_view', order_service),
                     methods=['PATCH'])
     
-    app.add_url_rule("/order",
+    app.add_url_rule("/orders/<int:order_detail_number>",
                     view_func=OrderView.as_view('order_view', order_service),
                     methods=['GET'])
                     

@@ -84,10 +84,7 @@ class OrderView(MethodView):
         self.service = service 
 
     @LoginRequired("seller")
-    @validate_params(
-        Param('detail_order_number', GET, str, required=True)
-    )
-    def get(self, valid):
+    def get(self, order_detail_number):
         """주문 상세 뷰
 
         어드민 페이지의 주문관리 페이지에서 주문상세번호를 클릭했을 때, 주문 상세 정보를 출력
@@ -102,8 +99,10 @@ class OrderView(MethodView):
         """
         conn = None
         try:
-            params = valid.get_params()
-            conn = get_connection() 
+            path = request.view_args["order_detail_number"]
+            params = dict()
+            params["detail_order_number"] = path
+            conn = get_connection()
 
             order_detail = self.service.get_order(conn, params)
             return get_response(order_detail), 200
