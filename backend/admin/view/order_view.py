@@ -6,7 +6,7 @@ from flask_request_validator import validate_params, Param, GET, ValidRequest, J
 
 from connection import get_connection
 
-from utils.custom_exception import DataNotExists, DatabaseConnectFail, StartDateFail
+from utils.custom_exception import DataNotExists, StartDateFail
 
 class OrderListView(MethodView):
     def __init__(self, service):

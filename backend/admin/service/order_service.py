@@ -1,7 +1,7 @@
 from admin.model import OrderDao
 
 from utils.response import error_response
-from utils.custom_exception import DataNotExists, DatabaseConnectFail, StartDateFail
+from utils.custom_exception import DataNotExists, StartDateFail
 
 import traceback
 from datetime import timedelta
@@ -51,9 +51,6 @@ class OrderService:
                 StartDateFail : 조회 날짜가 알맞지 않을 때 발생하는 에러
                 KeyError : 데이터베이스의 key값이 맞지 않을 때 발생하는 에러
         """
-        
-        if not conn:
-            raise DatabaseConnectFail(500, "DB connection 에러")
         
         if 'end_date' in params:
             params['end_date'] +=  timedelta(days=1)
