@@ -1,19 +1,18 @@
 from utils.response import error_response, get_response, post_response, post_response_with_return
-
-from flask import request, jsonify
+from flask import request, jsonify, g
 from flask.views import MethodView
 from flask_request_validator import validate_params, Param, GET, ValidRequest, JsonParam, Min, Enum, Datetime
-
 from connection import get_connection
-
 from utils.custom_exception import DataNotExists, StartDateFail
+from utils.decorator import LoginRequired
+
 
 class OrderListView(MethodView):
     def __init__(self, service):
         self.service = service
     
     # 주문 조회
-    # @login_required
+    @LoginRequired("seller")
     @validate_params(
         Param('start_date', GET, str, rules=[Datetime('%Y-%m-%d')], required=True),
         Param('end_date', GET, str, rules=[Datetime('%Y-%m-%d')], required=True),
@@ -37,7 +36,7 @@ class OrderListView(MethodView):
             valid (ValidRequest): validate_params 데코레이터로 전달된 값
             
         Returns:
-            dict: 결제일자, 주문번호, 주문상세번호, 상품명, 주문상태 등 주문 조회 리스트 관련 정보
+            order_list_result (dict): 결제일자, 주문번호, 주문상세번호, 상품명, 주문상태 등 주문 조회 리스트 관련 정보
             200: 주문 조회 리스트 가져오기 성공
             500: Exception
                 KeyError - query parameter로 잘못된 key값이 들어올 경우에 발생하는 에러
@@ -46,7 +45,7 @@ class OrderListView(MethodView):
         try:
             params = valid.get_params()
             conn = get_connection()   
-
+            
             order_list_result = self.service.get_order_list(conn, params)
             return get_response(order_list_result), 200
         
@@ -54,21 +53,22 @@ class OrderListView(MethodView):
             conn.close()
     
     # order_status_type 변경
-    # @login_required
+    @LoginRequired("seller")
     def patch(self):
         """주문 및 배송처리 
 
         주문 상태를 관리한다. 예를 들어, 상품 준비에서 배송중, 배송중에서 배송완료 등으로 주문의 현재 상태를 수정해준다.
 
         Returns:
-            dict : 성공했을 때, Success 메시지를 반환하고, 일부 값 변경에 실패할 경우 실패한 값을 반환
+            "SUCCESS" (dict) : 성공했을 때, Success 메시지를 반환 
+            not_possible_change_values (dict) : 일부 값 변경에 실패할 경우 실패한 값을 반환
         """
         conn = None
         try:
-            body = request.get_json()
+            params = request.get_json()
             conn = get_connection()
             
-            not_possible_change_values = self.service.patch_order_status_type(conn, body)
+            not_possible_change_values = self.service.patch_order_status_type(conn, params)
             conn.commit()
               
             return post_response_with_return("SUCCESS", not_possible_change_values), 200
@@ -78,8 +78,9 @@ class OrderListView(MethodView):
 
 class OrderView(MethodView):
     def __init__(self, service):
-        self.service = service    
-    
+        self.service = service 
+
+    @LoginRequired("seller")
     @validate_params(
         Param('detail_order_number', GET, str, required=True)
     )
@@ -92,7 +93,7 @@ class OrderView(MethodView):
             valid (ValidRequest): validate_params 데코레이터로 전달된 값 
             
         Returns:
-            dict: 주문정보, 주문상세정보, 상품정보, 수취자정보, 주문상태 이력변경 등의 정보
+            order_detail (dict): 주문정보, 주문상세정보, 상품정보, 수취자정보, 주문상태 이력변경 등의 정보
             200: 주문 상세 정보 가져오기 성공
             500: Exception
         """
