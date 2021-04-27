@@ -68,9 +68,8 @@ class AccountLogInView(MethodView):
                         "accessToken" : result['accessToken'], 
                         "account_id" : result['account_id'],
                         "status_code" : 200
-                        }
-
-        finally:
+                    })
+        finally:    
             try:
                 conn.close()
             except Exception as e:

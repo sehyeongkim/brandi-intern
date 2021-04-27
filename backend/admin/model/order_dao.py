@@ -1,5 +1,7 @@
 import pymysql
 
+from flask import g
+
 class OrderDao:
     def __new__(cls, *args, **kwargs):
         if not hasattr(cls, '_instance'):
@@ -179,40 +181,26 @@ class OrderDao:
             
             return order_list_info, order_counts
         
+    def get_status_type(self, conn):
+        sql = """
+            SELECT
+                id,
+                name
+            FROM
+                order_status_type
 
-    def check_if_status_type_exists(self, conn, body):
-        exist_list = list()
-        non_exist_list = list()
-        for data in body:
-            sql = """
-                SELECT
-                   1
-                FROM
-                    order_status_type
-                WHERE 
-                    id = %(order_status_type_id)s
-            """
-            with conn.cursor() as cursor:
-                cursor.execute(sql, data)
-                if cursor.fetchone():
-                    exist_list.append(data)
-                else:
-                    non_exist_list.append(data)
-
-        return exist_list, non_exist_list
-
+        """
+        with conn.cursor() as cursor:
+            cursor.execute(sql)
+            return cursor.fetchall()
 
     def check_if_possible_change(self, conn, body):
-        PURCHASE_COMPLETE = 4
-        CANCEL_COMPLETE = 7
-        REFUND_COMPLETE = 9
-
-        possible_list = list()
-        impossible_list = list()
+        
+        order_detail_results = list()
         for data in body:
             sql = """
                 SELECT
-                    id AS order_detail_id,
+                    id AS orders_detail_id,
                     order_status_type_id
                 FROM
                     orders_detail
@@ -222,12 +210,9 @@ class OrderDao:
 
             with conn.cursor() as cursor:
                 cursor.execute(sql, data)
-                if cursor.fetchone()["order_status_type_id"] in (PURCHASE_COMPLETE, CANCEL_COMPLETE, REFUND_COMPLETE):
-                    impossible_list.append(data)
-                else:
-                    possible_list.append(data)
-                    
-        return possible_list, impossible_list
+                order_detail_results.append(cursor.fetchone())
+        
+        return order_detail_results
 
 
     def patch_order_status_type(self, conn, possible_to_patch):
@@ -239,7 +224,7 @@ class OrderDao:
             conn (Connection): DB 커넥션 객체
             possible_change_order_status (list): order_service에서 걸러진 주문들 (주문 상태를 변경하지 못하는 주문들은 제외됨)
         """
-
+        possible_to_patch
         sql = """
             UPDATE 
                 orders_detail
@@ -268,43 +253,31 @@ class OrderDao:
                     ...
                 ]
         """
-        # account_id는 로그인 데코레이터로 파악
-        for data in results:
-            sql_select = """
-                SELECT 
-                    id,
-                    order_status_type_id,
-                    address_id,
-                    price
-                FROM
-                    orders_detail
-                WHERE 
-                    id = %(orders_detail_id)s
-            """
 
-            with conn.cursor() as cursor:
-                cursor.execute(sql_select, data)
-                result = cursor.fetchone()
-                
-            sql_insert = """
-                INSERT INTO order_detail_history ( 
+        for data in results:
+            sql = """
+                INSERT INTO order_detail_history(
                     order_detail_id,
                     order_status_type_id,
                     address_id,
                     modify_account_id,
                     price
                 )
-                VALUES (
-                    %(id)s,
-                    %(order_status_type_id)s,
-                    %(address_id)s,
-                    
-                    %(price)s
-                )
+                SELECT
+                    id,
+                    order_status_type_id,
+                    address_id,
+                    %(account_id)s,
+                    price
+                FROM
+                    orders_detail
+                WHERE
+                    id = %(orders_detail_id)s
             """
 
+            data["account_id"] = g.account_id
             with conn.cursor() as cursor:
-                cursor.execute(sql_insert, result)
+                cursor.execute(sql, data)
 
             
     def get_order(self, conn, params):
