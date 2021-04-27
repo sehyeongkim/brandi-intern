@@ -120,16 +120,23 @@ class ProductDao:
                 AND
                     p.created_at >= %(start_date_str)s
             """
-        # # 조회 날짜 끝 선택 됐을 때 검색
+        # 조회 날짜 끝 선택 됐을 때 검색
         if 'start_date' not in params and 'end_date' in params:
             sql += """
                 AND
                     p.created_at < %(end_date_str)s
             """
+        # 선택된 상품이 있을 때 해당 상품만 검색
         if 'select_product_id' in params:
             sql += """
                 AND
                     p.id IN %(select_product_id)s
+            """
+        # 셀러계정일 때 해당 셀러상품만 검색
+        if params['account_type_id'] == 2:
+            sql += """
+                AND
+                    s.account_id = %(account_id)s
             """
 
         product_sql = sql_select + sql + sql1

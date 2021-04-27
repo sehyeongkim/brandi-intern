@@ -35,7 +35,7 @@ class ProductView(MethodView):
         Param('end_date', GET, str, rules=[Datetime('%Y-%m-%d')], required=False),
         Param('select_product_id', GET, list, required=False)
     )
-    # @LoginRequired('seller')
+    @LoginRequired('seller')
     def get(self, valid: ValidRequest):
         """상품 조회 리스트
 
@@ -74,6 +74,8 @@ class ProductView(MethodView):
         conn = None
         try:
             params = valid.get_params()
+            params['account_id'] = g.account_id
+            params['account_type_id'] = g.account_type_id
             headers = valid.get_headers()
             conn = get_connection()
             

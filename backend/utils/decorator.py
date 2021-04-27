@@ -63,7 +63,7 @@ class LoginRequired:
                 g.account_id = result['id']
                 g.account_type_id = result['account_type_id']
 
-                return func(self, *args, **kwargs)
+                return func(target, *args, **kwargs)
 
             except jwt.exceptions.InvalidSignatureError:
                 raise JwtInvalidSignatureError('토큰이 손상되었습니다.')
