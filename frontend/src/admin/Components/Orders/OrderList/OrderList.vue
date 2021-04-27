@@ -39,39 +39,37 @@
       </template>
       <template slot="row" slot-scope="{item}">
         <!--
-        additionalPrice: 0
-        colorName: "레드"
-        name: "말랑말랑"
-        orderDate: "2021-04-05 00:00:00"
-        orderDetailNumber: "110004"
-        orderName: "아버지"
-        orderNumber: "10002"
-        orderPhone: "010-1111-2222"
-        orderStatus: "결제완료"
-        productName: "따듯한 아우터"
-        quantity: 1
-        sizeName: "Medium"
-        totalPrice: 21000
-        userInfoId: 3
+        "brand_name": "가가",
+        "color_id": 2,
+        "order_created_at": "Tue, 20 Apr 2021 09:00:00 GMT",
+        "order_detail_number": "4444",
+        "order_number": "444",
+        "order_status_type_id": 1,
+        "order_username": "fff",
+        "orderer_phone": "12341234124",
+        "price": 10000,
+        "product_name": "멋진 아우터",
+        "quantity": 2,
+        "size_id": 2
         -->
-        <td>{{ item.orderDate }}</td> <!-- 결제일자 -->
-        <td>{{ item.orderDetailNumber }}</td> <!-- 주문번호 -->
-        <td><router-link :to="''+item.orderDetailNumber">{{ item.orderDetailNumber }}</router-link></td> <!-- 주문상세번호 -->
-        <td>{{ item.name }}</td> <!-- 셀러명 -->
+        <td>{{ item.order_created_at }}</td> <!-- 결제일자 -->
+        <td>{{ item.order_number }}</td> <!-- 주문번호 -->
+        <td><router-link :to="''+item.order_detail_number">{{ item.order_detail_number }}</router-link></td> <!-- 주문상세번호 -->
+        <td>{{ item.brand_name }}</td> <!-- 셀러명 -->
         <!--        <th>셀러구분</th>-->
         <!--        <th>헬피구분</th>-->
         <!--        <th>배송구분</th>-->
-        <td>{{ item.productName }}</td> <!-- 상품명 -->
-        <td>{{ item.colorName }} / {{ item.sizeName }}</td> <!-- 옵션정보 -->
+        <td>{{ item.product_name }}</td> <!-- 상품명 -->
+        <td>{{ item.color }} / {{ item.size }}</td> <!-- 옵션정보 -->
         <!--        <th>옵션추가금액</th>-->
         <td>{{ item.quantity }}</td> <!-- 수량 -->
-        <td>{{ item.orderName }}</td> <!-- 주문자명 -->
-        <td>{{ item.orderPhone }}</td> <!-- 핸드폰번호 -->
-        <td>{{ item.totalPrice | makeComma }}</td> <!-- 결제금액 -->
+        <td>{{ item.order_username }}</td> <!-- 주문자명 -->
+        <td>{{ item.orderer_phone }}</td> <!-- 핸드폰번호 -->
+        <td>{{ item.total_price | makeComma }}</td> <!-- 결제금액 -->
         <!--        <th>사용포인트</th>-->
         <!--        <th>쿠폰할인</th>-->
         <!--        <th>결제수단</th>-->
-        <td>{{ item.orderStatus }}</td> <!-- 주문상태 -->
+        <td>{{ item.order_status_type }}</td> <!-- 주문상태 -->
       </template>
     </board-list>
   </div>
@@ -93,12 +91,12 @@ export default {
   components: { BoardList, OrderFilterBox },
   props: {
     status_id: {
-      default () {
+      default() {
         return 0
       }
     }
   },
-  data () {
+  data() {
     return {
       dataStore: new Vue(store),
       menuName: '',
@@ -111,12 +109,12 @@ export default {
       ]
     }
   },
-  mounted () {
+  mounted() {
     this.menuName = this.getSellerPropertyName(this.status_id)
     // this.dataStore.setFilter()
   },
   methods: {
-    search (filter) {
+    search(filter) {
       filter = JSON.parse(JSON.stringify(filter))
       filter.status_id = this.status_id
       this.dataStore.page = 1
@@ -124,15 +122,15 @@ export default {
       this.dataStore.load()
     },
     // 상품 구매
-    buyProduct (row) {
+    buyProduct(row) {
       console.log('상품 구매', row)
     },
-    getSellerPropertyName (orderStatusId) {
+    getSellerPropertyName(orderStatusId) {
       const statusItem = this.constants.orderStatusTypes.filter((d) => { return d.value === orderStatusId })
       if (statusItem.length > 0) return statusItem[0].label
       return ''
     },
-    processDelivery () {
+    processDelivery() {
       // 체크 리스트가 없다면 처리 불가
       const len = this.dataStore.checkedList.length
       if (len > 0) {

@@ -13,24 +13,24 @@
 
 export default {
   name: 'order-modal',
-  data () {
+  data() {
     return {
       productItem: {},
       visible: false
     }
   },
-  mounted () {
+  mounted() {
   },
   methods: {
     // 저장하기
-    save () {
+    save() {
       console.log('save')
     },
-    show (productItem) {
+    show(productItem) {
       this.productItem = productItem
       this.visible = true
     },
-    close () {
+    close() {
       this.visible = false
       console.log('close')
     }
