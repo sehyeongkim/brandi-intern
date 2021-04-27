@@ -25,7 +25,7 @@ class OrderService:
             params (dict): query parameter로 받은 정보 (셀러명, 조회 기간 등)
             
         Returns:
-            dict : 
+            order_list_info (dict) : 
                     order_list_info: 
                             order_list_info = {
                                     "order_list" : [
@@ -42,12 +42,11 @@ class OrderService:
                                             "quantity": 구매 수량,
                                             "size_id": 사이즈 아이디,
                                             "product_name": 상품명
-                                        } for result in result_1
+                                        } for result in order_detail
                                     ],
                                     "total_count": 주문 전체 수
                             }     
             500 : Exceptions  
-                DatabaseConnectFail : DB와의 커넥션이 존재하지 않을 경우 발생하는 에러
                 StartDateFail : 조회 날짜가 알맞지 않을 때 발생하는 에러
                 KeyError : 데이터베이스의 key값이 맞지 않을 때 발생하는 에러
         """
@@ -106,23 +105,19 @@ class OrderService:
             DataNotExists: DB에 해당 id가 존재하지 않을 때 발생하는 에러
 
         Returns:
-            list : 주문 상태를 변경하는데 실패한 값 반환
+            impossible_to_patch (list) : 주문 상태를 변경하는데 실패한 값 반환
         """
         status_type_exist, status_type_not_exist = self.order_dao.check_if_status_type_exists(conn, body)
 
         possible_to_patch, impossible_to_patch = self.order_dao.check_if_possible_change(conn, status_type_exist)
 
-        possible_to_patch += status_type_exist
         impossible_to_patch += status_type_not_exist
 
         self.order_dao.patch_order_status_type(conn, possible_to_patch)
         # self.order_dao.insert_order_detail_history(conn, possible_to_patch)
         return impossible_to_patch
     
-        
-
-
-        
+ 
     def get_order(self, conn, params):
         """주문 상세
 
@@ -133,41 +128,74 @@ class OrderService:
             params (dict): {"detail_order_number" : 주문 상세 번호}
 
         Returns:
-            dict : 주문 상세 정보 반환
+            order_detail_info (dict) :         
+                    order_detail_info = {
+                        "order_detail": {
+                            "order_number": 주문번호,
+                            "order_detail_number": 주문상세번호,
+                            "order_created_at": 주문발생 시간,
+                            "order_status_type": 주문 상태,
+                            "orderer_phone": 주문자 전화번호,
+                            "orderer_name": 주문자명,
+                            "product_id": 상품번호,
+                            "price": 상품가격,
+                            "discount_rate": 할인율,
+                            "discounted_price": 할인된 가격,
+                            "total_price": 총가격,
+                            "product_name": 상품명,
+                            "brand_name": 브랜드명,
+                            "color": 색깔,
+                            "size": 크기,
+                            "quantity": 구매 수량,
+                            "user_id": 사용자 id,
+                            "recipient": 수령자명,
+                            "zip_code": 우편번호,
+                            "address": 주소 및 상세주소,
+                            "recipient_phone": 수령자 전화번호,
+                            "delivery_memo": 배송시 요청사항,
+                        },
+                        "order_history": [
+                                    {
+                                        "update_time": history["updated_at"],
+                                        "order_status_type": history["order_status_type"]
+                                    }
+                                    for history in order_histories
+                                ]
+                }
         """
-        result_1, result_2 = self.order_dao.get_order(conn, params)
+        order_detail, order_histories = self.order_dao.get_order(conn, params)
 
         order_detail_info = {
                 "order_detail": {
-                    "order_number": result_1["order_number"],
-                    "order_detail_number": result_1["detail_order_number"],
-                    "order_created_at": result_1["created_at"],
-                    "order_status_type": result_1["order_status_type"],
-                    "orderer_phone": result_1["order_phone"],
-                    "orderer_name": result_1["orderer_name"],
-                    "product_id": result_1["product_id"],
-                    "price": result_1["price"],
-                    "discount_rate": int(100 * result_1["discount_rate"]),
-                    "discounted_price": int(result_1["price"] if result_1["discount_rate"] == 0 else (result_1["price"] * (1-result_1["discount_rate"]))),
-                    "total_price": int(result_1["price"] * result_1["quantity"] if result_1["discount_rate"] == 0 else result_1["price"] * result_1["discount_rate"] * result_1["quantity"]),
-                    "product_name": result_1["title"],
-                    "brand_name": result_1["korean_brand_name"],
-                    "color": result_1["color"],
-                    "size": result_1["size"],
-                    "quantity": result_1["quantity"],
-                    "user_id": result_1["user_id"],
-                    "recipient": result_1["recipient"],
-                    "zip_code": result_1["zip_code"],
-                    "address": result_1["address"]+" "+result_1["detail_address"],
-                    "recipient_phone": result_1["recipient_phone"],
-                    "delivery_memo": result_1["delivery_memo_custom"] if result_1["delivery_memo_custom"] else result_1["delivery_memo"] if result_1["delivery_memo"] else None,
+                    "order_number": order_detail["order_number"],
+                    "order_detail_number": order_detail["detail_order_number"],
+                    "order_created_at": order_detail["created_at"],
+                    "order_status_type": order_detail["order_status_type"],
+                    "orderer_phone": order_detail["order_phone"],
+                    "orderer_name": order_detail["orderer_name"],
+                    "product_id": order_detail["product_id"],
+                    "price": order_detail["price"],
+                    "discount_rate": int(100 * order_detail["discount_rate"]),
+                    "discounted_price": int(order_detail["price"] if order_detail["discount_rate"] == 0 else (order_detail["price"] * (1-order_detail["discount_rate"]))),
+                    "total_price": int(order_detail["price"] * order_detail["quantity"] if order_detail["discount_rate"] == 0 else order_detail["price"] * (1-order_detail["discount_rate"]) * order_detail["quantity"]),
+                    "product_name": order_detail["title"],
+                    "brand_name": order_detail["korean_brand_name"],
+                    "color": order_detail["color"],
+                    "size": order_detail["size"],
+                    "quantity": order_detail["quantity"],
+                    "user_id": order_detail["user_id"],
+                    "recipient": order_detail["recipient"],
+                    "zip_code": order_detail["zip_code"],
+                    "address": order_detail["address"]+" "+order_detail["detail_address"],
+                    "recipient_phone": order_detail["recipient_phone"],
+                    "delivery_memo": order_detail["delivery_memo_custom"] if order_detail["delivery_memo_custom"] else order_detail["delivery_memo"] if order_detail["delivery_memo"] else None,
                 },
                 "order_history": [
                             {
-                                "update_time": result["updated_at"],
-                                "order_status_type": result["order_status_type"]
+                                "update_time": history["updated_at"],
+                                "order_status_type": history["order_status_type"]
                             }
-                            for result in result_2
+                            for history in order_histories
                         ]
         }
         return order_detail_info

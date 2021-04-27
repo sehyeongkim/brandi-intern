@@ -19,8 +19,8 @@ class OrderDao:
             params (dict) : query parameter로 받은 정보 (셀러명, 조회 기간 등)
         
         Returns:
-            dict : 주문 리스트 정보
-            dict : 주문 전체 개수
+            order_list_info (dict) : 주문 리스트 정보
+            orders_count (dict) : 주문 전체 개수
         """
 
         select = """ 
@@ -71,51 +71,51 @@ class OrderDao:
                     d.order_status_type_id=%(order_status_type_id)s
         """ 
         
-        sql_1 = select + order_info + condition
+        sql_select_info = select + order_info + condition
 
         if "sub_property_id" in params:
-            sql_1 += """
+            sql_select_info += """
                 AND 
                     sp.id = %(sub_property_id)s
             """
         
         if "order_number" in params:
-            sql_1 += """
+            sql_select_info += """
                 AND 
                     o.order_number = %(order_number)s
             """
         
         if "order_detail_number" in params:
-            sql_1 += """
+            sql_select_info += """
                 AND
                     d.detail_order_number = %(order_detail_number)s
             """
 
         if "seller_name" in params:
-            sql_1 += """
+            sql_select_info += """
                 AND
                     s.korean_brand_name = %(seller_name)s
             """
         
         if "order_username" in params:
-            sql_1 += """
+            sql_select_info += """
                 AND 
                     o.order_username = %(order_username)s
             """
         
         if "phone" in params:
-            sql_1 += """
+            sql_select_info += """
                 AND
                     u.phone = %(orderer_phone)s
             """
         
         if "product_name" in params:
-            sql_1 += """
+            sql_select_info += """
                 AND
                     p.title = %(product_name)s
             """
         
-        sql_1 += """
+        sql_select_info += """
                 LIMIT
                     %(limit)s
                 OFFSET
@@ -126,58 +126,58 @@ class OrderDao:
                 COUNT(*) as count 
         """
         
-        sql_2 = select + count + condition
+        sql_select_count = select + count + condition
 
         if "sub_property_id" in params:
-            sql_2 += """
+            sql_select_count += """
                 AND 
                     sp.id = %(sub_property_id)s
             """
         
         if "order_number" in params:
-            sql_2 += """
+            sql_select_count += """
                 AND 
                     o.order_number = %(order_number)s
             """
         
         if "order_detail_number" in params:
-            sql_2 += """
+            sql_select_count += """
                 AND
                     d.detail_order_number = %(order_detail_number)s
             """
 
         if "seller_name" in params:
-            sql_2 += """
+            sql_select_count += """
                 AND
                     s.korean_brand_name = %(seller_name)s
             """
         
         if "order_username" in params:
-            sql_2 += """
+            sql_select_count += """
                 AND 
                     o.order_username = %(order_username)s
             """
         
         if "phone" in params:
-            sql_2 += """
+            sql_select_count += """
                 AND
                     u.phone = %(orderer_phone)s
             """
         
         if "product_name" in params:
-            sql_2 += """
+            sql_select_count += """
                 AND
                     p.title = %(product_name)s
             """
 
         with conn.cursor() as cursor:
-            cursor.execute(sql_1, params)
-            result_1 = cursor.fetchall()
+            cursor.execute(sql_select_info, params)
+            order_list_info = cursor.fetchall()
 
-            cursor.execute(sql_2, params)
-            result_2 = cursor.fetchone()
+            cursor.execute(sql_select_count, params)
+            order_counts = cursor.fetchone()
             
-            return result_1, result_2
+            return order_list_info, order_counts
         
 
     def check_if_status_type_exists(self, conn, body):
@@ -198,7 +198,7 @@ class OrderDao:
                     exist_list.append(data)
                 else:
                     non_exist_list.append(data)
-                
+
         return exist_list, non_exist_list
 
 
@@ -226,7 +226,7 @@ class OrderDao:
                     impossible_list.append(data)
                 else:
                     possible_list.append(data)
-        
+                    
         return possible_list, impossible_list
 
 
@@ -270,7 +270,7 @@ class OrderDao:
         """
         # account_id는 로그인 데코레이터로 파악
         for data in results:
-            sql_1 = """
+            sql_select = """
                 SELECT 
                     id,
                     order_status_type_id,
@@ -283,10 +283,10 @@ class OrderDao:
             """
 
             with conn.cursor() as cursor:
-                cursor.execute(sql_1, data)
+                cursor.execute(sql_select, data)
                 result = cursor.fetchone()
                 
-            sql_2 = """
+            sql_insert = """
                 INSERT INTO order_detail_history ( 
                     order_detail_id,
                     order_status_type_id,
@@ -304,7 +304,7 @@ class OrderDao:
             """
 
             with conn.cursor() as cursor:
-                cursor.execute(sql_2, result)
+                cursor.execute(sql_insert, result)
 
             
     def get_order(self, conn, params):
@@ -321,7 +321,7 @@ class OrderDao:
             dict : 주문과 관련된 상세 정보 반환 
             list : 주문 이력 반환
         """
-        sql_1 = """
+        sql_select_info = """
             SELECT 
                 o.order_number, 
                 DATE_FORMAT(o.created_at, '%%Y-%%m-%%d %%h:%%i:%%s') AS created_at,
@@ -375,7 +375,7 @@ class OrderDao:
                 od.detail_order_number = %(detail_order_number)s;
         """
 
-        sql_2 = """
+        sql_select_history = """
             SELECT 
                 DATE_FORMAT(odh.updated_at, '%%Y-%%m-%%d %%h:%%i:%%s') AS updated_at,
                 ost.name AS order_status_type
@@ -390,10 +390,10 @@ class OrderDao:
         """
 
         with conn.cursor() as cursor:
-            cursor.execute(sql_1, params)
-            result_1 = cursor.fetchone()
+            cursor.execute(sql_select_info, params)
+            order_info = cursor.fetchone()
 
-            cursor.execute(sql_2, params)
-            result_2 = cursor.fetchall()
+            cursor.execute(sql_select_history, params)
+            order_history = cursor.fetchall()
 
-            return result_1, result_2
+            return order_info, order_history

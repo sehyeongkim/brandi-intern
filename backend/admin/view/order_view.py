@@ -37,7 +37,7 @@ class OrderListView(MethodView):
             valid (ValidRequest): validate_params 데코레이터로 전달된 값
             
         Returns:
-            dict: 결제일자, 주문번호, 주문상세번호, 상품명, 주문상태 등 주문 조회 리스트 관련 정보
+            order_list_result (dict): 결제일자, 주문번호, 주문상세번호, 상품명, 주문상태 등 주문 조회 리스트 관련 정보
             200: 주문 조회 리스트 가져오기 성공
             500: Exception
                 KeyError - query parameter로 잘못된 key값이 들어올 경우에 발생하는 에러
@@ -61,7 +61,8 @@ class OrderListView(MethodView):
         주문 상태를 관리한다. 예를 들어, 상품 준비에서 배송중, 배송중에서 배송완료 등으로 주문의 현재 상태를 수정해준다.
 
         Returns:
-            dict : 성공했을 때, Success 메시지를 반환하고, 일부 값 변경에 실패할 경우 실패한 값을 반환
+            "SUCCESS" (dict) : 성공했을 때, Success 메시지를 반환 
+            not_possible_change_values (dict) : 일부 값 변경에 실패할 경우 실패한 값을 반환
         """
         conn = None
         try:
@@ -92,7 +93,7 @@ class OrderView(MethodView):
             valid (ValidRequest): validate_params 데코레이터로 전달된 값 
             
         Returns:
-            dict: 주문정보, 주문상세정보, 상품정보, 수취자정보, 주문상태 이력변경 등의 정보
+            order_detail (dict): 주문정보, 주문상세정보, 상품정보, 수취자정보, 주문상태 이력변경 등의 정보
             200: 주문 상세 정보 가져오기 성공
             500: Exception
         """
