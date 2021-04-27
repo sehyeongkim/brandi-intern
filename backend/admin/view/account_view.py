@@ -60,7 +60,7 @@ class AccountLogInView(MethodView):
             body = valid.get_json()        
             conn = get_connection()
             # 계정을 먼저 가져와서 처리하는게 더 안전
-            if body['id'].find("@") == -1 :
+            if body['id'].find("@") == -1:
                 print("Seller 로그인")
                 result = self.service.post_account_login(conn, body)
             else:
