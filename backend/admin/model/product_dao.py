@@ -1,4 +1,4 @@
-
+from flask import g
 class ProductDao:
     def __new__(cls, *args, **kwargs):
         if not hasattr(cls, '_instance'):
@@ -192,8 +192,9 @@ class ProductDao:
             WHERE
                 p.product_code = %(product_code)s
             """
-        
-        if params['account_type_id'] == 2:
+
+        params['account_id'] = g.account_id
+        if g.account_type_id == 2:
             sql += """
                 AND
                     s.account_id = %(account_id)s
@@ -201,9 +202,7 @@ class ProductDao:
 
         with conn.cursor() as cursor:
             cursor.execute(sql, params)
-            product_result = cursor.fetchone()
-        
-        return product_result
+            return cursor.fetchone()
     
     def get_product_images_by_product_code(self, conn, params):
         sql = """
@@ -222,9 +221,7 @@ class ProductDao:
         
         with conn.cursor() as cursor:
             cursor.execute(sql, params)
-            product_image_result = cursor.fetchall()
-        
-        return product_image_result
+            return cursor.fetchall()
 
     def get_product_options_by_product_code(self, conn, params):
         sql = """
@@ -251,9 +248,7 @@ class ProductDao:
 
         with conn.cursor() as cursor:
             cursor.execute(sql, params)
-            product_option_result = cursor.fetchall()
-        
-        return product_option_result
+            return cursor.fetchall()
 
     def get_categories_list(self, conn, category_id):
         pass

@@ -136,9 +136,6 @@ class ProductDetailView(MethodView):
         try:
             conn = get_connection()
             params = valid.get_path_params()
-            params['account_id'] = g.account_id
-            params['account_type_id'] = g.account_type_id
-            
             result = self.service.get_product_detail(conn, params)
             
             return get_response(result)

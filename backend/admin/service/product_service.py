@@ -146,7 +146,14 @@ class ProductService:
             raise DataNotExists('상품을 조회할 수 없습니다.', 'product does not exists or Forbidden')
 
         product_image_result = self.product_dao.get_product_images_by_product_code(conn, params)
+
+        if not product_image_result:
+            raise DataNotExists('상품이미지를 조회할 수 없습니다.', 'product image does not exists or Forbidden')
+
         product_option_result = self.product_dao.get_product_options_by_product_code(conn, params)
+
+        if not product_option_result:
+            raise DataNotExists('상품옵션을 조회할 수 없습니다.', 'product option does not exists or Forbidden')
 
         product_detail = {
             'basic_info': {
