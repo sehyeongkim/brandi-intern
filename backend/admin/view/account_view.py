@@ -61,10 +61,10 @@ class AccountLogInView(MethodView):
             conn = get_connection()
             # 계정을 먼저 가져와서 처리하는게 더 안전
             if body['id'].find("@") == -1 :
-                print("Seller 로그인")
+                # Seller 로그인
                 result = self.service.post_account_login(conn, body)
             else:
-                print("Master 로그인")
+                # Master 로그인
                 result = self.service.post_master_login(conn, body)
                 
             return post_response({
