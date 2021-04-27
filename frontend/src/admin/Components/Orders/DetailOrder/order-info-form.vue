@@ -42,12 +42,12 @@ export default {
   },
   props: {
     dataStore: {
-      default () {
+      default() {
         return {}
       }
     }
   },
-  data () {
+  data() {
     return {
       data: {
         seller_property_id: 1,
@@ -58,24 +58,24 @@ export default {
     }
   },
   computed: {
-    firstCategory () {
+    firstCategory() {
       return this.$store.state.const.firstCategory
     },
-    secondCategory () {
+    secondCategory() {
       return this.$store.state.const.secondCategory
     }
   },
   methods: {
-    showHistoryModal () {
+    showHistoryModal() {
       this.$refs.historyModal.show()
     },
-    setFormData (value) {
+    setFormData(value) {
 
     },
-    getFromData () {
+    getFromData() {
       return JSON.stringify(JSON.parse(this.data))
     },
-    validate () {
+    validate() {
       return true
     }
   }

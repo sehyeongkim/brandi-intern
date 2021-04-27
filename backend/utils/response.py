@@ -36,4 +36,3 @@ def post_response_with_return(message, *args, status_code=200):
                 }
     return response
 
-

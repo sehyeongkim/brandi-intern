@@ -1,213 +1,98 @@
 {
   "result": {
-    "data": [
+    "product": [
       {
-        "actions": [
-          {
-            "id": 1,
-            "name": "입점 승인",
-            "sl.id": 2
-          },
-          {
-            "id": 2,
-            "name": "입점 거절",
-            "sl.id": 2
-          }
-        ],
-        "attribute": "로드샵",
-        "createdAt": "Fri, 03 Apr 2020 00:00:00 GMT",
-        "english": "nanauhh",
-        "korean": "우나나나",
-        "managerEmail": "t2@gmail.com",
-        "managerName": "담2",
-        "managerPhone": "010-2",
-        "no": 6,
-        "sellerStatus": "입점 대기",
-        "sellerType": "일반",
-        "username": "nana"
+        "discount_price": 8500,
+        "discount_rate": 0.15,
+        "id": 1,
+        "image_url": "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__340.jpg",
+        "is_displayed": 1,
+        "is_selling": 1,
+        "korean_brand_name": "가가",
+        "price": 10000,
+        "product_code": "111",
+        "seller_id": 1,
+        "sub_property": "쇼핑몰 ",
+        "title": "멋진 아우터",
+        "upload_date": "2021-04-20 "
       },
       {
-        "actions": [
-          {
-            "id": 8,
-            "name": "퇴점 확정처리",
-            "sl.id": 7
-          },
-          {
-            "id": 9,
-            "name": "퇴점 철회처리",
-            "sl.id": 7
-          },
-          {
-            "id": 11,
-            "name": "휴점 신청",
-            "sl.id": 7
-          }
-        ],
-        "attribute": "쇼핑몰",
-        "createdAt": "Sat, 03 Apr 2010 00:00:00 GMT",
-        "english": "mallang",
-        "korean": "말랑말랑",
-        "managerEmail": null,
-        "managerName": null,
-        "managerPhone": null,
-        "no": 1,
-        "sellerStatus": "퇴점 대기",
-        "sellerType": "헬피",
-        "username": "bong"
+        "discount_price": 12000,
+        "discount_rate": 0.2,
+        "id": 5,
+        "image_url": "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__340.jpg",
+        "is_displayed": 1,
+        "is_selling": 1,
+        "korean_brand_name": "마마",
+        "price": 15000,
+        "product_code": "555",
+        "seller_id": 5,
+        "sub_property": "제너럴브랜드",
+        "title": "믓진 아우터 ",
+        "upload_date": "2021-04-20 "
       },
       {
-        "actions": [
-          {
-            "id": 1,
-            "name": "입점 승인",
-            "sl.id": 2
-          },
-          {
-            "id": 2,
-            "name": "입점 거절",
-            "sl.id": 2
-          }
-        ],
-        "attribute": "마켓",
-        "createdAt": "Sun, 03 Apr 2011 00:00:00 GMT",
-        "english": "bubutrandi",
-        "korean": "부븟랜디",
-        "managerEmail": null,
-        "managerName": null,
-        "managerPhone": null,
-        "no": 2,
-        "sellerStatus": "입점 대기",
-        "sellerType": "헬피",
-        "username": "burandi"
+        "discount_price": 12000,
+        "discount_rate": 0.2,
+        "id": 4,
+        "image_url": "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__340.jpg",
+        "is_displayed": 1,
+        "is_selling": 1,
+        "korean_brand_name": "라라",
+        "price": 15000,
+        "product_code": "444",
+        "seller_id": 4,
+        "sub_property": "디자이너브랜드",
+        "title": "믓진 아우터 ",
+        "upload_date": "2021-04-20 "
       },
       {
-        "actions": [
-          {
-            "id": 1,
-            "name": "입점 승인",
-            "sl.id": 2
-          },
-          {
-            "id": 2,
-            "name": "입점 거절",
-            "sl.id": 2
-          }
-        ],
-        "attribute": "마켓",
-        "createdAt": "Fri, 03 Apr 2020 00:00:00 GMT",
-        "english": "jello",
-        "korean": "젤로",
-        "managerEmail": null,
-        "managerName": null,
-        "managerPhone": null,
-        "no": 33,
-        "sellerStatus": "입점 대기",
-        "sellerType": "일반",
-        "username": "dottory"
+        "discount_price": 12000,
+        "discount_rate": 0.2,
+        "id": 3,
+        "image_url": "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__340.jpg",
+        "is_displayed": 1,
+        "is_selling": 1,
+        "korean_brand_name": "다다",
+        "price": 15000,
+        "product_code": "333",
+        "seller_id": 3,
+        "sub_property": "로드샵",
+        "title": "믓진 아우터 ",
+        "upload_date": "2021-04-20 "
       },
       {
-        "actions": [
-          {
-            "id": 1,
-            "name": "입점 승인",
-            "sl.id": 2
-          },
-          {
-            "id": 2,
-            "name": "입점 거절",
-            "sl.id": 2
-          }
-        ],
-        "attribute": "쇼핑몰",
-        "createdAt": "Sat, 03 Apr 2021 00:00:00 GMT",
-        "english": "chaerockkk",
-        "korean": "채록",
-        "managerEmail": null,
-        "managerName": null,
-        "managerPhone": null,
-        "no": 96,
-        "sellerStatus": "입점 대기",
-        "sellerType": "일반",
-        "username": "mark"
+        "discount_price": 12000,
+        "discount_rate": 0.2,
+        "id": 2,
+        "image_url": "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__340.jpg",
+        "is_displayed": 1,
+        "is_selling": 1,
+        "korean_brand_name": "나나",
+        "price": 15000,
+        "product_code": "222",
+        "seller_id": 2,
+        "sub_property": "마켓 ",
+        "title": "상의",
+        "upload_date": "2021-04-20 "
       },
       {
-        "actions": [
-          {
-            "id": 1,
-            "name": "입점 승인",
-            "sl.id": 2
-          },
-          {
-            "id": 2,
-            "name": "입점 거절",
-            "sl.id": 2
-          }
-        ],
-        "attribute": "쇼핑몰",
-        "createdAt": "Sun, 04 Apr 2021 00:00:00 GMT",
-        "english": "mark",
-        "korean": "마크옷",
-        "managerEmail": null,
-        "managerName": null,
-        "managerPhone": null,
-        "no": 111,
-        "sellerStatus": "입점 대기",
-        "sellerType": "일반",
-        "username": "sellermark"
-      },
-      {
-        "actions": [
-          {
-            "id": 1,
-            "name": "입점 승인",
-            "sl.id": 2
-          },
-          {
-            "id": 2,
-            "name": "입점 거절",
-            "sl.id": 2
-          }
-        ],
-        "attribute": "제너럴브랜드",
-        "createdAt": "Sun, 04 Apr 2021 00:00:00 GMT",
-        "english": "Nothing",
-        "korean": "다없슈",
-        "managerEmail": null,
-        "managerName": null,
-        "managerPhone": null,
-        "no": 113,
-        "sellerStatus": "입점 대기",
-        "sellerType": "일반",
-        "username": "chyunKim"
-      },
-      {
-        "actions": [
-          {
-            "id": 1,
-            "name": "입점 승인",
-            "sl.id": 2
-          },
-          {
-            "id": 2,
-            "name": "입점 거절",
-            "sl.id": 2
-          }
-        ],
-        "attribute": "디자이너브랜드",
-        "createdAt": "Mon, 05 Apr 2021 00:00:00 GMT",
-        "english": "master",
-        "korean": "마스터",
-        "managerEmail": null,
-        "managerName": null,
-        "managerPhone": null,
-        "no": 115,
-        "sellerStatus": "입점 대기",
-        "sellerType": "일반",
-        "username": "master17"
+        "discount_price": 12000,
+        "discount_rate": 0.2,
+        "id": 6,
+        "image_url": "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__340.jpg",
+        "is_displayed": 1,
+        "is_selling": 1,
+        "korean_brand_name": "바바",
+        "price": 15000,
+        "product_code": "666",
+        "seller_id": 6,
+        "sub_property": "내셔널브랜드",
+        "title": "믓진 아우터 ",
+        "upload_date": "2021-04-20 "
       }
     ],
-    "totalCount": 8
+    "total_count": 6
   },
-  "message": "SUCCESS"
+  "status_code": 200
 }

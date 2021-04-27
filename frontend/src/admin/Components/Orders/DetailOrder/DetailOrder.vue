@@ -64,7 +64,7 @@ export default {
     OrderDeliveryInfoForm,
     OrderHistoryInfoForm
   },
-  data () {
+  data() {
     return {
       dataStore: new Vue(store),
       tabNo: 0,
@@ -74,23 +74,23 @@ export default {
   props: {
     // path param
     detailNo: {
-      default () {
+      default() {
         return 0
       }
     }
   },
-  mounted () {
+  mounted() {
     this.dataStore.getDetail(this.detailNo)
     document.addEventListener('scroll', this.scrollEvent)
   },
-  destroyed () {
+  destroyed() {
     document.removeEventListener('scroll', this.scrollEvent)
   },
   methods: {
-    cancel () {
+    cancel() {
       this.$router.go(-1)
     },
-    scrollEvent (event) {
+    scrollEvent(event) {
       const pageContents = this.$refs.pageContent
       const len = pageContents.length
       // 마지막은 끝으로 인식
@@ -106,7 +106,7 @@ export default {
         }
       }
     },
-    scrollTab (tabNo) {
+    scrollTab(tabNo) {
       const pageContents = this.$refs.pageContent
       const elTop = Utils.getOffset(this.$refs.pageContent[0].$el).top
       window.scrollTo({ top: Utils.getOffset(pageContents[tabNo].$el).top - elTop, behavior: 'smooth' })
