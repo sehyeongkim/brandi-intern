@@ -525,8 +525,8 @@ class OrderDao:
         #30일간 결제건수, 결제금액
         sql3 = """
                 SELECT 
-                    COUNT(case when od.order_status_type_id<4 then 1 end) AS order_month,
-                    SUM(od.price*od.quantity) AS sales_montl
+                    COUNT(*) AS order_month,
+                    SUM(od.price*od.quantity) AS sales_month
                 FROM account AS ac
                 INNER JOIN sellers AS se
                     ON ac.id = se.account_id
@@ -534,31 +534,24 @@ class OrderDao:
                     ON se.id = pr.seller_id
                 INNER JOIN orders_detail AS od
                     ON pr.id = od.product_id
-                WHERE pr.seller_id = 1 AND od.updated_at BETWEEN DATE_ADD(NOW(),INTERVAL -1 MONTH ) AND NOW()
-            
+                WHERE pr.seller_id = %(account_id)s AND  od.order_status_type_id=4 AND od.updated_at BETWEEN DATE_ADD(NOW(),INTERVAL -1 MONTH ) AND NOW()
                 """
-                # jsonformatter default
-                # time, decimal, float, ...
-                # response 영역
-                
-
-            
+                    
         params = dict()
         params['account_id'] = account_id
 
         with conn.cursor() as cursor:
             cursor.execute(sql1, params)
-            result1 = cursor.fetchall()
-            print(result1,'===============================')
+            result1 = cursor.fetchone()
 
             cursor.execute(sql2 , params)
-            result2 = cursor.fetchall()
-            print(result2,'===============================')
+            result2 = cursor.fetchone()
 
             cursor.execute(sql3, params)
-            result3 = cursor.fetchall()
-            print(result3,'===============================')
-
-            return result1, result2, result3
+            result3 = cursor.fetchone()
+           
+            result = {**result1, **result2, **result3}
+        
+            return result
 
        

@@ -8,9 +8,14 @@ from admin.service import (
     AccountService
 )
 
+from pytz import timezone
+from datetime import datetime, timedelta
 from admin.view import create_endpoints
+from utils.formatter import CustomJSONEncoder
 
-
+def home():
+    date = datetime.now()
+    return str(date)
 class Service:
     pass
 
@@ -32,4 +37,7 @@ def create_app(test_config=None):
 
     # endpoint 생성
     create_endpoints(app, services)
+
+    app.json_encoder = CustomJSONEncoder
+    
     return app
