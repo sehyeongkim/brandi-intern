@@ -35,7 +35,7 @@ class ProductView(MethodView):
         Param('end_date', GET, str, rules=[Datetime('%Y-%m-%d')], required=False),
         Param('select_product_id', GET, list, required=False)
     )
-    @LoginRequired('seller')
+    # @LoginRequired('seller')
     def get(self, valid: ValidRequest):
         """상품 조회 리스트
 
@@ -113,25 +113,41 @@ class ProductDetailView(MethodView):
         self.service = service
 
     # 상품 상세 가져오기
-    # @login_required
+    @LoginRequired('seller')
     @validate_params(
         Param('product_code', PATH, str)
     )
     def get(self, valid: ValidRequest, product_code):
+        """상품 상세 조회
+        
+        해당 상품코드를 가진 상품 상세 정보 출력
+
+        Args:
+            valid (ValidRequest): validate_params 데코레이터로 전달된 값
+            product_code (str): PATH params 로 들어온 상품코드
+
+        Raises:
+            DatabaseCloseFail: 데이터베이스 close 에러
+
+        Returns:
+            [dict]: 상품의 정보, 옵션, 이미지 정보
+        """
         conn = None
         try:
             conn = get_connection()
-            
-            if not conn:
-                raise DatabaseConnectFail('데이터베이스 연결에 실패했습니다.')
-            
             params = valid.get_path_params()
+            params['account_id'] = g.account_id
+            params['account_type_id'] = g.account_type_id
+            
             result = self.service.get_product_detail(conn, params)
             
             return get_response(result)
         
         finally:
-            conn.close()
+            try:
+                conn.close()
+            except Exception as e:
+                raise DatabaseCloseFail('서버에 알 수 없는 오류가 발생했습니다.')
 
 
 class ProductCategoryView(MethodView):

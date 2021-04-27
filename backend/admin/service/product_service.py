@@ -1,6 +1,6 @@
 from admin.model import ProductDao
 from datetime import timedelta, datetime
-from utils.custom_exception import StartDateFail
+from utils.custom_exception import StartDateFail, DataNotExists
 import xlwt
 from io import BytesIO
 # from flask import send_file
@@ -89,7 +89,108 @@ class ProductService:
     
     # 상품 상세 가져오기
     def get_product_detail(self, conn, params):
-        return self.product_dao.get_product_detail(conn, params)
+        """상품 코드로 상품 상세 조회 서비스
+
+        상품코드로 상품정보, 상품이미지, 상품옵션 정보를 가져오고 결과 fomatting 수행
+
+        Args:
+            conn (Connection): DB 커넥션 객체
+            params (dict)): { 'product_code' : PATH로 받은 상품코드 }
+
+        Returns:
+            [dict]]: product_detail = {
+                        'basic_info': {
+                            'product_code': 상품코드,
+                            'selling': 판매여부,
+                            'displayed': 진열여부,
+                            'property': 셀러속성,
+                            'category': 상품카테고리,
+                            'sub_category': 상품하위카테고리,
+                            'product_info_notice': {
+                                'manufacturer': 제조사,
+                                'date_of_manufacture': 제조일자,
+                                'origin': 원산지
+                            },
+                            'title': 상품명,
+                            'simple_description': 상품 한줄 설명,
+                            'images': [
+                                {
+                                    'image_url' : 상품이미지 URL,
+                                    'is_represent' : 대표상품 이미지 여부 1:대표, 0:대표아님
+                                }
+                            ],
+                            'detail_description': 제품상세 설명
+                        },
+                        'option_info': [
+                            {
+                                'option_id': 옵션번호,
+                                'color': 칼라,
+                                'size': 사이즈,
+                                'stock': 재고
+                            }
+                        ],
+                        'selling_info': {
+                            'price': 상품가격,
+                            'discount_rate': 할인율,
+                            'discount_price': 할인가격,
+                            'discount_start_date': 할인 시작일,
+                            'discount_end_date': 할인 끝일,
+                            'min_amount': 최소판매수량,
+                            'max_amount': 최대판매수량
+                        }
+                    }
+        """
+        product_result = self.product_dao.get_product_detail(conn, params)
+        
+        if not product_result:
+            raise DataNotExists('상품을 조회할 수 없습니다.', 'product does not exists or Forbidden')
+
+        product_image_result = self.product_dao.get_product_images_by_product_code(conn, params)
+        product_option_result = self.product_dao.get_product_options_by_product_code(conn, params)
+
+        product_detail = {
+            'basic_info': {
+                'product_code': product_result['product_code'],
+                'selling': product_result['is_selling'],
+                'displayed': product_result['is_displayed'],
+                'property': product_result['property'],
+                'category': product_result['category'],
+                'sub_category': product_result['sub_category'],
+                'product_info_notice': {
+                    'manufacturer': product_result['manufacturer'],
+                    'date_of_manufacture': product_result['date_of_manufacture'],
+                    'origin': product_result['origin']
+                },
+                'title': product_result['title'],
+                'simple_description': product_result['simple_description'],
+                'images': [
+                    {
+                        'image_url' : image['image_url'],
+                        'is_represent' : image['is_represent']
+                    }
+                for image in product_image_result],
+                'detail_description': '<html>'
+            },
+            'option_info': [
+                {
+                    'option_id': option['id'],
+                    'color': option['color'],
+                    'size': option['size'],
+                    'stock': option['stock']
+                }
+            for option in product_option_result],
+            'selling_info': {
+                'price': product_result['price'],
+                'discount_rate': product_result['discount_rate'],
+                'discount_price': product_result['price'] - product_result['price'] * product_result['discount_rate'],
+                'discount_start_date': product_result['discount_start_date'],
+                'discount_end_date': product_result['discount_end_date'],
+                'min_amount': product_result['min_amount'],
+                'max_amount': product_result['max_amount']
+            }
+        }
+
+        return product_detail
     
     # 상품 categories list 가져오기
     def get_categories_list(self, conn, category_id):

@@ -160,15 +160,29 @@ class ProductDao:
                 p.product_code,
                 p.is_selling,
                 p.is_displayed,
-
+                pp.name as property,
+                c.name as category,
+                sc.name as sub_category,
+                p.manufacturer,
+                p.date_of_manufacture,
+                p.origin,
+                p.title,
+                IF(p.simple_description,p.simple_description,'') as simple_description,
+                p.content,
+                p.price,
+                p.discount_rate,
+                DATE_FORMAT(p.discount_start_date,'%%Y-%%m-%%d %%h:%%m:%%s') as discount_start_date,
+                DATE_FORMAT(p.discount_end_date,'%%Y-%%m-%%d %%h:%%m:%%s') as discount_end_date,
+                p.min_amount,
+                p.max_amount
             FROM 
                 products as p
             INNER JOIN
                 sellers as s
                 ON  p.seller_id = s.id
             INNER JOIN
-                sub_property as sp
-                ON  s.sub_property_id = sp.id
+                property as pp
+                ON  s.property_id = pp.id
             INNER JOIN
                 category as c
                 ON  p.category_id = c.id
@@ -176,15 +190,71 @@ class ProductDao:
                 sub_category as sc
                 ON  p.sub_category_id = sc.id
             WHERE
-                p.product_code = %('product_code')s
+                p.product_code = %(product_code)s
+            """
+        
+        if params['account_type_id'] == 2:
+            sql += """
+                AND
+                    s.account_id = %(account_id)s
             """
 
         with conn.cursor() as cursor:
             cursor.execute(sql, params)
-            product_result = cursor.fetchall()
+            product_result = cursor.fetchone()
         
-        return 'aaaa'
+        return product_result
     
+    def get_product_images_by_product_code(self, conn, params):
+        sql = """
+            SELECT
+                pi.image_url,
+                pi.is_represent
+            FROM
+                product_images as pi
+            INNER JOIN
+                products as p
+                ON p.id = pi.product_id
+                AND p.product_code = %(product_code)s
+            WHERE
+                pi.is_deleted = 0
+        """
+        
+        with conn.cursor() as cursor:
+            cursor.execute(sql, params)
+            product_image_result = cursor.fetchall()
+        
+        return product_image_result
+
+    def get_product_options_by_product_code(self, conn, params):
+        sql = """
+            SELECT
+                o.id,
+                o.stock,
+                c.name as color,
+                s.name as size
+            FROM
+                options as o
+            INNER JOIN
+                products as p
+                ON p.id = o.product_id
+                AND p.product_code = %(product_code)s
+            INNER JOIN
+                color as c
+                ON o.color_id = c.id
+            INNER JOIN
+                size as s
+                ON o.size_id = s.id
+            WHERE
+                o.is_deleted = 0
+        """
+
+        with conn.cursor() as cursor:
+            cursor.execute(sql, params)
+            product_option_result = cursor.fetchall()
+        
+        return product_option_result
+
     def get_categories_list(self, conn, category_id):
         pass
 
