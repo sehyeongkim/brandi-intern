@@ -90,22 +90,31 @@ class ProductView(MethodView):
             conn.close()
 
     # 상품 리스트에서 상품의 판매여부, 진열여부 수정
+    @validate_params(
+        JsonParam({
+            'product_id' : [IsInt()],
+            'selling' : [IsInt()],
+            'display' : [IsInt()],
+        }, as_list=True)
+    )
     # @LoginRequired
-    def patch(self):
+    def patch(self, valid: ValidRequest):
         conn = None
         try:
-            # request body의 data
-            body = request.data
+            params = valid.get_json()
             conn = get_connection()
-            if conn:
-                self.service.patch_product(conn, body)
+            
+            result = self.service.patch_product_selling_or_display_status(conn, params)
 
             conn.commit()
 
-            return jsonify(''), 200
+            return get_response(result), 200
 
         finally:
-            conn.close()
+            try:
+                conn.close()
+            except Exception as e:
+                raise DatabaseCloseFail('서버에 알 수 없는 오류가 발생했습니다.')
 
 
 class ProductDetailView(MethodView):

@@ -8,10 +8,6 @@ class ProductDao:
     def __init__(self):
         pass
 
-<<<<<<< HEAD
-    def get_products_list(self, conn):
-        pass
-=======
     def get_products_list(self, conn, params, headers):
         sql_select = """
             SELECT
@@ -151,13 +147,22 @@ class ProductDao:
             total_count_result = cursor.fetchone() 
 
             return product_result, total_count_result
->>>>>>> admin
 
     def post_product_by_seller_or_master(self, conn, body):
         pass
 
-    def patch_product_selling_or_display_status(self, conn, body):
-        pass
+    def patch_product_selling_or_display_status(self, conn, params):
+        sql = """
+            SELECT
+                p.id
+            FROM
+                products as p
+        """
+        with conn.cursor() as cursor:
+            cursor.execute(sql, params)
+            product_result = cursor.fetchall()
+
+        return product_result
 
     def get_product_detail(self, conn, product_code):
         pass
