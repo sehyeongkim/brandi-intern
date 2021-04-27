@@ -1,3 +1,4 @@
+
 import pymysql
 
 class AccountDao:
@@ -16,7 +17,7 @@ class AccountDao:
             conn (class): DB 클래스
             params (dict): BODY에서 넘어온 seller 회원가입 정보
         """
-        sql_select = """
+        sql = """
             SELECT
                 *
             FROM
@@ -25,7 +26,7 @@ class AccountDao:
                 seller_identification = %(id)s
         """
         with conn.cursor() as cursor:
-            cursor.execute(sql_select, params)
+            cursor.execute(sql, params)
             return cursor.fetchall()
     
     def get_account_type_id(self, conn, params):
@@ -35,7 +36,7 @@ class AccountDao:
             conn (class): DB 클래스
             params (dict): seller id값을 이용해서 가져온 seller_info 정보
         """
-        sql_select = """
+        sql = """
             SELECT
                 account_type_id
             FROM
@@ -44,7 +45,7 @@ class AccountDao:
                 id = %(account_id)s
         """
         with conn.cursor() as cursor:
-            cursor.execute(sql_select, params)
+            cursor.execute(sql, params)
             return cursor.fetchone()
         
     def get_korean_brand_name(self, conn, params):
@@ -54,7 +55,7 @@ class AccountDao:
             conn (class): DB 클래스
             params (dict): BODY에서 넘어온 seller 회원가입 정보
         """
-        sql_select = """
+        sql = """
             SELECT
                 korean_brand_name
             FROM
@@ -63,7 +64,7 @@ class AccountDao:
                 korean_brand_name = %(korean_brand_name)s
         """
         with conn.cursor() as cursor:
-            cursor.execute(sql_select, params)
+            cursor.execute(sql, params)
             return cursor.fetchall()
         
     def get_english_brand_name(self, conn, params):
@@ -73,7 +74,7 @@ class AccountDao:
             conn (class): DB 클래스
             params (dict): BODY에서 넘어온 seller 회원가입 정보
         """
-        sql_select = """
+        sql = """
             SELECT
                 english_brand_name
             FROM
@@ -82,7 +83,7 @@ class AccountDao:
                 english_brand_name = %(english_brand_name)s
         """
         with conn.cursor() as cursor:
-            cursor.execute(sql_select, params)
+            cursor.execute(sql, params)
             return cursor.fetchall()
         
     def get_property_id(self, conn, params):
@@ -94,7 +95,7 @@ class AccountDao:
             conn (class): DB 클래스
             params (dict): BODY에서 넘어온 seller 회원가입 정보
         """
-        sql_select = """
+        sql = """
             SELECT
                 property_id 
             FROM
@@ -103,7 +104,7 @@ class AccountDao:
                 id = %(sub_property_id)s limit 1
         """
         with conn.cursor() as cursor:
-            cursor.execute(sql_select, params)
+            cursor.execute(sql, params)
             return cursor.fetchone()
     
     def create_account(self, conn, params):
@@ -115,7 +116,7 @@ class AccountDao:
             conn (class): DB 클래스 
             params (dict): BODY에서 넘어온 seller 회원가입 정보
         """  
-        sql_insert = """
+        sql = """
             INSERT INTO account ( 
                 account_type_id
             )
@@ -124,7 +125,7 @@ class AccountDao:
             )
         """
         with conn.cursor() as cursor:
-            cursor.execute(sql_insert, params)
+            cursor.execute(sql, params)
             return cursor.lastrowid
     
     def create_managers_history(self, conn, params):
@@ -134,7 +135,7 @@ class AccountDao:
             conn (class): DB 클래스
             params (dict): BODY에서 넘어온 seller 회원가입 정보
         """
-        sql_insert = """
+        sql = """
             INSERT INTO managers_history (
                 manager_id,
                 phone
@@ -145,7 +146,7 @@ class AccountDao:
             )
         """
         with conn.cursor() as cursor:
-            cursor.execute(sql_insert, params)
+            cursor.execute(sql, params)
             return cursor.lastrowid
         
     def create_seller_signup(self, conn, params):
@@ -155,7 +156,7 @@ class AccountDao:
             conn (class): DB 클래스
             params (dict]): BODY에서 넘어온 seller 회원가입 정보
         """
-        sql_insert = """
+        sql = """
             INSERT INTO sellers (
                 property_id,
                 sub_property_id,
@@ -178,7 +179,7 @@ class AccountDao:
             )
         """
         with conn.cursor() as cursor:
-            cursor.execute(sql_insert, params)
+            cursor.execute(sql, params)
             return cursor.lastrowid
 
     def create_manager(self, conn, params):
@@ -187,7 +188,7 @@ class AccountDao:
             conn (class): DB 클래스
             params (dict): BODY에서 넘어온 seller 회원가입 정보
         """
-        sql_insert = """
+        sql = """
             INSERT INTO managers (
                 seller_id,
                 phone
@@ -197,7 +198,7 @@ class AccountDao:
             )
         """
         with conn.cursor() as cursor:
-            cursor.execute(sql_insert, params)
+            cursor.execute(sql, params)
             return cursor.lastrowid
     
     def create_seller_history(self, conn, params):
@@ -207,7 +208,7 @@ class AccountDao:
             conn (class): DB 클래스
             params (dict): BODY에서 넘어온 seller 회원가입 정보
         """
-        sql_insert = """
+        sql = """
             INSERT INTO sellers_history (
                 seller_id,
                 property_id,
@@ -225,7 +226,7 @@ class AccountDao:
             )
         """
         with conn.cursor() as cursor:
-            cursor.execute(sql_insert, params)
+            cursor.execute(sql, params)
             return cursor.lastrowid
     
     def post_account_login(self, conn, params):
@@ -235,7 +236,7 @@ class AccountDao:
             conn (class): DB 클래스
             params ([type]): BODY에서 넘어온 seller 정보
         """
-        sql_select = """
+        sql = """
             SELECT 
                 seller_identification, password, is_deleted, account_id
             FROM 
@@ -245,7 +246,7 @@ class AccountDao:
                 AND seller_identification = %(id)s
         """
         with conn.cursor() as cursor:
-            cursor.execute(sql_select, params)
+            cursor.execute(sql, params)
             return cursor.fetchone()
 
     def post_master_login(self, conn, params):

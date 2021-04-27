@@ -18,8 +18,11 @@ class ProductService:
     # 상품 리스트 가져오기
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> [Admin > order]
+=======
+>>>>>>> 병합할 때 지우지 않았던 코드 줄 삭제 및 DatabaseConnectFail 제거
     def get_products_list(self, conn, params, headers):
         # 페이지네이션 위한 OffSET 설정
         params['page'] = (params['page'] - 1) * params['limit']
@@ -90,6 +93,7 @@ class ProductService:
         
         return result
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> [상품관리 > 상품리스트]
 =======
 
@@ -103,6 +107,8 @@ class ProductService:
 >>>>>>> [로그인 데코레이터]
 =======
 >>>>>>> [Admin > order]
+=======
+>>>>>>> 병합할 때 지우지 않았던 코드 줄 삭제 및 DatabaseConnectFail 제거
     
     # 상품 등록 (by seller or master)
     def post_product_by_seller_or_master(self, conn, body):
