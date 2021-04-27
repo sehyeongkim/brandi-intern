@@ -1,4 +1,5 @@
 import pymysql
+from flask import g
 
 class OrderDao:
     def __new__(cls, *args, **kwargs):
@@ -282,44 +283,29 @@ class OrderDao:
         """
         # account_id는 로그인 데코레이터로 파악
         for data in results:
-            sql_1 = """
-                SELECT 
-                    id,
-                    order_status_type_id,
-                    address_id,
-                    price
-                FROM
-                    orders_detail
-                WHERE 
-                    id = %(orders_detail_id)s
-            """
-
-            with conn.cursor() as cursor:
-                cursor.execute(sql_1, data)
-                result = cursor.fetchone()
-                
-            sql_2 = """
-                INSERT INTO order_detail_history ( 
+            sql = """
+                INSERT INTO order_detail_history(
                     order_detail_id,
                     order_status_type_id,
                     address_id,
                     modify_account_id,
                     price
                 )
-                VALUES (
-                    %(id)s,
-                    %(order_status_type_id)s,
-                    %(address_id)s,
-                    
-                    %(price)s
-                )
+                SELECT
+                    id,
+                    order_status_type_id,
+                    address_id,
+                    %(account_id)s,
+                    price
+                FROM
+                    orders_detail
+                WHERE
+                    id = %(orders_detail_id)s
             """
-
+            data["account_id"] = g.account_id
             with conn.cursor() as cursor:
-                cursor.execute(sql_2, result)
+                cursor.execute(sql, data)
 
-            
-    
     def get_order(self, conn, params):
         """ 주문 상세 확인 
 

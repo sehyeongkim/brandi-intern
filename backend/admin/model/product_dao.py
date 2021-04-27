@@ -159,7 +159,7 @@ class ProductDao:
                 products as p
         """
         with conn.cursor() as cursor:
-            cursor.execute(sql, params)
+            cursor.execute(sql)
             product_result = cursor.fetchall()
 
         return product_result

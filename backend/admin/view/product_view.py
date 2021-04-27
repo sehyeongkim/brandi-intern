@@ -90,22 +90,14 @@ class ProductView(MethodView):
             conn.close()
 
     # 상품 리스트에서 상품의 판매여부, 진열여부 수정
-    @validate_params(
-        JsonParam({
-            'product_id' : [IsInt()],
-            'selling' : [IsInt()],
-            'display' : [IsInt()],
-        }, as_list=True)
-    )
     # @LoginRequired
-    def patch(self, valid: ValidRequest):
+    def patch(self):
         conn = None
         try:
-            params = valid.get_json()
+            params = request.get_json()
             conn = get_connection()
-            
             result = self.service.patch_product_selling_or_display_status(conn, params)
-
+            
             conn.commit()
 
             return get_response(result), 200
