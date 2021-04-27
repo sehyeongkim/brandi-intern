@@ -1,4 +1,5 @@
 from datetime import datetime
+
 from flask import request, jsonify, g
 from flask.views import MethodView
 from flask_request_validator import validate_params, Param, GET, ValidRequest, JsonParam, Min, Enum, Datetime
@@ -7,13 +8,15 @@ from flask.json import JSONEncoder
 from connection import get_connection
 from utils.response import error_response, get_response, post_response, post_response_with_return
 from utils.custom_exception import DataNotExists, DatabaseConnectFail, StartDateFail
+from utils.decorator import LoginRequired
+
 
 class OrderListView(MethodView):
     def __init__(self, service):
         self.service = service
     
     # 주문 조회
-    # @login_required
+    @LoginRequired("seller")
     @validate_params(
         Param('start_date', GET, str, rules=[Datetime('%Y-%m-%d')], required=True),
         Param('end_date', GET, str, rules=[Datetime('%Y-%m-%d')], required=True),
@@ -46,7 +49,7 @@ class OrderListView(MethodView):
         try:
             params = valid.get_params()
             conn = get_connection()   
-
+            
             order_list_result = self.service.get_order_list(conn, params)
             return get_response(order_list_result), 200
         
@@ -54,7 +57,7 @@ class OrderListView(MethodView):
             conn.close()
     
     # order_status_type 변경
-    # @login_required
+    @LoginRequired("seller")
     def patch(self):
         """주문 및 배송처리 
 
@@ -66,10 +69,10 @@ class OrderListView(MethodView):
         """
         conn = None
         try:
-            body = request.get_json()
+            params = request.get_json()
             conn = get_connection()
             
-            not_possible_change_values = self.service.patch_order_status_type(conn, body)
+            not_possible_change_values = self.service.patch_order_status_type(conn, params)
             conn.commit()
               
             return post_response_with_return("SUCCESS", not_possible_change_values), 200
@@ -100,8 +103,9 @@ class DashboardSellerView(MethodView):
 
 class OrderView(MethodView):
     def __init__(self, service):
-        self.service = service    
-    
+        self.service = service 
+
+    @LoginRequired("seller")
     @validate_params(
         Param('detail_order_number', GET, str, required=True)
     )
