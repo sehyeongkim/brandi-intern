@@ -194,7 +194,7 @@ export default {
         brand_name_korean: { value: '', state: true }, // korean_name
         brand_name_english: { value: '', state: true }, // eng_name
         brand_crm_number: { value: '', state: true }, // center_number
-        sub_property_id: { value: '', state: true }
+        sub_property_id: { value: '1', state: true }
       },
       radioList: [
         '쇼핑몰',
@@ -241,6 +241,7 @@ export default {
 
       // 위 filter 함수에서 결과가 모두 true인지 조건을 넣어 모두 true일 경우 0이므로,
       // 조건문을 이용하여 axios body에 넣을 값들을 정리합니다.
+      console.log(this.infoInput.sub_property_id.value)
       if (filterResult.length === 0) {
         this.sendSubmit({
           id: this.infoInput.account.value,
@@ -255,24 +256,26 @@ export default {
     },
     sendSubmit(value) {
       console.log('보내기 직전', value)
+      let res
       axios
         // .post(this.constants.apiDomain + "/signup", value)
         .post('/account/signup', value)
-        .then((res) => {
-          console.log('백엔드 응답', res)
-          if (res.data.status_code === 200) {
+        .then((response) => {
+          console.log('백엔드 응답', response)
+          res = response
+          console.log(res)
+          if (res.data.result.status_code === 200) {
             Message.success('회원가입을 축하합니다!')
             this.isLoading = false
             this.$router.push('/')
-          } else {
-            Message.error(String(res.data.user_error_message))
-            this.isLoading = false
-            this.$router.push('/admin/signup')
           }
         })
         .catch((error) => {
           console.log('err', error)
-          this.isLoading = true
+          this.isLoading = false
+          Message.error(String(res.data.user_error_message))
+          // this.isLoading = false
+          this.$router.push('/admin/signup')
         })
     }
   }
