@@ -1,17 +1,11 @@
-from flask import jsonify
 import traceback
-
+from flask import jsonify
 from flask_request_validator import *
 from flask_request_validator.error_formatter import demo_error_formatter
 from flask_request_validator.exceptions import InvalidRequestError, InvalidHeadersError, RuleError
 from utils.custom_exception import CustomUserError
-
-# start error handling
-from flask import current_app as app
-
 from utils.response import error_response
 
-from pymysql import err
 
 
 def error_handle(app):
@@ -20,13 +14,15 @@ def error_handle(app):
     에러 처리하는 함수
 
     Args:
-        app ([type]): __init__.py에서 파라미터로 app을 전달 받은 값
+        app  : __init__.py에서 파라미터로 app을 전달 받은 값
     Returns:
         json : error_response() 함수로 에러 메시지를 전달해서 반환 받고 return
     """
     @app.errorhandler(Exception)
     def handle_error(e):
-        pass
+        traceback.print_exc()
+        return error_response("서버 상에서 오류가 발생했습니다.", "Exception", 500)
+
 
     @app.errorhandler(AttributeError)
     def handle_error(e):
@@ -48,10 +44,10 @@ def error_handle(app):
         traceback.print_exc()
         return error_response("데이터에 잘못된 값이 입력되었습니다.", "Data Value Error", 500)
     
-    @app.errorhandler(err.OperationalError)
-    def handle_operational_error(e):
-        traceback.print_exc()
-        return error_response(e, "에러")
+    # @app.errorhandler(err.OperationalError)
+    # def handle_operational_error(e):
+    #     traceback.print_exc()
+    #     return error_response(e, "에러")
 
     @app.errorhandler(InvalidRequestError)
     def data_error(e):

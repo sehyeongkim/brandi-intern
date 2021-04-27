@@ -88,7 +88,9 @@ class OrderService:
 
     def patch_order_status_type(self, conn, params):
         """주문 및 배송처리 함수
+
         json으로 받은 값을 바탕으로 주문 및 배송 처리하기 위한 함수
+
         Args:
             conn (Connection): DB 커넥션 객체
             params (json): 
@@ -98,8 +100,10 @@ class OrderService:
                     {"orders_detail_id" : 주문 상세 아이디, "order_status_type_id": 변경할 주문 상태 아이디}
                     ...
                 ]
+
         Raises:
             DataNotExists: DB에 해당 id가 존재하지 않을 때 발생하는 에러
+
         Returns:
             impossible_to_patch (list) : 주문 상태를 변경하는데 실패한 값 반환
         """
@@ -142,10 +146,13 @@ class OrderService:
  
     def get_order(self, conn, params):
         """주문 상세
+
         주문 상세 정보를 가져오는 함수
+
         Args:
             conn (Connection): DB 커넥션 객체
             params (dict): {"detail_order_number" : 주문 상세 번호}
+
         Returns:
             order_detail_info (dict) :         
                     order_detail_info = {
@@ -219,5 +226,5 @@ class OrderService:
         }
         return order_detail_info
 
-        def get_dashboard_seller(self, conn, account_id):
+    def get_dashboard_seller(self, conn, account_id):
         return self.order_dao.get_dashboard_seller(conn, account_id)

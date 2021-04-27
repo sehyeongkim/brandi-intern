@@ -1,9 +1,8 @@
-from datetime import datetime
+from utils.response import error_response, get_response, post_response, post_response_with_return
 
 from flask import request, jsonify, g
 from flask.views import MethodView
 from flask_request_validator import validate_params, Param, GET, ValidRequest, JsonParam, Min, Enum, Datetime
-from flask.json import JSONEncoder
 
 from connection import get_connection
 from utils.response import error_response, get_response, post_response, post_response_with_return
@@ -79,37 +78,13 @@ class OrderListView(MethodView):
         finally:
             conn.close()
 
-class DashboardSellerView(MethodView):
-    def __init__(self, service):
-        self.service = service
-    
-    #배송완료, 상품준비, 전체상품, 노출상품
-    # @login_required
-    def get(self):
-        #account_id = g.account_id
-        account_id=1
-        conn = None
-        try:
-            conn = get_connection()
-            results = self.service.get_dashboard_seller(conn, account_id)
-            result = {"data" : results}
-        # except Exception as e:
-        #     return jsonify({'message': 'UNSUCCESS'}),400
-        # else:
-        #     return jsonify(result), 200
-            return jsonify(result), 200        
-        finally:
-            conn.close()
 
 class OrderView(MethodView):
     def __init__(self, service):
         self.service = service 
 
     @LoginRequired("seller")
-    @validate_params(
-        Param('detail_order_number', GET, str, required=True)
-    )
-    def get(self, valid):
+    def get(self, order_detail_number):
         """주문 상세 뷰
 
         어드민 페이지의 주문관리 페이지에서 주문상세번호를 클릭했을 때, 주문 상세 정보를 출력
@@ -124,8 +99,10 @@ class OrderView(MethodView):
         """
         conn = None
         try:
-            params = valid.get_params()
-            conn = get_connection() 
+            path = request.view_args["order_detail_number"]
+            params = dict()
+            params["detail_order_number"] = path
+            conn = get_connection()
 
             order_detail = self.service.get_order(conn, params)
             return get_response(order_detail), 200

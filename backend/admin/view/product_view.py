@@ -4,7 +4,7 @@ from flask_request_validator import validate_params, Param, GET, Datetime, Valid
 from datetime import datetime
 from connection import get_connection
 from utils.response import get_response, post_response
-from utils.custom_exception import IsInt, IsStr, IsFloat, IsRequired, DatabaseConnectFail
+from utils.custom_exception import IsInt, IsStr, IsFloat, IsRequired, DatabaseCloseFail
 from flask_request_validator.exceptions import InvalidRequestError, RulesError
 import xlwt
 
@@ -14,7 +14,6 @@ from utils.decorator import LoginRequired
 class ProductView(MethodView):
     def __init__(self, service):
         self.service = service
-    # 상품 리스트 조회
 
     @validate_params(
         Param('Content-Type', HEADER, str, required=False),
@@ -54,8 +53,6 @@ class ProductView(MethodView):
             params = valid.get_params()
             headers = valid.get_headers()
             conn = get_connection()
-            if not conn:
-                raise DatabaseConnectFail('데이터베이스 연결 실패')
             
             result = self.service.get_products_list(conn, params, headers)
             
@@ -67,11 +64,14 @@ class ProductView(MethodView):
             return get_response(result)
 
         finally:
-            conn.close()
+            try:
+                conn.close()
+            except Exception as e:
+                raise DatabaseCloseFail('서버에 알 수 없는 오류가 발생했습니다.')
 
     # 상품 등록 (by master or seller)
-    # @login_required
-    def post(self, valid: ValidRequest):
+    #@LoginRequired('seller')
+    def post(self):
         conn = None
         try:
             # request body의 data

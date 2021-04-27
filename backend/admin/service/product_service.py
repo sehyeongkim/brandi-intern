@@ -1,4 +1,4 @@
-from model import ProductDao
+from admin.model import ProductDao
 from datetime import timedelta, datetime
 from utils.custom_exception import StartDateFail
 import xlwt
@@ -22,8 +22,7 @@ class ProductService:
         if 'end_date' in params:
             params['end_date'] +=  timedelta(days=1)
             params['end_date_str'] = params['end_date'].strftime('%Y-%m-%d')
-        return product_dao.get_products_list(conn, params)
-
+        
         if 'start_date' in params:
             params['start_date_str'] = params['start_date'].strftime('%Y-%m-%d')
         
@@ -78,14 +77,7 @@ class ProductService:
         }
         
         return result
-
-    # 상품 리스트 가져오기
-    def get_products_list(self, conn, params):
-        return self.product_dao.get_products_list(conn, params)
-
-    def get_products_list(self, conn):
-        return self.product_dao.get_products_list(conn)
-
+    
     # 상품 등록 (by seller or master)
     def post_product_by_seller_or_master(self, conn, body):
         return self.product_dao.post_product_by_seller_or_master(conn, body)

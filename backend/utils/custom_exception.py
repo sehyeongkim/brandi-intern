@@ -29,79 +29,6 @@ class DatabaseCloseFail(CustomUserError):
             dev_error_message = "database.close() error"
         super().__init__(status_code, dev_error_message, error_message)
 
-class DatabaseConnectFail(CustomUserError):
-    def __init__(self,error_message, dev_error_message=None):
-        status_code = 500
-        dev_error_message = "database.connect error"
-        super().__init__(status_code, dev_error_message, error_message)
-        
-class SignUpFail(CustomUserError):
-    def __init__(self, error_message, dev_error_message=None):
-        status_code = 400
-        if not dev_error_message:
-            dev_error_message = "SignUpFail error"
-        super().__init__(status_code, dev_error_message, error_message)
-    
-class SignInError(CustomUserError):
-    def __init__(self, error_message, dev_error_message=None):
-        status_code = 400
-        if not dev_error_message:
-            dev_error_message = "SignInFaill error"
-        super().__init__(status_code, dev_error_message, error_message)
-        
-class TokenCreateError(CustomUserError):
-    def __init__(self, error_message, dev_error_message=None):
-        status_code = 400
-        if not dev_error_message:
-            dev_error_message = "TokenCreate error"
-    
-class StartDateFail(CustomUserError):
-    def __init__(self,error_message):
-        status_code = 400
-        dev_error_message = "start_date gt end_date error"
-        super().__init__(status_code, dev_error_message, error_message)
-
-class IsInt(AbstractRule):
-    def validate(self, value):
-        if not isinstance(value, int):
-            raise RuleError('invalid request')
-        return value
-
-class IsStr(AbstractRule):
-    def validate(self, value):
-        if not isinstance(value, str):
-            raise RuleError('invalid request')
-        return value
-
-class IsFloat(AbstractRule):
-    def validate(self, value):
-        if not isinstance(value, float):
-            raise RuleError('invalid request')
-        return value
-
-class IsRequired(AbstractRule):
-    def validate(self, value):
-        if not value:
-            raise RuleError('invalid request')
-        return value
-        if not dev_error_message:
-            dev_error_message = "database.connect error"
-        super().__init__(status_code, dev_error_message, error_message)
-
-class StartDateFail(CustomUserError):
-    def __init__(self, error_message, dev_error_message=None):
-        status_code = 500
-        if not dev_error_message:
-            dev_error_message = "order status type id doesn't exist"
-        super().__init__(status_code, dev_error_message, error_message)
-
-class DataNotExists(CustomUserError):
-    def __init__(self, error_message, dev_error_message=None):
-        status_code = 500
-        if not dev_error_message:
-            dev_error_message = "order status type id doesn't exist"
-        super().__init__(status_code, dev_error_message, error_message)
-
 class TokenIsEmptyError(CustomUserError):
     def __init__(self, error_message):
         status_code = 400
@@ -136,4 +63,63 @@ class SellerLoginRequired(CustomUserError):
     def __init__(self, error_message):
         status_code = 400
         dev_error_message = "seller login required"
+
+class StartDateFail(CustomUserError):
+    def __init__(self,error_message):
+        status_code = 400
+        dev_error_message = "start_date gt end_date error"
+        super().__init__(status_code, dev_error_message, error_message)
+
+class DataNotExists(CustomUserError):
+    def __init__(self, error_message, dev_error_message=None):
+        status_code = 500
+        if not dev_error_message:
+            dev_error_message = "order status type id doesn't exist"
+
+class IsInt(AbstractRule):
+    def validate(self, value):
+        if not isinstance(value, int):
+            raise RuleError('invalid request')
+        return value
+
+class IsStr(AbstractRule):
+    def validate(self, value):
+        if not isinstance(value, str):
+            raise RuleError('invalid request')
+        return value
+
+class IsFloat(AbstractRule):
+    def validate(self, value):
+        if not isinstance(value, float):
+            raise RuleError('invalid request')
+        return value
+
+class IsRequired(AbstractRule):
+    def validate(self, value):
+        if not value:
+            raise RuleError('invalid request')
+        return value
+        if not dev_error_message:
+            dev_error_message = "order status type id doesn't exist"
+
+        
+class SignUpFail(CustomUserError):
+    def __init__(self, error_message, dev_error_message=None):
+        status_code = 400
+        if not dev_error_message:
+            dev_error_message = "SignUpFail error"
+        super().__init__(status_code, dev_error_message, error_message)
+    
+class SignInError(CustomUserError):
+    def __init__(self, error_message, dev_error_message=None):
+        status_code = 400
+        if not dev_error_message:
+            dev_error_message = "SignInFaill error"
+        super().__init__(status_code, dev_error_message, error_message)
+        
+class TokenCreateError(CustomUserError):
+    def __init__(self, error_message, dev_error_message=None):
+        status_code = 400
+        if not dev_error_message:
+            dev_error_message = "TokenCreate error"
         super().__init__(status_code, dev_error_message, error_message)

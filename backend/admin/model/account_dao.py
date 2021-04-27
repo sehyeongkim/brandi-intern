@@ -270,7 +270,7 @@ class AccountDao:
             return cursor.fetchone()
         
     # decorator 가 account_id 비교하는 로직
-    def decorator_find_account(self, conn, account_id):
+    def decorator_find_account(self, conn, account_id: int):
         sql = """
             SELECT
                 a.id,

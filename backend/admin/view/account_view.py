@@ -11,6 +11,7 @@ from connection import get_connection
 from utils.decorator import LoginRequired
 
 
+
 class AccountSignUpView(MethodView):
     def __init__(self, service):
         self.service = service
@@ -56,6 +57,7 @@ class AccountSignUpView(MethodView):
 class AccountLogInView(MethodView):
     def __init__(self, service):
         self.service = service
+
     
     @validate_params(
         Param('id', JSON, str, rules=[Pattern("^[a-z]+[a-z0-9@.]{4,19}$")], required=True),
@@ -79,9 +81,10 @@ class AccountLogInView(MethodView):
                         "accessToken" : result['accessToken'],
                         "account_type_id" : result['account_type_id'],
                         "status_code" : 200
-                    })
-        finally:    
+                        }), 200
+        finally:
             try:
                 conn.close()
-            except Exception as e: 
+            except Exception as e:
                 raise DatabaseCloseFail('서버에 알 수 없는 오류가 발생했습니다.')
+

@@ -11,7 +11,7 @@ from admin.model import AccountDao
 
 from utils.custom_exception import (
     TokenIsEmptyError,
-    UserNotFoundError, 
+    UserNotFoundError,
     DatabaseCloseFail,
     JwtInvalidSignatureError,
     JwtDecodeError,
