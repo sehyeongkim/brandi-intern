@@ -9,13 +9,9 @@ from .product_view import (
 )
 
 from .order_view import (
-<<<<<<< HEAD
                             DashboardSellerView,
                             OrderListView,
                             OrderView
-=======
-                            OrderListView
->>>>>>> [로그인 데코레이터]
 )
 
 from .account_view import (
@@ -25,12 +21,7 @@ from .account_view import (
 
 from utils.error_handler import error_handle
 
-<<<<<<< HEAD
 def create_endpoints(app, services, ):
-=======
-
-def create_endpoints(app, services):
->>>>>>> [로그인 데코레이터]
     product_service = services.product_service
     order_service = services.order_service
     account_service = services.account_service
@@ -66,45 +57,22 @@ def create_endpoints(app, services):
                     methods=['GET'])
 
     # order
-<<<<<<< HEAD
-    app.add_url_rule("/order",
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> Order 주문관리 진행중
-=======
     app.add_url_rule("/orders",
->>>>>>> [Admin > order_dao, order_service, order_view]
-=======
->>>>>>> [로그인 데코레이터]
                     view_func=OrderListView.as_view('order_list_view', order_service),
                     methods=['GET'])
     
-    app.add_url_rule("/order/delivery",
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-                    view_func=OrderListView.as_view('order_view', order_service),
-                    methods=['GET'])
-    
     app.add_url_rule("/orders",
->>>>>>> [상품관리 > 상품리스트]
-=======
->>>>>>> Order 주문관리 진행중
-=======
->>>>>>> [로그인 데코레이터]
                     view_func=OrderListView.as_view('order_delivery_view', order_service),
                     methods=['PATCH'])
-
+    
+    app.add_url_rule("/orders/<int:order_detail_number>",
+                    view_func=OrderView.as_view('order_view', order_service),
+                    methods=['GET'])
+    
     app.add_url_rule("/dashboard/seller",
                     view_func=DashboardSellerView.as_view('dashboard_seller', order_service),
                     methods=['GET'])
-    
-    app.add_url_rule("/order",
-                    view_func=OrderView.as_view('order_view', order_service),
-                    methods=['GET'])
-                    
+
     # account
     app.add_url_rule("/account/signup",
                     view_func=AccountSignUpView.as_view('account_signup_view', account_service),
@@ -112,38 +80,10 @@ def create_endpoints(app, services):
     
     app.add_url_rule("/account/login",
                     view_func=AccountLogInView.as_view('account_login_view', account_service),
-<<<<<<< HEAD
-<<<<<<< HEAD
                     methods=['POST'])
-<<<<<<< HEAD
-<<<<<<< HEAD
     
     app.add_url_rule("/seller/signin",
                     view_func=AccountLogInView.as_view('seller_login_view', account_service),
-<<<<<<< HEAD
                     methods=['POST'])
-    
-<<<<<<< HEAD
     
     error_handle(app)
-=======
->>>>>>> Add : 회원가입 API 작성중
-    
-=======
-                    methods=['POST'])
->>>>>>> Modify : 디렉토리 수정, gitignore에 .vscode 추가
-=======
-                    methods=['POST'])
-    
->>>>>>> Modify : import 경로 문제 수정
-=======
-    
-    error_handle(app)
-    
->>>>>>> [error_handle 작성]
-=======
-                    methods=['POST'])
->>>>>>> MOD: minor changes
-=======
-    error_handle(app)
->>>>>>> [로그인 데코레이터]

@@ -15,20 +15,9 @@ class OrderService:
 
     def __init__(self):
         self.order_dao = OrderDao()
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> Order 주문관리 진행중
     
-<<<<<<< HEAD
->>>>>>> Modify: Directory 구조 변경 및 경로 수정정
-    # 주문 조회
-=======
->>>>>>> [Admin > order]
     def get_order_list(self, conn, params):
         """주문 조회 리스트 서비스
-
         주문 리스트 정보를 위해 model로 정보를 넘김
         
         Args:
@@ -97,36 +86,9 @@ class OrderService:
         return order_list_info
 
 
-<<<<<<< HEAD
-    def patch_order_status_type(self, conn, body):
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-        return order_dao.patch_order_status_type(conn, body)
-    
-    #배송완료, 상품준비, 전체상품, 노출상품
-    def get_dashboard_seller(self, conn, account_id):
-        return self.order_dao.get_dashboard_seller(conn, account_id)
-        
-=======
-        return self.order_dao.patch_order_status_type(conn, body)
->>>>>>> Modify: Directory 구조 변경 및 경로 수정정
-=======
-        return self.order_dao.patch_order_status_type(conn, dbody)
->>>>>>> Order 주문관리 진행중
-=======
-        # DB에 없는 주문 상태를 전달할 때 -> dao에서 처리하기 or view 혹은 service에서 처리하기
-=======
-=======
-=======
     def patch_order_status_type(self, conn, params):
->>>>>>> [Admin > order]
         """주문 및 배송처리 함수
-
         json으로 받은 값을 바탕으로 주문 및 배송 처리하기 위한 함수
-
         Args:
             conn (Connection): DB 커넥션 객체
             params (json): 
@@ -136,38 +98,11 @@ class OrderService:
                     {"orders_detail_id" : 주문 상세 아이디, "order_status_type_id": 변경할 주문 상태 아이디}
                     ...
                 ]
-
         Raises:
             DataNotExists: DB에 해당 id가 존재하지 않을 때 발생하는 에러
-
         Returns:
             impossible_to_patch (list) : 주문 상태를 변경하는데 실패한 값 반환
         """
-<<<<<<< HEAD
-        status_type_exist, status_type_not_exist = self.order_dao.check_if_status_type_exists(conn, body)
-
-<<<<<<< HEAD
-        appropriate_id = self.order_dao.check_appropriate_order_status_type(conn, body)
->>>>>>> [Admin > order]
-=======
-        possible_to_patch, impossible_to_patch = self.order_dao.check_if_possible_change(conn, status_type_exist)
->>>>>>> [Admin > order]
-
-        impossible_to_patch += status_type_not_exist
-
-<<<<<<< HEAD
-        checked_current_order_status_list = self.order_dao.check_current_order_status(conn, body) 
-
-<<<<<<< HEAD
->>>>>>> [Admin > order]
-        # 주문 취소가 된 상품인 경우 -> 수정을 못하도록 에러발생
-        # 이미 구매확정이 된 상품인 경우 -> 수정을 못하도록 에러발생
-=======
->>>>>>> [Admin > order]
-        possible_change_order_status = list()
-        not_possible_change_order_status = list()
-=======
-=======
 
         # 요청된 주문 상태 중 유효한 값을 넣는 리스트
         match_status_types = list()
@@ -199,30 +134,18 @@ class OrderService:
         impossible_to_patch += not_match_status_types
 
         # 들어온 요청 값과 possible_to_patch_id와 비교하여 patch
->>>>>>> [Admin > order]
         self.order_dao.patch_order_status_type(conn, possible_to_patch)
         self.order_dao.insert_order_detail_history(conn, possible_to_patch)
 
         return impossible_to_patch
     
-<<<<<<< HEAD
->>>>>>> [Admin > order]
-        
-
-
-        
-=======
  
->>>>>>> [Admin > order]
     def get_order(self, conn, params):
         """주문 상세
-
         주문 상세 정보를 가져오는 함수
-
         Args:
             conn (Connection): DB 커넥션 객체
             params (dict): {"detail_order_number" : 주문 상세 번호}
-
         Returns:
             order_detail_info (dict) :         
                     order_detail_info = {
@@ -295,4 +218,6 @@ class OrderService:
                         ]
         }
         return order_detail_info
->>>>>>> [Admin > order_dao, order_service, order_view]
+
+        def get_dashboard_seller(self, conn, account_id):
+        return self.order_dao.get_dashboard_seller(conn, account_id)

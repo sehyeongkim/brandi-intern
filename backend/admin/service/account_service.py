@@ -1,24 +1,7 @@
 import bcrypt, jwt
-<<<<<<< HEAD
-
-<<<<<<< HEAD
-<<<<<<< HEAD
-from admin.model import AccountDao
-<<<<<<< HEAD
-=======
-from model import AccountDao
->>>>>>> Modify: Directory 구조 변경 및 경로 수정정
-=======
-from admin.model import AccountDao
->>>>>>> Modify: Directory 구조 변경 및 경로 수정 완료
-=======
-from utils.custom_exception import SignUpFail
->>>>>>> seller 회원가입 기능 구현
-=======
 from config import SECRET_KEY
 from admin.model import AccountDao
 from utils.custom_exception import SignUpFail, SignInError, TokenCreateError
->>>>>>> [프론트]
 
 class AccountService:
     def __new__(cls, *args, **kwargs):

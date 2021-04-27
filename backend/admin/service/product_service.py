@@ -13,16 +13,8 @@ class ProductService:
 
     def __init__(self):
         self.product_dao = ProductDao()
-<<<<<<< HEAD
     
     # 상품 리스트 가져오기
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> [Admin > order]
-=======
->>>>>>> 병합할 때 지우지 않았던 코드 줄 삭제 및 DatabaseConnectFail 제거
     def get_products_list(self, conn, params, headers):
         # 페이지네이션 위한 OffSET 설정
         params['page'] = (params['page'] - 1) * params['limit']
@@ -30,14 +22,8 @@ class ProductService:
         if 'end_date' in params:
             params['end_date'] +=  timedelta(days=1)
             params['end_date_str'] = params['end_date'].strftime('%Y-%m-%d')
-<<<<<<< HEAD
-<<<<<<< HEAD
         return product_dao.get_products_list(conn, params)
-=======
 
-=======
-        
->>>>>>> [상품등록 > 엑셀저장]
         if 'start_date' in params:
             params['start_date_str'] = params['start_date'].strftime('%Y-%m-%d')
         
@@ -92,24 +78,14 @@ class ProductService:
         }
         
         return result
-<<<<<<< HEAD
-<<<<<<< HEAD
->>>>>>> [상품관리 > 상품리스트]
-=======
 
     # 상품 리스트 가져오기
     def get_products_list(self, conn, params):
         return self.product_dao.get_products_list(conn, params)
->>>>>>> Order 주문관리 진행중
-=======
+
     def get_products_list(self, conn):
         return self.product_dao.get_products_list(conn)
->>>>>>> [로그인 데코레이터]
-=======
->>>>>>> [Admin > order]
-=======
->>>>>>> 병합할 때 지우지 않았던 코드 줄 삭제 및 DatabaseConnectFail 제거
-    
+
     # 상품 등록 (by seller or master)
     def post_product_by_seller_or_master(self, conn, body):
         return self.product_dao.post_product_by_seller_or_master(conn, body)
@@ -133,7 +109,6 @@ class ProductService:
     # 상품 등록 창에서 seller 검색
     def search_seller(self, conn, params):
         return self.product_dao.search_seller(conn, params)
-<<<<<<< HEAD
     
     # 상품 등록 창에서 color list 뿌려주기
     def get_products_color_list(self, conn):
@@ -142,5 +117,3 @@ class ProductService:
     # 상품 등록 창에서 size list 뿌려주기
     def get_products_size_list(self, conn):
         return self.product_dao.get_products_size_list(conn)
-=======
->>>>>>> Order 주문관리 진행중
