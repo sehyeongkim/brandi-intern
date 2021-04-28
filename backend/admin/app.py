@@ -18,7 +18,7 @@ from utils.error_handler import error_handle
 class Service:
     pass
 
-def create_app(test_config=None):
+def create_app():
     app = Flask(__name__)
 
     CORS(app)
