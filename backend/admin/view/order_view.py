@@ -6,7 +6,7 @@ from flask_request_validator import validate_params, Param, GET, ValidRequest, J
 
 from connection import get_connection
 from utils.response import error_response, get_response, post_response, post_response_with_return
-from utils.custom_exception import DataNotExists, DatabaseConnectFail, StartDateFail
+from utils.custom_exception import DataNotExists, StartDateFail
 from utils.decorator import LoginRequired
 
 

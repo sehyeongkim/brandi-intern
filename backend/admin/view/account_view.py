@@ -4,7 +4,7 @@ from flask_request_validator import Param, Pattern, JSON, validate_params, Valid
 from flask_request_validator.error_formatter import demo_error_formatter
 from flask_request_validator.exceptions import InvalidRequestError, InvalidHeadersError, RuleError
 
-from utils.custom_exception import DatabaseCloseFail, DatabaseConnectFail
+from utils.custom_exception import DatabaseCloseFail
 from utils.response import post_response
 
 from connection import get_connection

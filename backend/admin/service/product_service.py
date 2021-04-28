@@ -1,4 +1,4 @@
-from admin.model import ProductDao
+from model import ProductDao
 from datetime import timedelta, datetime
 from utils.custom_exception import StartDateFail
 import xlwt
