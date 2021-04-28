@@ -1,7 +1,12 @@
 import bcrypt, jwt
+
+from cachetools import TTLCache, cached
+import time
 from config import SECRET_KEY
 from admin.model import AccountDao
 from utils.custom_exception import SignUpFail, SignInError, TokenCreateError
+
+cache = TTLCache(maxsize=12, ttl=10)
 
 class AccountService:
     def __new__(cls, *args, **kwargs):
@@ -109,3 +114,61 @@ class AccountService:
         # encode 예외 처리 찾으면 try 문 사용해서 추가 할 수 있도록
         # raise TokenCreateError("뜻하지 않은 에러가 발생했습니다. 다시 시도 해주세요.", "create_token error")
         return token
+
+    @cached(cache = TTLCache(12, 10))
+    def get_status_type(self, conn, seller_status_type):
+
+        # status_name, seller_status_type_id, button_id, button_name, to_status_type_id가 포함된 리스트        
+        seller_status_type_button_lists = self.account_dao.get_seller_status(conn, seller_status_type)
+
+        results = list()
+        for seller_status_type_button in seller_status_type_button_lists:
+            if seller_status_type in ["입점신청", "입점", "휴점", "퇴점대기"]:
+                seller_button_info = {
+                                        "button_name": seller_status_type_button["button_name"], 
+                                        "to_status_type_id": seller_status_type_button["to_status_type_id"]
+                                    }
+                results.append(seller_button_info)
+            elif seller_status_type in ["입점거절", "퇴점"]:
+                continue
+
+        # 캐시를 이용했을 때 시간을 측정
+        # s = time.time()
+        # print("status_type: ", time.time() -s)    
+        return results
+
+    def get_seller_list(self, conn, params):
+
+        params['page'] = (params['page'] - 1) * params['limit']
+
+        if 'end_date' in params:
+            params['end_date'] +=  timedelta(days=1)
+            params['end_date_str'] = params['end_date'].strftime('%Y-%m-%d')
+
+        if 'start_date' in params:
+            params['start_date_str'] = params['start_date'].strftime('%Y-%m-%d')
+
+        if 'start_date' in params and 'end_date' in params and params['start_date'] > params['end_date']:
+            raise  StartDateFail('조회 시작 날짜가 끝 날짜보다 큽니다.')
+
+        seller_list, seller_count = self.account_dao.get_seller_list(conn, params)
+
+        seller_list_info = {
+            "seller_list": [
+                {
+                    "id": seller["seller_id"],
+                    "seller_identification": seller["seller_identification"],
+                    "english_brand_name": seller["english_brand_name"],
+                    "korean_brand_name": seller["korean_brand_name"],
+                    "manager_name": seller["manager_name"],
+                    "seller_status_type": seller["seller_status_type"],
+                    "seller_status_type_button": self.get_status_type(conn, seller["seller_status_type"]),
+                    "manager_phone": seller["manager_phone"],
+                    "manager_email": seller["manager_email"],
+                    "sub_property": seller["sub_property"],
+                    "seller_created_date": seller["seller_created_date"]
+                } for seller in seller_list
+            ],
+            "total_count": seller_count["count"]
+        }
+        return seller_list_info

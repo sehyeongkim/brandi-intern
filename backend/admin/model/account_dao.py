@@ -285,3 +285,141 @@ class AccountDao:
         with conn.cursor() as cursor:
             cursor.execute(sql, params)
             return cursor.fetchone()
+
+    # id도 함께 날려준다.
+    def get_seller_status(self, conn, seller_status_type):
+        sql = """
+            SELECT
+                st.name AS status_name,
+                stb.seller_status_type_id,
+                stb.seller_status_button_id,
+                sb.name as button_name,
+                sb.to_status_type_id AS to_status_type_id
+            FROM
+                seller_status_type_button AS stb
+            right outer JOIN
+                seller_status_type AS st 
+                on st.id = stb.seller_status_type_id
+            left outer JOIN
+                seller_status_button As sb
+                on sb.id = stb.seller_status_button_id
+            WHERE
+                st.name = %(seller_status_type)s
+            ORDER BY st.id ASC;
+        """
+
+        with conn.cursor() as cursor:
+            cursor.execute(sql, {"seller_status_type":seller_status_type})
+            result = cursor.fetchall()
+            return result
+
+    def get_seller_list(self, conn, params):
+        select = """
+            SELECT 
+        """
+
+        seller_info = """
+                sst.id AS seller_status_type_id,
+                s.id as seller_id, 
+                s.seller_identification, 
+                s.english_brand_name, 
+                s.korean_brand_name, 
+                m.name as manager_name, 
+                sst.name as seller_status_type, 
+                m.phone as manager_phone, 
+                m.email as manager_email, 
+                sb.name as sub_property, 
+                DATE_FORMAT(s.created_at, '%%Y-%%m-%%d %%h:%%i:%%s') as seller_created_date
+        """
+
+        condition = """
+            FROM 
+                sellers as s
+            INNER JOIN
+                managers as m ON s.id = m.seller_id
+            INNER JOIN
+                sub_property as sb ON s.sub_property_id = sb.id
+            INNER JOIN
+                seller_status_type as sst ON sst.id = s.seller_status_type_id
+            WHERE
+                    s.created_at BETWEEN '0000-00-00 00:00:00' AND '9999-12-30 00:00:00'
+        """
+
+        sql_1 = select + seller_info + condition
+
+        if 'id' in params:
+            condition += """
+                AND
+                    s.id = %(id)s
+            """
+        
+        # 이 부분은 직접 확인해보고 수정
+        if 'seller_identification' in params:
+            condition += """
+                AND 
+                    s.seller_identification LIKE %(seller_identification)s 
+            """
+
+        if 'english_brand_name' in params:
+            condition += """
+                AND
+                    s.english_brand_name LIKE %(english_brand_name)s
+            """
+        
+        if 'korean_brand_name' in params:
+            condition += """
+                AND
+                    s.korean_brand_name LIKE %(korean_brand_name)s
+            """
+        
+        if 'manager_name' in params:
+            condition += """
+                AND
+                    m.name LIKE %(manager_name)s
+            """
+        
+        if 'seller_status_type' in params:
+            condition += """
+                AND
+                    s.seller_status_type_id = %(seller_status_type_id)s
+            """
+        
+        if 'manager_phone' in params:
+            condition += """
+                AND
+                    m.phone LIKE %(manager_phone)s
+            """
+        
+        if 'sub_property_id' in params:
+            condition += """
+                AND
+                    s.sub_property_id = %(sub_property_id)s
+            """
+        
+        if 'start_date' in params and 'end_date' in params:
+            condition += """
+                AND
+                    s.created_at BETWEEN %(start_date)s AND %(end_date)s
+            """
+        
+        limit = """
+                LIMIT
+                    %(limit)s
+                OFFSET
+                    %(page)s
+        """
+
+        count = """
+                COUNT(*) as count 
+        """
+
+        sql_select_seller_info = select + seller_info + condition + limit
+        sql_select_seller_count = select + count + condition + limit
+        with conn.cursor() as cursor:
+            cursor.execute(sql_select_seller_info, params)
+            seller_info_list = cursor.fetchall()
+
+            cursor.execute(sql_select_seller_count, params)
+            seller_counts = cursor.fetchone()
+
+            return seller_info_list, seller_counts
