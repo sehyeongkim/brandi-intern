@@ -1,5 +1,5 @@
 from flask.views import MethodView
-from flask import request, jsonify
+from flask import request, jsonify, g
 from flask_request_validator import Param, Pattern, JSON, validate_params, ValidRequest, GET, Min, Enum
 from flask_request_validator.error_formatter import demo_error_formatter
 from flask_request_validator.exceptions import InvalidRequestError, InvalidHeadersError, RuleError
@@ -7,7 +7,7 @@ from flask_request_validator.exceptions import InvalidRequestError, InvalidHeade
 
 from utils.custom_exception import DatabaseCloseFail
 from utils.response import post_response, get_response
-
+from utils.decorator import LoginRequired
 from connection import get_connection
 
 from timeit import repeat
@@ -86,6 +86,7 @@ class SellerListView(MethodView):
     def __init__(self, service):
         self.service=service
 
+    @LoginRequired("seller")
     @validate_params(
         Param('id', GET, int, required=False),
         Param('seller_identification', GET, str, required=False),
@@ -119,3 +120,26 @@ class SellerListView(MethodView):
             return get_response(seller_list_results), 200
         finally:
             conn.close()
+    
+    @LoginRequired("seller")
+    def patch(self):
+        conn = None
+        try:
+            params = request.get_json()
+            conn = get_connection()
+
+            params["account_id"] = g.account_id
+            self.service.change_seller_status_type(conn, params)
+
+            conn.commit()
+
+            return get_response("SUCCESS")
+        except Exception as e:
+            if conn:
+                conn.rollback()
+            raise e
+        finally:
+            try:
+                conn.close()
+            except Exception as e:
+                raise DatabaseCloseFail('서버에 알 수 없는 오류가 발생했습니다.')

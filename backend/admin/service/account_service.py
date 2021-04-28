@@ -172,3 +172,7 @@ class AccountService:
             "total_count": seller_count["count"]
         }
         return seller_list_info
+    
+    def change_seller_status_type(self, conn, params):
+        self.account_dao.change_seller_status_type(conn, params)
+        self.account_dao.change_seller_history(conn, params)

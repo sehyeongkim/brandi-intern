@@ -86,5 +86,10 @@ def create_endpoints(app, services):
     app.add_url_rule("/sellers",
                     view_func=SellerListView.as_view('seller_list_view', account_service),
                     methods=['GET'])
+
+    app.add_url_rule("/sellers",
+                    view_func=SellerListView.as_view('seller_update_status_view', account_service),
+                    methods=["PATCH"]
+                    )
     
     error_handle(app)

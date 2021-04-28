@@ -423,3 +423,68 @@ class AccountDao:
             seller_counts = cursor.fetchone()
 
             return seller_info_list, seller_counts
+    
+    def change_seller_status_type(self, conn, params):
+        sql = """
+            UPDATE 
+                sellers 
+            SET
+                seller_status_type_id = %(to_status_type_id)s
+            WHERE
+                id = %(seller_id)s
+        """
+
+        with conn.cursor() as cursor:
+            cursor.execute(sql, params)
+            
+
+
+    def change_seller_history(self, conn, params):
+        sql = """
+            INSERT INTO sellers_history(
+                seller_id,
+                modify_account_id,
+                is_deleted,
+                property_id,
+                sub_property_id,
+                seller_status_type_id,
+                zip_code,
+                address,
+                detail_address,
+                korean_brand_name,
+                english_brand_name,
+                customer_center_number,
+                profile_image_url,
+                background_image_url,
+                description,
+                detail_description,
+                open_at,
+                close_at
+            )
+            SELECT 
+                id,
+                %(account_id)s,
+                is_deleted,
+                property_id,
+                sub_property_id,
+                seller_status_type_id,
+                zip_code,
+                address,
+                detail_address,
+                korean_brand_name,
+                english_brand_name,
+                customer_center_number,
+                profile_image_url,
+                background_image_url,
+                description,
+                detail_description,
+                open_at,
+                close_at
+            FROM
+                sellers 
+            WHERE id = %(seller_id)s
+        """
+
+        with conn.cursor() as cursor:
+            cursor.execute(sql, params)
+            conn.commit()
