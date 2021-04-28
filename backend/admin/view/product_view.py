@@ -3,8 +3,8 @@ from flask.views import MethodView
 from flask_request_validator import validate_params, Param, GET, Datetime, ValidRequest, CompositeRule, Min, Max, Enum, JsonParam, JSON, HEADER
 from datetime import datetime
 from connection import get_connection
-from utils.response import get_response, post_response
-from utils.custom_exception import IsInt, IsStr, IsFloat, IsRequired, DatabaseCloseFail
+from utils.response import get_response, post_response, post_response_with_return
+from utils.custom_exception import IsInt, IsStr, IsFloat, IsRequired, DatabaseCloseFail, IsBool
 from flask_request_validator.exceptions import InvalidRequestError, RulesError
 import xlwt
 
@@ -90,24 +90,34 @@ class ProductView(MethodView):
             conn.close()
 
     # 상품 리스트에서 상품의 판매여부, 진열여부 수정
-    # @LoginRequired
+    @LoginRequired('seller')
     def patch(self):
+        """상품 판매, 진열여부 수정
+
+        요청으로 들어온 상품번호의 상품 판매여부, 진열여부를 수정한다.
+
+        Returns:
+            "SUCCESS" (dict) : 성공했을 때, Success 메시지를 반환 
+            product_check_fail_result (dict) : 일부 값 변경에 실패할 경우 실패한 값을 반환
+        """
         conn = None
         try:
             params = request.get_json()
             conn = get_connection()
-            result = self.service.patch_product_selling_or_display_status(conn, params)
+            product_check_fail_result = self.service.patch_product_selling_or_display_status(conn, params)
             
             conn.commit()
-
-            return get_response(result), 200
+            
+            if product_check_fail_result:
+                return post_response_with_return('상품이 존재하지 않거나 권한이 없습니다.', product_check_fail_result)
+            
+            return post_response('SUCCESS')
 
         finally:
             try:
                 conn.close()
             except Exception as e:
                 raise DatabaseCloseFail('서버에 알 수 없는 오류가 발생했습니다.')
-
 
 class ProductDetailView(MethodView):
     def __init__(self, service):
