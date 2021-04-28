@@ -13,7 +13,6 @@ class ProductService:
 
     def __init__(self):
         self.product_dao = ProductDao()
-
     
     # 상품 리스트 가져오기
     def get_products_list(self, conn, params, headers):

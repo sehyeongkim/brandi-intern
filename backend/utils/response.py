@@ -35,4 +35,3 @@ def post_response_with_return(message, fail_return, status_code=200):
                     "status_code": status_code
                 }
     return response
-

@@ -18,7 +18,6 @@ class OrderService:
     
     def get_order_list(self, conn, params):
         """주문 조회 리스트 서비스
-
         주문 리스트 정보를 위해 model로 정보를 넘김
         
         Args:
@@ -226,3 +225,6 @@ class OrderService:
                         ]
         }
         return order_detail_info
+
+    def get_dashboard_seller(self, conn, account_id):
+        return self.order_dao.get_dashboard_seller(conn, account_id)
