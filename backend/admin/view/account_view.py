@@ -72,11 +72,9 @@ class AccountLogInView(MethodView):
                         "accessToken" : result['accessToken'],
                         "account_type_id" : result['account_type_id'],
                         "status_code" : 200
-                        }
-                 ), 200
+                        }), 200
         finally:
             try:
                 conn.close()
             except Exception as e:
                 raise DatabaseCloseFail('서버에 알 수 없는 오류가 발생했습니다.')
-
