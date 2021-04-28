@@ -17,6 +17,39 @@ class AccountService:
             params['password'].encode('UTF-8'),
             bcrypt.gensalt()
         ).decode('UTF-8')
+        
+    def create_token(self, info):
+        try:
+            token = jwt.encode({"account_id": info['account_id']},
+                                SECRET_KEY,
+                                algorithm="HS256")
+        except Exception as e:
+            raise TokenCreateError("뜻하지 않은 에러가 발생했습니다. 다시 시도 해주세요.", "create_token error")
+        
+        return token
+        
+    def check_hash_password(self, conn, info, params):
+        """ 로그인 hash password 체크하는 함수
+
+        hash password 체크 후 account_type_id, accessToken값을 return하는 함수
+
+        Args:
+            conn (class): DB 클래스
+            info (dict): post_account_login or post_master_login에서 가져온 계정 정보
+            params (dict): BODY에서 넘어온 master or seller 정보
+
+        Returns:
+            [dict]: account_type_id , accessToken
+        """
+        if not info or not bcrypt.checkpw(params['password'].encode('utf-8'), info['password'].encode('utf-8')):
+            raise SignInError("정확한 아이디, 비밀번호를 입력해주세요", "post_master_login error")
+    
+        account_type_id = self.account_dao.get_account_type_id(conn, info)
+        token = self.create_token(info)
+        return {
+            "account_type_id" : account_type_id['account_type_id'],
+            "accessToken" : token
+        }
     #  ---------------------------------------------------------------------------------------------------------------------
     # account 회원가입
     def post_account_signup(self, conn, params):   
@@ -77,35 +110,13 @@ class AccountService:
     # seller 로그인
     def post_account_login(self, conn, params):
         seller_info = self.account_dao.post_account_login(conn, params)
-        if not seller_info or not bcrypt.checkpw(params['password'].encode('utf-8'), seller_info['password'].encode('utf-8')):
-            raise SignInError("정확한 아이디, 비밀번호를 입력해주세요", "post_account_login error")
+        result = self.check_hash_password(conn, seller_info, params)
         
-        account_type_id = self.account_dao.get_account_type_id(conn, seller_info)
-        token = self.create_token(seller_info)
-        result = {
-            "account_type_id" : account_type_id['account_type_id'],
-            "accessToken" : token
-        }
         return result
     
     # master 로그인
     def post_master_login(self, conn, params):
         master_info = self.account_dao.post_master_login(conn, params)
-        if not master_info or not bcrypt.checkpw(params['password'].encode('utf-8'), master_info['password'].encode('utf-8')):
-            raise SignInError("정확한 아이디, 비밀번호를 입력해주세요", "post_master_login error")
+        result = self.check_hash_password(conn, master_info, params)
         
-        account_type_id = self.account_dao.get_account_type_id(conn, master_info)
-        token = self.create_token(master_info)
-        result = {
-            "account_type_id" : account_type_id['account_type_id'],
-            "accessToken" : token
-        }
         return result
-        
-    def create_token(self, seller_info):
-        token = jwt.encode({"account_id": seller_info['account_id']},
-                                SECRET_KEY,
-                                algorithm="HS256")
-        # encode 예외 처리 찾으면 try 문 사용해서 추가 할 수 있도록
-        # raise TokenCreateError("뜻하지 않은 에러가 발생했습니다. 다시 시도 해주세요.", "create_token error")
-        return token

@@ -264,7 +264,7 @@ export default {
           console.log('백엔드 응답', response)
           res = response
           console.log(res)
-          if (res.data.result.status_code === 200) {
+          if (res.data.result.status_code) {
             Message.success('회원가입을 축하합니다!')
             this.isLoading = false
             this.$router.push('/')
@@ -274,7 +274,6 @@ export default {
           console.log('err', error)
           this.isLoading = false
           Message.error(String(res.data.user_error_message))
-          // this.isLoading = false
           this.$router.push('/admin/signup')
         })
     }
