@@ -17,7 +17,7 @@ export default {
   name: 'RadioBtn',
   props: ['name', 'buttonName', 'label'],
   methods: {
-    handleValue () {
+    handleValue() {
       this.$emit('change', this.label)
     }
   }
