@@ -15,7 +15,6 @@ class ProductView(MethodView):
     def __init__(self, service):
         self.service = service
 
-
     @validate_params(
         Param('Content-Type', HEADER, str, required=False),
         Param('Authorization', HEADER, str, required=False),

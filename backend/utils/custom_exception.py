@@ -22,7 +22,6 @@ class CustomUserError(Exception):
         self.dev_error_message = dev_error_message
         self.error_message = error_message
 
-
 class DatabaseCloseFail(CustomUserError):
     def __init__(self, error_message, dev_error_message=None):
         status_code = 500
