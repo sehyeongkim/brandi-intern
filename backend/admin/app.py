@@ -30,6 +30,7 @@ def create_app():
     services.order_service = OrderService()
     services.account_service = AccountService()
 
+    app.json_encoder = CustomJSONEncoder
     # endpoint 생성
     create_endpoints(app, services)
     

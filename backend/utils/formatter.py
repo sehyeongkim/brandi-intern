@@ -18,10 +18,14 @@ class CustomJSONEncoder(JSONEncoder):
         Returns:
             원하는데이터 타입, 혹은 원하는 response 형태
         """
+        
         if isinstance(obj, Decimal):
             return float(obj)
 
         if isinstance(obj, datetime.datetime):
-            return obj.strftime('%Y-%m-%d %I:%M:%S')
+           return obj.strftime('%Y-%m-%d %I:%M:%S')
+        
+        if isinstance(obj, datetime.timedelta):
+            return str(obj)
 
         return JSONEncoder.default(self, obj)

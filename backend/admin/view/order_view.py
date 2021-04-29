@@ -74,8 +74,15 @@ class OrderListView(MethodView):
             conn.commit()
               
             return post_response_with_return("SUCCESS", not_possible_change_values), 200
+        except Exception as e:
+            if conn:
+                conn.rollback()
+            raise e
         finally:
-            conn.close()
+            try:
+                conn.close()
+            except Exception as e:
+                raise DatabaseCloseFail('서버에 알 수 없는 오류가 발생했습니다.')
 
 
 class OrderView(MethodView):
@@ -98,9 +105,9 @@ class OrderView(MethodView):
         """
         conn = None
         try:
-            path = request.view_args["order_detail_number"]
+            path_param = request.view_args["order_detail_number"]
             params = dict()
-            params["detail_order_number"] = path
+            params["detail_order_number"] = path_param
             conn = get_connection()
 
             order_detail = self.service.get_order(conn, params)

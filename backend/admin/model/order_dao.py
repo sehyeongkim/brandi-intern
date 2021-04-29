@@ -238,7 +238,6 @@ class OrderDao:
         with conn.cursor() as cursor:
             cursor.executemany(sql, possible_to_patch)
 
-        
     def insert_order_detail_history(self, conn, results):
         """주문 히스토리 데이터 삽입
 
