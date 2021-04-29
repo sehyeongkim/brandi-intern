@@ -369,7 +369,7 @@ class OrderDao:
             cursor.execute(sql_select_history, params)
             order_history = cursor.fetchall()
 
-            return result_1, result_2
+            return order_info, order_history
 
     def get_dashboard_seller(self, conn, account_id):
         #전체상품, 노출상품
