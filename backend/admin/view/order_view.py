@@ -106,9 +106,9 @@ class OrderView(MethodView):
         """
         conn = None
         try:
-            path = request.view_args["order_detail_number"]
+            path_param = request.view_args["order_detail_number"]
             params = dict()
-            params["detail_order_number"] = path
+            params["detail_order_number"] = path_param
             conn = get_connection()
 
             order_detail = self.service.get_order(conn, params)

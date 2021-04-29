@@ -6,7 +6,7 @@ from config import SECRET_KEY
 from admin.model import AccountDao
 from utils.custom_exception import SignUpFail, SignInError, TokenCreateError
 
-cache = TTLCache(maxsize=12, ttl=10)
+from utils.formatter import CustomJSONEncoder
 
 class AccountService:
     def __new__(cls, *args, **kwargs):
@@ -176,3 +176,36 @@ class AccountService:
     def change_seller_status_type(self, conn, params):
         self.account_dao.change_seller_status_type(conn, params)
         self.account_dao.change_seller_history(conn, params)
+
+    def get_seller_info(self, conn, params):
+        seller_info, manager_info = self.account_dao.get_seller_info(conn, params)
+
+        seller_result = {
+            "profile_image_url": seller_info["profile_image_url"],
+            "seller_status_type": seller_info["seller_status_type"],
+            "korean_brand_name": seller_info["korean_brand_name"],
+            "english_brand_name": seller_info["english_brand_name"],
+            "seller_identification": seller_info["seller_identification"],
+            "background_image_url": seller_info["background_image_url"],
+            "seller_description": seller_info["description"],
+            "seller_detail_description": seller_info["detail_description"],
+            "customer_center": seller_info["customer_center"],
+            "customer_center_phone": seller_info["customer_center_number"],
+            "zip_code": seller_info["zip_code"],
+            "address": seller_info["address"],
+            "detail_address": seller_info["detail_address"],
+            "customer_open_time": seller_info["open_at"],
+            "customer_close_time": seller_info["close_at"],
+            "delivery_info": seller_info["delivery_info"],
+            "exchange_refund_info": seller_info["exchange_refund_info"],
+            "manager_info_list": [
+                {
+                    "manager_name": manager["manager_name"],
+                    "manager_phone": manager["manager_phone"],
+                    "manager_email": manager["manager_email"]
+                }
+                for manager in manager_info
+            ]
+        }
+
+        return seller_result

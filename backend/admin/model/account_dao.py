@@ -488,3 +488,58 @@ class AccountDao:
         with conn.cursor() as cursor:
             cursor.execute(sql, params)
             conn.commit()
+    
+    def get_seller_info(self, conn, params):
+        sql_select_seller = """
+            SELECT
+                s.id AS seller_id,
+                s.profile_image_url,
+                sst.name AS seller_status_type,
+                s.korean_brand_name,
+                s.english_brand_name,
+                s.seller_identification,
+                s.background_image_url,
+                s.description,
+                s.detail_description,
+                s.customer_center,
+                s.customer_center_number,
+                s.zip_code,
+                s.address,
+                s.detail_address,
+                s.open_at,
+                s.close_at, 
+                s.delivery_info,
+                s.exchange_refund_info
+            FROM
+                sellers AS s
+            INNER JOIN
+                seller_status_type AS sst ON s.seller_status_type_id = sst.id
+            WHERE
+                seller_identification = %(seller_identification)s
+        """
+
+        sql_select_manager = """
+            SELECT
+                s.id AS seller_id,
+                m.name AS manager_name,
+                m.phone AS manager_phone,
+                m.email AS manager_email
+            FROM 
+                sellers AS s
+            INNER JOIN
+                managers AS m ON s.id = m.seller_id
+            WHERE
+                s.seller_identification = %(seller_identification)s;
+            ;
+        """
+        with conn.cursor() as cursor:
+            cursor.execute(sql_select_seller, params)
+            seller_info = cursor.fetchone()
+            
+        
+        with conn.cursor() as cursor:
+            cursor.execute(sql_select_manager, params)
+            manager_info = cursor.fetchall()
+
+            return seller_info, manager_info
+

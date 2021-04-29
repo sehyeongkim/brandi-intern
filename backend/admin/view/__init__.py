@@ -16,7 +16,8 @@ from .order_view import (
 from .account_view import (
                             AccountSignUpView,
                             AccountLogInView,
-                            SellerListView
+                            SellerListView,
+                            SellerView
 )
 
 from utils.error_handler import error_handle
@@ -91,5 +92,9 @@ def create_endpoints(app, services):
                     view_func=SellerListView.as_view('seller_update_status_view', account_service),
                     methods=["PATCH"]
                     )
+    
+    app.add_url_rule("/sellers/<seller_identification>",
+                    view_func=SellerView.as_view('seller_view', account_service),
+                    methods=["GET"])
     
     error_handle(app)

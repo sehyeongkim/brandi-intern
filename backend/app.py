@@ -11,6 +11,7 @@ from admin.service import (
 from admin.view import create_endpoints
 
 from utils.error_handler import error_handle
+from utils.formatter import CustomJSONEncoder
 
 class Service:
     pass
@@ -31,6 +32,7 @@ def create_app(test_config=None):
     services.order_service = OrderService()
     services.account_service = AccountService()
 
+    app.json_encoder = CustomJSONEncoder
     # endpoint 생성
     create_endpoints(app, services)
 

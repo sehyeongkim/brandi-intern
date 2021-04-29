@@ -143,3 +143,27 @@ class SellerListView(MethodView):
                 conn.close()
             except Exception as e:
                 raise DatabaseCloseFail('서버에 알 수 없는 오류가 발생했습니다.')
+
+
+class SellerView(MethodView):
+    def __init__(self, service):
+        self.service=service
+    
+    @LoginRequired("seller")
+    def get(self, seller_identification):
+        
+        conn = None
+        try:
+            path_param = request.view_args["seller_identification"]
+            params = dict()
+            params["seller_identification"] = path_param
+            conn=get_connection()
+
+            seller_info = self.service.get_seller_info(conn, params)
+
+            return get_response(seller_info), 200
+        finally:
+            try:
+                conn.close()
+            except Exception as e:
+                raise DatabaseCloseFail('서버에 알 수 없는 오류가 발생했습니다.')
