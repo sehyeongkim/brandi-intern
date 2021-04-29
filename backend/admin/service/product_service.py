@@ -3,7 +3,7 @@ from datetime import timedelta, datetime
 from utils.custom_exception import StartDateFail, DataNotExists
 import xlwt
 from io import BytesIO
-# from flask import send_file
+import copy
 
 class ProductService:
     def __new__(cls, *args, **kwargs):
@@ -83,8 +83,56 @@ class ProductService:
         return self.product_dao.post_product_by_seller_or_master(conn, body)
     
     # 상품 리스트에서 상품의 판매여부, 진열여부 수정
-    def patch_product_selling_or_display_status(self, conn, body):
-        return self.product_dao.patch_product(conn, body)
+    def patch_product_selling_or_display_status(self, conn, params):
+        """상품 판매, 진열 수정 함수
+
+        요청으로 들어온 JSON 으로 해당 상품의 진열, 판매 상태를 변경
+
+        Args:
+            conn (Connection): DB 커넥션 객체
+            params (list):
+                [
+                    {"product_id" : 상품아이디, "selling" : 판매여부, "display" : 진열여부},
+                    {"product_id" : 상품아이디, "selling" : 판매여부, "display" : 진열여부},
+                    {"product_id" : 상품아이디, "selling" : 판매여부, "display" : 진열여부}
+                    ...
+                ]
+
+        Returns:
+            [list]: 변경하려는 상품이 데이터베이스에 존재하지 않거나 권한이 없는 경우의 상품리스트
+        """
+        # 데이터베이스 상품 조회 후 tuple 형태 변환
+        product_check_results = tuple(map(lambda d:d.get('product_id'), self.product_dao.check_product_exists(conn, params)))
+        
+        # 해당 상품이 없거나 권한이 없을 경우 return
+        if not product_check_results:
+            return params
+
+        # 데이터베이스에 없는 상품 리스트
+        product_check_fail_result = list()
+        
+        # 데이터베이스에 있는 상품 리스트
+        product_check_success_result = list()
+        
+        # 요청으로 들어온 값을 복합객체, 내용 복사
+        requests_data = copy.deepcopy(params)
+
+        # 요청으로 들어온 상품 과 데이터베이스 비교 후 리스트 분리
+        for request_data in requests_data:
+            if request_data.get('product_id') in product_check_results:
+                product_check_success_result.append(request_data)
+            else:
+                product_check_fail_result.append(request_data)
+
+
+        # 상품 판매, 진열 상태 변경
+        self.product_dao.patch_product_selling_or_display_status(conn, product_check_success_result)
+        
+        # 상품 히스토리에 변경 이력 저장
+        self.product_dao.insert_product_history(conn, product_check_success_result)
+
+        return product_check_fail_result
+
     
     # 상품 상세 가져오기
     def get_product_detail(self, conn, params):

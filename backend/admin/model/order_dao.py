@@ -1,4 +1,5 @@
 import pymysql
+from flask import g
 
 from flask import g
 
@@ -274,7 +275,6 @@ class OrderDao:
                 WHERE
                     id = %(orders_detail_id)s
             """
-
             data["account_id"] = g.account_id
             with conn.cursor() as cursor:
                 cursor.execute(sql, data)
