@@ -108,7 +108,7 @@ class ProductView(MethodView):
             
             # 상태변경에 실패한 경우
             if product_check_fail_result:
-                return post_response_with_return('상품이 존재하지 않거나 권한이 없습니다.', product_check_fail_result)
+                return post_response_with_return('상품이 존재하지 않거나 권한이 없습니다.', product_check_fail_result, 400)
             
             return post_response('SUCCESS')
 
@@ -229,7 +229,7 @@ class ProductColorView(MethodView):
             if conn:
                 result = self.service.get_products_color_list(conn)
 
-            return jsonify(result), 200
+            return get_response(result), 200
 
         finally:
             conn.close()
@@ -246,7 +246,7 @@ class ProductSizeView(MethodView):
             if conn:
                 result = self.service.get_products_size_list(conn)
 
-            return jsonify(result), 200
+            return get_response(result), 200
 
         finally:
             conn.close()

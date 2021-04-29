@@ -163,17 +163,30 @@ class ProductDao:
         """
         sql = """
             UPDATE
-                products as p
+                products as p       
             SET
-                p.is_displayed = %(display)s,
-                p.is_selling = %(selling)s
+        """
+        comma = ''
+        
+        if 'display' in product_check_success_result[0]:
+            sql += """
+                p.is_displayed = %(display)s
+            """
+            comma = ','
+        
+        if 'selling' in product_check_success_result[0]:
+            sql += f"""
+                {comma}p.is_selling = %(selling)s
+            """
+        sql1 = """
             WHERE
                 p.id = %(product_id)s
-            
         """
+        sql += sql1
         with conn.cursor() as cursor:
             cursor.executemany(sql, product_check_success_result)
-    
+
+
     def check_product_exists(self, conn, params):
         """데이터베이스 상품 존재여부 확인
 
@@ -293,8 +306,11 @@ class ProductDao:
                 p.is_selling,
                 p.is_displayed,
                 pp.name as property,
+                pp.id as property_id,
                 c.name as category,
+                c.id as category_id,
                 sc.name as sub_category,
+                sc.id as sub_category_id,
                 p.manufacturer,
                 p.date_of_manufacture,
                 p.origin,
@@ -361,7 +377,9 @@ class ProductDao:
                 o.id,
                 o.stock,
                 c.name as color,
-                s.name as size
+                c.id as color_id,
+                s.name as size,
+                s.id as size_id
             FROM
                 options as o
             INNER JOIN

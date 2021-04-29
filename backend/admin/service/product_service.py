@@ -208,8 +208,11 @@ class ProductService:
                 'selling': product_result['is_selling'],
                 'displayed': product_result['is_displayed'],
                 'property': product_result['property'],
+                'property_id': product_result['property_id'],
                 'category': product_result['category'],
+                'category_id': product_result['category_id'],
                 'sub_category': product_result['sub_category'],
+                'sub_category_id': product_result['sub_category_id'],
                 'product_info_notice': {
                     'manufacturer': product_result['manufacturer'],
                     'date_of_manufacture': product_result['date_of_manufacture'],
@@ -229,7 +232,9 @@ class ProductService:
                 {
                     'option_id': option['id'],
                     'color': option['color'],
+                    'color_id': option['color_id'],
                     'size': option['size'],
+                    'size_id': option['size_id'],
                     'stock': option['stock']
                 }
             for option in product_option_result],
