@@ -8,7 +8,6 @@ class ProductDao:
     def __init__(self):
         pass
 
-<<<<<<< HEAD
     def get_products_list(self, conn, params, headers):
         sql_select = """
             SELECT
@@ -149,7 +148,7 @@ class ProductDao:
 
             return product_result, total_count_result
 
-    def create_basic_info_dao(self, conn, basic_info: dict):
+    def create_product_info_dao(self, conn, params: dict):
         sql = """
             INSERT INTO
             products (
@@ -160,44 +159,35 @@ class ProductDao:
                 is_selling,
                 is_displayed,
                 title,
-                description,
+                simple_description,
                 content,
-                product_code
+                product_code,
+                manufacturer,
+                date_of_manufacture,
+                origin,
+                price,
+                discount_rate,
+                discount_start_date,
+                discount_end_date,
+                min_amount,
+                max_amount
                 )
             VALUES (
                 %(seller_id)s,
                 %(property_id)s,
                 %(category_id)s,
                 %(sub_category_id)s,
+                %(is_selling)s,
+                %(is_displayed)s,
                 %(title)s,
-                %(description)s,
+                %(simple_description)s,
                 %(content)s,
-                %(product_code)s
-            )
-        """
-
-        with conn.cursor() as cursor:
-            cursor.execute(sql, basic_info)
-            product_id = cursor.lastrowid
-            return product_id
-            
-    
-    def create_selling_info_dao(self, conn, selling_info: dict):
-        sql = """
-            INSERT INTO 
-            products(
-                price,
-                discount_rate,
-                discount_price,
-                discount_start_date,
-                discount_end_date,
-                min_amount,
-                max_amount
-            )
-            VALUES (
+                %(product_code)s,
+                %(manufacturer)s,
+                %(date_of_manufacture)s,
+                %(origin)s,
                 %(price)s,
                 %(discount_rate)s,
-                %(discount_price)s,
                 %(discount_start_date)s,
                 %(discount_end_date)s,
                 %(min_amount)s,
@@ -205,8 +195,8 @@ class ProductDao:
             )
         """
         with conn.cursor() as cursor:
-            cursor.execute(sql, selling_info)
-
+            cursor.execute(sql, params)
+            return cursor.lastrowid
     
     def create_option_info_dao(self, conn, option_info: list):
         sql = """
@@ -230,26 +220,33 @@ class ProductDao:
         """
         with conn.cursor() as cursor:
             cursor.executemany(sql, option_info)
+            return cursor.lastrowid
 
-
-    def create_image_url_dao(self, conn, product_id: int, images: list):
-        sql = """
+    def insert_image_url_dao(self, conn, params: list):
+        sql="""
             INSERT INTO
             product_images (
                 product_id,
                 image_url,
-                is_represent
+                is_represent,
+                is_deleted,
+                created_account_id,
+                delete_account_id,
+                deleted_at
             )
             VALUES (
-                # product_id,
-                %s,
-                1 if idx = 0 else 0 # index 에 따라 대표 이미지 선택 
+                %(product_id)s,
+                %(image_url)s,
+                %(is_represent)s,
+                %(is_deleted)s,
+                %(created_account_id)s,
+                %(delete_account_id)s,
+                %(deleted_at)s
             )
         """
-
         with conn.cursor() as cursor:
-            cursor.executemany(sql, images) # ? 
-            return "SUCCESS"
+            cursor.executemany(sql, params)
+
     
     def patch_product_selling_or_display_status(self, conn, body):
         pass
@@ -257,13 +254,10 @@ class ProductDao:
     def get_product_detail(self, conn, product_code):
         pass
 
-    def get_categories_list(self, conn, category_id):
-        pass
-
-    def search_seller_dao(self, conn, keyword: str):
+    def search_seller_dao(self, conn, params: dict):
         sql = """
             SELECT
-                s.id,
+                s.id AS seller_id,
                 s.profile_image_url,
                 s.korean_brand_name
             FROM
@@ -276,46 +270,40 @@ class ProductDao:
                 
             LIMIT 10
         """
-        params = dict()
-        params['keyword'] = keyword
         with conn.cursor() as cursor:
             cursor.execute(sql, params)
             return cursor.fetchall()
     
-    def get_property_and_available_categories_list_dao(self, conn, seller_id: int):
+    def get_property_and_available_categories_list_dao(self, conn, params: dict):
         sql = """
             SELECT
-                p.id,
-                p.name,
-                c.id,
-                c.name
+                pr.id AS property_id,
+                pr.name AS property_name,
+                c.id AS category_id,
+                c.name AS category_name
             FROM
                 sellers AS s
             INNER JOIN
-                property as p ON s.property_id = p.id
+                property as pr ON s.property_id = pr.id
             INNER JOIN
-                category as c ON p.id = c.property_id
+                category as c ON pr.id = c.property_id
             WHERE
                 s.id = %(seller_id)s
         """
-        params = dict()
-        params['seller_id'] = seller_id
         with conn.cursor() as cursor:
             cursor.execute(sql, params)
             return cursor.fetchall()
     
-    def get_sub_categories_list_dao(self, conn, category_id: int):
+    def get_sub_categories_list_dao(self, conn, params: dict):
         sql = """
             SELECT
-                c.id,
-                c.name
+                s.id AS subcategory_id,
+                s.name AS subcategory_name
             FROM
-                category AS c
+                sub_category AS s
             WHERE
-                c.property_id = %(category_id)s
+                s.category_id = %(category_id)s
         """
-        params = dict()
-        params['category_id'] = category_id
         with conn.cursor() as cursor:
             cursor.execute(sql, params)
             return cursor.fetchall()
@@ -323,8 +311,8 @@ class ProductDao:
     def get_products_color_list_dao(self, conn):
         sql = """
             SELECT 
-                c.id,
-                c.name
+                c.id AS color_id,
+                c.name AS color_name
             FROM
                 color AS c
         """
@@ -335,8 +323,8 @@ class ProductDao:
     def get_products_size_list_dao(self, conn):
         sql = """
             SELECT
-                s.id,
-                s.name
+                s.id AS size_id,
+                s.name AS size_name
             FROM
                 size AS s
         """

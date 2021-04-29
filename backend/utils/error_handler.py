@@ -57,7 +57,7 @@ def error_handle(app):
         dev_error_message = demo_error_formatter(
             e)[0]['errors'], demo_error_formatter(e)[0]['message']
         return error_response("형식에 맞는 값을 입력해주세요", dev_error_message, 400)
-
+    
     @app.errorhandler(CustomUserError)
     def handle_error(e):
         traceback.print_exc()

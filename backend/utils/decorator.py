@@ -12,7 +12,6 @@ from admin.model import AccountDao
 from utils.custom_exception import (
     TokenIsEmptyError,
     UserNotFoundError,
-    DatabaseConnectFail,
     DatabaseCloseFail,
     JwtInvalidSignatureError,
     JwtDecodeError,
@@ -64,7 +63,7 @@ class LoginRequired:
                 g.account_id = result['id']
                 g.account_type_id = result['account_type_id']
 
-                return func(self, *args, **kwargs)
+                return func(target, *args, **kwargs)
 
             except jwt.exceptions.InvalidSignatureError:
                 raise JwtInvalidSignatureError('토큰이 손상되었습니다.')
@@ -74,9 +73,10 @@ class LoginRequired:
 
             finally:
                 if conn:
-                    try:
-                        conn.close()
-                    except Exception:
-                        raise DatabaseCloseFail('서버와 연결을 종료하는 중 에러가 발생했습니다.')
+                    conn.close()
+                # try:
+                #     conn.close()
+                # except Exception:
+                #     raise DatabaseCloseFail('서버와 연결을 종료하는 중 에러가 발생했습니다.')
 
         return wrapper

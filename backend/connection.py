@@ -2,7 +2,7 @@ import pymysql
 from boto3 import client
 from botocore.exceptions import ClientError
 
-from config import DB, AWS_ACCESS_KEY, AWS_SECRET_KEY, BUCKET_NAME
+from config import DB, AWS_ACCESS_KEY, AWS_SECRET_KEY, BUCKET_NAME, REGION
 
 def get_connection():
     return pymysql.connect(
