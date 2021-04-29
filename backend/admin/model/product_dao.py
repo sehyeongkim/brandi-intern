@@ -171,8 +171,8 @@ class ProductDao:
                 p.content,
                 p.price,
                 p.discount_rate,
-                DATE_FORMAT(p.discount_start_date,'%%Y-%%m-%%d %%h:%%m:%%s') as discount_start_date,
-                DATE_FORMAT(p.discount_end_date,'%%Y-%%m-%%d %%h:%%m:%%s') as discount_end_date,
+                p.discount_start_date as discount_start_date,
+                p.discount_end_date as discount_end_date,
                 p.min_amount,
                 p.max_amount
             FROM 
