@@ -7,7 +7,6 @@ from utils.response import get_response, post_response, post_response_with_retur
 from utils.custom_exception import IsInt, IsStr, IsFloat, IsRequired, DatabaseCloseFail, IsBool
 from flask_request_validator.exceptions import InvalidRequestError, RulesError
 import xlwt
-
 from utils.decorator import LoginRequired
 
 
@@ -107,6 +106,7 @@ class ProductView(MethodView):
             
             conn.commit()
             
+            # 상태변경에 실패한 경우
             if product_check_fail_result:
                 return post_response_with_return('상품이 존재하지 않거나 권한이 없습니다.', product_check_fail_result)
             
