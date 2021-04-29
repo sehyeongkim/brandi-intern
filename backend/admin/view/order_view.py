@@ -1,14 +1,13 @@
 from utils.response import error_response, get_response, post_response, post_response_with_return
-
 from flask import request, jsonify, g
 from flask.views import MethodView
 from flask_request_validator import validate_params, Param, GET, ValidRequest, JsonParam, Min, Enum, Datetime
-
 from connection import get_connection
-
+from utils.response import error_response, get_response, post_response, post_response_with_return
 from utils.custom_exception import DataNotExists, StartDateFail
 from utils.decorator import LoginRequired
 
+from utils.custom_exception import DataNotExists, StartDateFail
 
 class OrderListView(MethodView):
     def __init__(self, service):
@@ -114,5 +113,31 @@ class OrderView(MethodView):
             order_detail = self.service.get_order(conn, params)
             return get_response(order_detail), 200
         
+        finally:
+            conn.close()
+
+class DashboardSellerView(MethodView):
+    def __init__(self, service):
+        self.service = service
+    
+    # @login_required
+    def get(self):
+        """Seller Dashboard Page
+     
+        Seller 로그인 시 상품,판매 현황 출력
+
+        Args: 
+            
+        Returns:
+            dict: 전체상품, 판매중상품, 배송준비중, 배송완료, 결제건수(30일간), 결제금액(30일간)
+            200: 현황 정보 가져오기 성공
+            500: Exception
+        """
+        account_id = g.account_id
+        conn = None
+        try:
+            conn = get_connection()
+            result = self.service.get_dashboard_seller(conn, account_id)
+            return get_response(result, 200)        
         finally:
             conn.close()

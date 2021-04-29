@@ -14,9 +14,11 @@ class CustomJSONEncoder(JSONEncoder):
         Args:
             obj : 임의의 parameter.
             두번째 parameter: 변환 할 데이터 타입.
+
         Returns:
             원하는데이터 타입, 혹은 원하는 response 형태
         """
+        
         if isinstance(obj, Decimal):
             return float(obj)
 

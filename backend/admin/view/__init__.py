@@ -9,6 +9,7 @@ from .product_view import (
 )
 
 from .order_view import (
+                            DashboardSellerView,
                             OrderListView,
                             OrderView
 )
@@ -70,7 +71,11 @@ def create_endpoints(app, services):
     app.add_url_rule("/orders/<int:order_detail_number>",
                     view_func=OrderView.as_view('order_view', order_service),
                     methods=['GET'])
-                    
+    
+    app.add_url_rule("/dashboard/seller",
+                    view_func=DashboardSellerView.as_view('dashboard_seller', order_service),
+                    methods=['GET'])
+
     # account
     app.add_url_rule("/account/signup",
                     view_func=AccountSignUpView.as_view('account_signup_view', account_service),

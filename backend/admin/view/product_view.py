@@ -1,20 +1,18 @@
 from flask import request, jsonify, g, send_file
 from flask.views import MethodView
-from flask_request_validator import validate_params, Param, GET, Datetime, ValidRequest, CompositeRule, Min, Max, Enum, JsonParam, JSON, HEADER
+from flask_request_validator import validate_params, Param, GET, Datetime, ValidRequest, CompositeRule, Min, Max, Enum, JsonParam, JSON, HEADER, PATH
 from datetime import datetime
 from connection import get_connection
-from utils.response import get_response, post_response
-from utils.custom_exception import IsInt, IsStr, IsFloat, IsRequired, DatabaseCloseFail
+from utils.response import get_response, post_response, post_response_with_return
+from utils.custom_exception import IsInt, IsStr, IsFloat, IsRequired, DatabaseCloseFail, IsBool
 from flask_request_validator.exceptions import InvalidRequestError, RulesError
 import xlwt
-
 from utils.decorator import LoginRequired
 
 
 class ProductView(MethodView):
     def __init__(self, service):
         self.service = service
-
 
     @validate_params(
         Param('Content-Type', HEADER, str, required=False),
@@ -35,7 +33,7 @@ class ProductView(MethodView):
         Param('end_date', GET, str, rules=[Datetime('%Y-%m-%d')], required=False),
         Param('select_product_id', GET, list, required=False)
     )
-    @LoginRequired('seller')
+    # @LoginRequired('seller')
     def get(self, valid: ValidRequest):
         """상품 조회 리스트
 
@@ -90,41 +88,73 @@ class ProductView(MethodView):
             conn.close()
 
     # 상품 리스트에서 상품의 판매여부, 진열여부 수정
-    # @LoginRequired
+    @LoginRequired('seller')
     def patch(self):
+        """상품 판매, 진열여부 수정
+
+        요청으로 들어온 상품번호의 상품 판매여부, 진열여부를 수정한다.
+
+        Returns:
+            "SUCCESS" (dict) : 성공했을 때, Success 메시지를 반환 
+            product_check_fail_result (dict) : 일부 값 변경에 실패할 경우 실패한 값을 반환
+        """
         conn = None
         try:
-            # request body의 data
-            body = request.data
+            params = request.get_json()
             conn = get_connection()
-            if conn:
-                self.service.patch_product(conn, body)
-
+            product_check_fail_result = self.service.patch_product_selling_or_display_status(conn, params)
+            
             conn.commit()
-
-            return jsonify(''), 200
+            
+            # 상태변경에 실패한 경우
+            if product_check_fail_result:
+                return post_response_with_return('상품이 존재하지 않거나 권한이 없습니다.', product_check_fail_result)
+            
+            return post_response('SUCCESS')
 
         finally:
-            conn.close()
-
+            try:
+                conn.close()
+            except Exception as e:
+                raise DatabaseCloseFail('서버에 알 수 없는 오류가 발생했습니다.')
 
 class ProductDetailView(MethodView):
     def __init__(self, service):
         self.service = service
 
     # 상품 상세 가져오기
-    # @LoginRequired
-    def get(self, product_code):
+    @LoginRequired('seller')
+    @validate_params(
+        Param('product_code', PATH, str)
+    )
+    def get(self, valid: ValidRequest, product_code):
+        """상품 상세 조회
+        
+        해당 상품코드를 가진 상품 상세 정보 출력
+
+        Args:
+            valid (ValidRequest): validate_params 데코레이터로 전달된 값
+            product_code (str): PATH params 로 들어온 상품코드
+
+        Raises:
+            DatabaseCloseFail: 데이터베이스 close 에러
+
+        Returns:
+            [dict]: 상품의 정보, 옵션, 이미지 정보
+        """
         conn = None
         try:
             conn = get_connection()
-            if conn:
-                result = self.service.get_product_detail(conn, product_code)
-
-            return jsonify(result), 200
-
+            params = valid.get_path_params()
+            result = self.service.get_product_detail(conn, params)
+            
+            return get_response(result)
+        
         finally:
-            conn.close()
+            try:
+                conn.close()
+            except Exception as e:
+                raise DatabaseCloseFail('서버에 알 수 없는 오류가 발생했습니다.')
 
 
 class ProductCategoryView(MethodView):
