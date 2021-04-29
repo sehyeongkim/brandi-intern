@@ -178,6 +178,44 @@ class AccountService:
         self.account_dao.change_seller_history(conn, params)
 
     def get_seller_info(self, conn, params):
+        """셀러 상세 정보 formatting
+
+        데이터베이스에서 가져온 셀러 정보를 dictionary 형태로 formatting하는 함수
+
+        Args:
+            conn (Connection): 데이터베이스 커넥션 객체
+            params (dict): {"seller_identification" : 셀러 아이디
+
+        Returns:
+            seller_result (dict): 셀러 정보가 formatting된 결과
+                seller_result = {
+                    "profile_image_url": 셀러 프로필 이미지,
+                    "seller_status_type": 셀러 계정 입점 상태,
+                    "korean_brand_name": 한글 브랜드명,
+                    "english_brand_name": 영어 브랜드명,
+                    "seller_identification": 셀러아이디,
+                    "background_image_url": 배경이미지,
+                    "seller_description": 셀러 설명,
+                    "seller_detail_description": 셀러 상세 설명,
+                    "customer_center": 고객센터,
+                    "customer_center_phone": 고객센터 전화번호,
+                    "zip_code": 우편번호,
+                    "address": 셀러 주소,
+                    "detail_address": 셀러 상세 주소,
+                    "customer_open_time": 고객센터 운영 시작 시간,
+                    "customer_close_time": 고객센터 운영 끝 시간,
+                    "delivery_info": 배송 정보,
+                    "exchange_refund_info": 교환/환불 정보,
+                    "manager_info_list": [
+                        {
+                            "manager_name": 담당자 이름,
+                            "manager_phone": 담당자 전화번호,
+                            "manager_email": 담당자 이메일
+                        }
+                        for manager in manager_info
+                    ]
+                }
+        """
         seller_info, manager_info = self.account_dao.get_seller_info(conn, params)
 
         seller_result = {

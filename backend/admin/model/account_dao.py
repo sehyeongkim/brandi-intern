@@ -288,6 +288,25 @@ class AccountDao:
 
     # id도 함께 날려준다.
     def get_seller_status(self, conn, seller_status_type):
+        """ 셀러 계정 상태 가져오는 함수
+
+        셀러 계정 상태(입점, 입점신청 등)와 변화될 상태 id를 가져오는 함수
+
+        Args:
+            conn (Connection): DB 커넥션 객체
+            seller_status_type (dict) :                 
+                "seller_status_type_button": [
+                        {
+                            "button_name": 상태 변경 버튼
+                            "to_status_type_id": 상태 변경 후 변경될 seller_status_type_id
+                        },
+                        {
+                            "button_name": 상태 변경 버튼
+                            "to_status_type_id": 상태 변경 후 변경될 seller_status_type_id
+                        }
+                    ],
+
+        """
         sql = """
             SELECT
                 st.name AS status_name,
@@ -310,10 +329,30 @@ class AccountDao:
 
         with conn.cursor() as cursor:
             cursor.execute(sql, {"seller_status_type":seller_status_type})
-            result = cursor.fetchall()
-            return result
+            return cursor.fetchall()
+            
 
     def get_seller_list(self, conn, params):
+        """ 셀러 계정 리스트
+
+        셀러 계정 관리에서 셀러 리스트를 가져오는 함수
+
+        Args:
+            conn (Connection): DB 커넥션 객체
+            params (dict): 셀러 계정 리스트 표출을 위한 필터링 데이터
+                {
+                    "seller_id": 셀러 번호,
+                    "seller_identification": 셀러아이디,
+                    "english_brand_name": 영어 브랜드명,
+                    "korean_brand_name": 한글 브랜드명,
+                    "manager_name": 담당자 이름,
+                    "seller_status_type" : 셀러 계정 상태,
+                    "manager_email": 담당자 이메일,
+                    "sub_property": 셀러 속성,
+                    "seller_created_date": 셀러 계정 생성 날짜
+                }
+
+        """
         select = """
             SELECT 
         """

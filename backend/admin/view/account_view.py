@@ -123,6 +123,17 @@ class SellerListView(MethodView):
     
     @LoginRequired("seller")
     def patch(self):
+        """셀러 계정의 입점 상태 변화
+
+        셀러 계정의 입점 상태를 변화하는 함수(입점신청, 입점, 휴점, 휴점신청 등)
+
+        Raises:
+            e: 예상치 못한 에러
+            DatabaseCloseFail: 데이터베이스 close에 실패했을 때 발생하는 에러
+
+        Returns:
+           get_response (dict) : 성공시 SUCCESS 반환
+        """
         conn = None
         try:
             params = request.get_json()
@@ -151,6 +162,19 @@ class SellerView(MethodView):
     
     @LoginRequired("seller")
     def get(self, seller_identification):
+        """셀러 계정 수정을 위한 상세정보
+
+        셀러 계정 수정을 위해 가져오는 상세 정보들을 표출
+
+        Args:
+            seller_identification (str): 셀러 아이디
+
+        Raises:
+            DatabaseCloseFail: 데이터베이스 close에 실패했을 때 발생하는 에러
+
+        Returns:
+            seller_info (dict): 셀러 상세 정보를 표출
+        """
         
         conn = None
         try:
