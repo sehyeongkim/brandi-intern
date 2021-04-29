@@ -188,12 +188,7 @@ class ProductView(MethodView):
         try:
             params = request.get_json()
             conn = get_connection()
-<<<<<<< HEAD
-            if conn:
-                self.service.patch_product(conn, body)
-=======
             product_check_fail_result = self.service.patch_product_selling_or_display_status(conn, params)
->>>>>>> 7aede4668d2b2047690b63848700a8889aa71da1
             
             conn.commit()
             
@@ -325,15 +320,8 @@ class ProductColorView(MethodView):
         conn = None
         try:
             conn = get_connection()
-<<<<<<< HEAD
             result = self.service.get_products_color_list(conn)
             return get_response(result)
-=======
-            if conn:
-                result = self.service.get_products_color_list(conn)
-
-            return get_response(result), 200
->>>>>>> 7aede4668d2b2047690b63848700a8889aa71da1
 
         finally:
             try:
@@ -359,10 +347,7 @@ class ProductSizeView(MethodView):
             except Exception:
                 raise DatabaseCloseFail('서버와 연결을 끊는 도중 알 수 없는 에러가 발생했습니다.')
 
-<<<<<<< HEAD
-=======
             return get_response(result), 200
->>>>>>> 7aede4668d2b2047690b63848700a8889aa71da1
 
 class ProductContentImageView(MethodView):
     def __init__(self, service):
