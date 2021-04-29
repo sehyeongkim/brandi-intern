@@ -75,6 +75,7 @@ class DataNotExists(CustomUserError):
         status_code = 500
         if not dev_error_message:
             dev_error_message = "order status type id doesn't exist"
+        super().__init__(status_code, dev_error_message, error_message)
 
 class IsInt(AbstractRule):
     def validate(self, value):

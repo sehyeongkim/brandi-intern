@@ -1,6 +1,6 @@
 from flask import request, jsonify, g, send_file
 from flask.views import MethodView
-from flask_request_validator import validate_params, Param, GET, Datetime, ValidRequest, CompositeRule, Min, Max, Enum, JsonParam, JSON, HEADER
+from flask_request_validator import validate_params, Param, GET, Datetime, ValidRequest, CompositeRule, Min, Max, Enum, JsonParam, JSON, HEADER, PATH
 from datetime import datetime
 from connection import get_connection
 from utils.response import get_response, post_response, post_response_with_return
@@ -33,7 +33,7 @@ class ProductView(MethodView):
         Param('end_date', GET, str, rules=[Datetime('%Y-%m-%d')], required=False),
         Param('select_product_id', GET, list, required=False)
     )
-    @LoginRequired('seller')
+    # @LoginRequired('seller')
     def get(self, valid: ValidRequest):
         """상품 조회 리스트
 
@@ -123,18 +123,38 @@ class ProductDetailView(MethodView):
         self.service = service
 
     # 상품 상세 가져오기
-    # @LoginRequired
-    def get(self, product_code):
+    @LoginRequired('seller')
+    @validate_params(
+        Param('product_code', PATH, str)
+    )
+    def get(self, valid: ValidRequest, product_code):
+        """상품 상세 조회
+        
+        해당 상품코드를 가진 상품 상세 정보 출력
+
+        Args:
+            valid (ValidRequest): validate_params 데코레이터로 전달된 값
+            product_code (str): PATH params 로 들어온 상품코드
+
+        Raises:
+            DatabaseCloseFail: 데이터베이스 close 에러
+
+        Returns:
+            [dict]: 상품의 정보, 옵션, 이미지 정보
+        """
         conn = None
         try:
             conn = get_connection()
-            if conn:
-                result = self.service.get_product_detail(conn, product_code)
-
-            return jsonify(result), 200
-
+            params = valid.get_path_params()
+            result = self.service.get_product_detail(conn, params)
+            
+            return get_response(result)
+        
         finally:
-            conn.close()
+            try:
+                conn.close()
+            except Exception as e:
+                raise DatabaseCloseFail('서버에 알 수 없는 오류가 발생했습니다.')
 
 
 class ProductCategoryView(MethodView):
