@@ -1,35 +1,30 @@
 {
   "result": {
-    "data": {
-      "orderDetails": {
-        "brandName": "마크옷",
-        "cartDate": "2021-04-05 11:04:35",
-        "cartNumber": "176",
-        "colorName": "그린",
-        "discountPrice": 18000,
-        "discountRate": 10,
-        "orderDate": "2021-04-05 11:04:35",
-        "orderMessage": null,
-        "orderName": null,
-        "orderNumber": "692",
-        "orderPhone": null,
-        "orderStatus": "결제완료",
-        "originalPrice": 400,
-        "productId": 28,
-        "productName": "anotha tshirt",
-        "quantity": 1,
-        "recipientAddress": null,
-        "recipientAddressDetail": null,
-        "recipientName": null,
-        "recipientPhone": null,
-        "recipientPostalCode": null,
-        "sizeName": "Extra Large",
-        "totalPrice": 18000,
-        "unitOriginalPrice": 400,
-        "userNo": 97
-      },
-      "orderLogs": []
-    }
+    "order_detail": {
+      "address": "강남구 123",
+      "brand_name": "가가",
+      "color": "블랙",
+      "delivery_memo": "문 앞에 놓아주세요",
+      "discount_rate": 15,
+      "discounted_price": 8500,
+      "order_created_at": "2021-04-20 09:00:00",
+      "order_detail_number": "9999",
+      "order_number": "999",
+      "order_status_type": "상품준비",
+      "orderer_name": "lll",
+      "orderer_phone": "12341234",
+      "price": 10000,
+      "product_id": 1,
+      "product_name": "멋진 아우터",
+      "quantity": 2,
+      "recipient": "fffff",
+      "recipient_phone": "01012341234",
+      "size": "Free",
+      "total_price": 17000,
+      "user_id": 9,
+      "zip_code": "06030"
+    },
+    "order_history": []
   },
-  "message": "SUCCESS"
+  "status_code": 200
 }

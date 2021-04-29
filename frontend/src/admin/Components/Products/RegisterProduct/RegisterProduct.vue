@@ -46,7 +46,7 @@ export default {
   mixins: [
     AdminApiMixin
   ],
-  data () {
+  data() {
     return {
       dataStore: new Vue(store),
       tabNo: 0,
@@ -58,19 +58,20 @@ export default {
     ProductSaleInfoForm,
     ProductOptionInfoForm
   },
-  mounted () {
+  mounted() {
     // this.dataStore.getDetail()
     // 상품 컬러 및 카테고리 정보 가져오기
     // productNo
-    this.dataStore.getMeta()
+    this.dataStore.getColorList()
+    this.dataStore.getSizeList()
     this.dataStore.getDetail(this.$route.params.productNo)
     document.addEventListener('scroll', this.scrollEvent)
   },
-  destroyed () {
+  destroyed() {
     document.removeEventListener('scroll', this.scrollEvent)
   },
   methods: {
-    scrollEvent (event) {
+    scrollEvent(event) {
       const pageContents = this.$refs.pageContent
       const len = pageContents.length
       // 마지막은 끝으로 인식
@@ -85,12 +86,12 @@ export default {
         }
       }
     },
-    scrollTab (tabNo) {
+    scrollTab(tabNo) {
       const pageContents = this.$refs.pageContent
       const elTop = Utils.getOffset(this.$refs.pageContent[0].$el).top
       window.scrollTo({ top: Utils.getOffset(pageContents[tabNo].$el).top - elTop, behavior: 'smooth' })
     },
-    save () {
+    save() {
       if (this.$route.params.productNo) {
         this.dataStore.putProduct(this.$route.params.productNo)
       } else {
@@ -120,7 +121,7 @@ export default {
     }
   },
   watch: {
-    tabNo (v) {
+    tabNo(v) {
       // console.log('changeV', v)
     }
   }
