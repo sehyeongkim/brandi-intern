@@ -86,6 +86,8 @@ class RequiredDataError(CustomUserError):
     def __init__(self, error_message, dev_error_message=None):
         status_code = 400
         dev_error_message = "required data is needed"
+        if not dev_error_message:
+            dev_error_message = "order status type id doesn't exist"
         super().__init__(status_code, dev_error_message, error_message)
 
 class IsInt(AbstractRule):
@@ -111,7 +113,13 @@ class IsRequired(AbstractRule):
         if not value:
             raise RuleError('invalid request')
         return value
-        
+
+class IsBool(AbstractRule):
+    def validate(self, value):
+        if not isinstance(value, bool):
+            raise RuleError('invalid request')
+        return value
+
 class SignUpFail(CustomUserError):
     def __init__(self, error_message, dev_error_message=None):
         status_code = 400

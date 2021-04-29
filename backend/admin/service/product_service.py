@@ -1,22 +1,28 @@
 import random, string, uuid
-from datetime import datetime
 from flask import g
 from admin.model import ProductDao
 from datetime import timedelta, datetime
-from utils.custom_exception import StartDateFail
+from utils.custom_exception import StartDateFail, DataNotExists
 import xlwt
 from io import BytesIO
-# from flask import send_file
+import copy
 
 from connection import get_s3_connection
 
-from utils.validation import validate_integer, validate_boolean, validate_datetime, validate_float, validate_string
+from utils.validation import (
+                                validate_integer, 
+                                validate_boolean, 
+                                validate_datetime, 
+                                validate_float, 
+                                validate_string
+)
 from config import BUCKET_NAME, REGION
+from utils.constant import (
+                            START_DATE,
+                            END_DATE,
+                            PRODUCT_INFO_NOTICE
+)
 
-
-START_DATE = datetime(1111, 1, 1, 0, 0)
-END_DATE = datetime(9999, 12, 31, 23, 59)
-PRODUCT_INFO_NOTICE = "상품 상세 참조"
 
 class ProductService:
     def __new__(cls, *args, **kwargs):
@@ -26,7 +32,6 @@ class ProductService:
 
     def __init__(self):
         self.product_dao = ProductDao()
-
     
     # 상품 리스트 가져오기
     def get_products_list(self, conn, params, headers):
@@ -253,12 +258,173 @@ class ProductService:
         return self.product_dao.insert_image_url_dao(conn, params)
 
     # 상품 리스트에서 상품의 판매여부, 진열여부 수정
-    def patch_product_selling_or_display_status(self, conn, body):
-        return self.product_dao.patch_product(conn, body)
+    def patch_product_selling_or_display_status(self, conn, params):
+        """상품 판매, 진열 수정 함수
+
+        요청으로 들어온 JSON 으로 해당 상품의 진열, 판매 상태를 변경
+
+        Args:
+            conn (Connection): DB 커넥션 객체
+            params (list):
+                [
+                    {"product_id" : 상품아이디, "selling" : 판매여부, "display" : 진열여부},
+                    {"product_id" : 상품아이디, "selling" : 판매여부, "display" : 진열여부},
+                    {"product_id" : 상품아이디, "selling" : 판매여부, "display" : 진열여부}
+                    ...
+                ]
+
+        Returns:
+            [list]: 변경하려는 상품이 데이터베이스에 존재하지 않거나 권한이 없는 경우의 상품리스트
+        """
+        # 데이터베이스 상품 조회 후 tuple 형태 변환
+        product_check_results = tuple(map(lambda d:d.get('product_id'), self.product_dao.check_product_exists(conn, params)))
+        
+        # 해당 상품이 없거나 권한이 없을 경우 return
+        if not product_check_results:
+            return params
+
+        # 데이터베이스에 없는 상품 리스트
+        product_check_fail_result = list()
+        
+        # 데이터베이스에 있는 상품 리스트
+        product_check_success_result = list()
+        
+        # 요청으로 들어온 값을 복합객체, 내용 복사
+        requests_data = copy.deepcopy(params)
+
+        # 요청으로 들어온 상품 과 데이터베이스 비교 후 리스트 분리
+        for request_data in requests_data:
+            if request_data.get('product_id') in product_check_results:
+                product_check_success_result.append(request_data)
+            else:
+                product_check_fail_result.append(request_data)
+
+
+        # 상품 판매, 진열 상태 변경
+        self.product_dao.patch_product_selling_or_display_status(conn, product_check_success_result)
+        
+        # 상품 히스토리에 변경 이력 저장
+        self.product_dao.insert_product_history(conn, product_check_success_result)
+
+        return product_check_fail_result
+
     
     # 상품 상세 가져오기
-    def get_product_detail(self, conn, product_code):
-        return self.product_dao.get_product_detail(conn, product_code)
+    def get_product_detail(self, conn, params):
+        """상품 코드로 상품 상세 조회 서비스
+
+        상품코드로 상품정보, 상품이미지, 상품옵션 정보를 가져오고 결과 fomatting 수행
+
+        Args:
+            conn (Connection): DB 커넥션 객체
+            params (dict)): { 'product_code' : PATH로 받은 상품코드 }
+
+        Returns:
+            [dict]]: product_detail = {
+                        'basic_info': {
+                            'product_code': 상품코드,
+                            'selling': 판매여부,
+                            'displayed': 진열여부,
+                            'property': 셀러속성,
+                            'category': 상품카테고리,
+                            'sub_category': 상품하위카테고리,
+                            'product_info_notice': {
+                                'manufacturer': 제조사,
+                                'date_of_manufacture': 제조일자,
+                                'origin': 원산지
+                            },
+                            'title': 상품명,
+                            'simple_description': 상품 한줄 설명,
+                            'images': [
+                                {
+                                    'image_url' : 상품이미지 URL,
+                                    'is_represent' : 대표상품 이미지 여부 1:대표, 0:대표아님
+                                }
+                            ],
+                            'detail_description': 제품상세 설명
+                        },
+                        'option_info': [
+                            {
+                                'option_id': 옵션번호,
+                                'color': 칼라,
+                                'size': 사이즈,
+                                'stock': 재고
+                            }
+                        ],
+                        'selling_info': {
+                            'price': 상품가격,
+                            'discount_rate': 할인율,
+                            'discount_price': 할인가격,
+                            'discount_start_date': 할인 시작일,
+                            'discount_end_date': 할인 끝일,
+                            'min_amount': 최소판매수량,
+                            'max_amount': 최대판매수량
+                        }
+                    }
+        """
+        product_result = self.product_dao.get_product_detail(conn, params)
+        
+        if not product_result:
+            raise DataNotExists('상품을 조회할 수 없습니다.', 'product does not exists or Forbidden')
+
+        product_image_result = self.product_dao.get_product_images_by_product_code(conn, params)
+
+        if not product_image_result:
+            raise DataNotExists('상품이미지를 조회할 수 없습니다.', 'product image does not exists or Forbidden')
+
+        product_option_result = self.product_dao.get_product_options_by_product_code(conn, params)
+
+        if not product_option_result:
+            raise DataNotExists('상품옵션을 조회할 수 없습니다.', 'product option does not exists or Forbidden')
+
+        product_detail = {
+            'basic_info': {
+                'product_code': product_result['product_code'],
+                'selling': product_result['is_selling'],
+                'displayed': product_result['is_displayed'],
+                'property': product_result['property'],
+                'property_id': product_result['property_id'],
+                'category': product_result['category'],
+                'category_id': product_result['category_id'],
+                'sub_category': product_result['sub_category'],
+                'sub_category_id': product_result['sub_category_id'],
+                'product_info_notice': {
+                    'manufacturer': product_result['manufacturer'],
+                    'date_of_manufacture': product_result['date_of_manufacture'],
+                    'origin': product_result['origin']
+                },
+                'title': product_result['title'],
+                'simple_description': product_result['simple_description'],
+                'images': [
+                    {
+                        'image_url' : image['image_url'],
+                        'is_represent' : image['is_represent']
+                    }
+                for image in product_image_result],
+                'detail_description': '<html>'
+            },
+            'option_info': [
+                {
+                    'option_id': option['id'],
+                    'color': option['color'],
+                    'color_id': option['color_id'],
+                    'size': option['size'],
+                    'size_id': option['size_id'],
+                    'stock': option['stock']
+                }
+            for option in product_option_result],
+            'selling_info': {
+                'price': product_result['price'],
+                'discount_rate': product_result['discount_rate'],
+                'discount_price': product_result['price'] - product_result['price'] * product_result['discount_rate'],
+                'discount_start_date': product_result['discount_start_date'],
+                'discount_end_date': product_result['discount_end_date'],
+                'min_amount': product_result['min_amount'],
+                'max_amount': product_result['max_amount']
+            }
+        }
+
+        return product_detail
     
     # 상품 등록 창에서 seller 검색 master만 가능함
     def search_seller(self, conn, keyword:str):

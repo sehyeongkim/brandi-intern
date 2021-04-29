@@ -13,6 +13,10 @@ def error_handle(app):
 
     에러 처리하는 함수
 
+def error_handle(app):
+#     @app.errorhandler(Exception)
+#     def handle_error(e):
+#         pass
     Args:
         app  : __init__.py에서 파라미터로 app을 전달 받은 값
     Returns:

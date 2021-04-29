@@ -25,63 +25,62 @@
 </template>
 
 <script>
-import Message from "@/admin/utils/message";
-import CommonMixin from "@/admin/mixins/common-mixin";
-import AdminApiMixin from "@/admin/mixins/admin-api";
+import Message from '@/admin/utils/message'
+import CommonMixin from '@/admin/mixins/common-mixin'
+import AdminApiMixin from '@/admin/mixins/admin-api'
 
 export default {
-  name: "login",
+  name: 'login',
   mixins: [AdminApiMixin, CommonMixin],
   data() {
     return {
-      account: "",
-      password: "",
-    };
+      account: '',
+      password: ''
+    }
   },
   methods: {
     goSignUp() {
-      this.$router.push("/admin/signup");
+      this.$router.push('/admin/signup')
     },
     checkValid() {
-      console.log("enter");
+      console.log('enter')
       if ((this.account.length !== 0) | (this.password.length !== 0)) {
-        this.sendSumbit();
+        this.sendSumbit()
       }
     },
 
     // token 물어보기
     sendSumbit() {
       // this.post(this.constants.apiDomain + "/seller/signin", {
-      this.post("/seller/signin", {
+      let res
+      this.post('/seller/signin', {
         id: this.account,
-        password: this.password,
+        password: this.password
       })
         .then((response) => {
-          console.log("response", response);
+          console.log('response', response)
+          res = response
           if (response.data.result.accessToken) {
             localStorage.setItem(
-              "access_token",
+              'access_token',
               response.data.result.accessToken
-            );
+            )
             localStorage.setItem(
-              "user_type_id",
-              response.data.result.userTypeId
-            );
+              'acount_type_id',
+              response.data.result.account_type_id
+            )
           }
         })
         .then(() => {
-          this.$router.push("/admin/sellerdashboard");
+          this.$router.push('/admin/sellerdashboard')
         })
         .catch((err) => {
-          if (err.response) {
-            console.log(err.response);
-            console.log(err.response.message);
-          }
-          Message.error("로그인에 실패하였습니다.");
-        });
-    },
-  },
-};
+          console.log(err)
+          Message.error(res.data.user_error_message)
+        })
+    }
+  }
+}
 </script>
 
 <style lang="scss">
@@ -126,8 +125,8 @@ export default {
       }
     }
 
-    input[type="text"],
-    input[type="password"] {
+    input[type='text'],
+    input[type='password'] {
       margin-bottom: 7px;
       border: 1px solid lightgrey;
       border-radius: 8px;

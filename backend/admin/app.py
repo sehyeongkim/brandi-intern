@@ -1,39 +1,41 @@
+import sys
+sys.path.insert(1, '../')
+
 from flask import Flask
 from flask_cors import CORS
+from flask.json import JSONEncoder
 
-
-from admin.service import (
+from service import (
     ProductService,
     OrderService,
     AccountService
 )
 
-from admin.view import create_endpoints
+from view import create_endpoints
 
 from utils.error_handler import error_handle
+from utils.formatter import CustomJSONEncoder
 
 class Service:
     pass
 
-def create_app(test_config=None):
+def create_app():
     app = Flask(__name__)
 
     CORS(app)
 
-    if test_config is None:
-        app.config.from_pyfile("config.py")
-    else:
-        app.config.update(test_config)
-    
     services = Service()
 
     services.product_service = ProductService()
     services.order_service = OrderService()
     services.account_service = AccountService()
 
+    app.json_encoder = CustomJSONEncoder
     # endpoint 생성
     create_endpoints(app, services)
-
+    
+    app.json_encoder = CustomJSONEncoder
+    
     error_handle(app)
 
     return app
