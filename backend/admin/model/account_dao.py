@@ -375,14 +375,19 @@ class AccountDao:
             FROM 
                 sellers as s
             INNER JOIN
-                managers as m ON s.id = m.seller_id
+                managers as m ON m.id = (
+                    SELECT MIN(id) FROM managers WHERE seller_id = s.id
+                )
             INNER JOIN
                 sub_property as sb ON s.sub_property_id = sb.id
             INNER JOIN
                 seller_status_type as sst ON sst.id = s.seller_status_type_id
             WHERE
                     s.created_at BETWEEN '0000-00-00 00:00:00' AND '9999-12-30 00:00:00'
+                AND 
+                    s.is_deleted = 0 
         """
+        # is_deleted가 1인 것은 표출 안되도록 추가
 
         sql_1 = select + seller_info + condition
 
@@ -445,7 +450,7 @@ class AccountDao:
                 LIMIT
                     %(limit)s
                 OFFSET
-                    %(page)s
+                    %(offset)s
         """
 
         count = """
@@ -469,14 +474,39 @@ class AccountDao:
                 sellers 
             SET
                 seller_status_type_id = %(to_status_type_id)s
+            WHERE   
+                id = %(seller_id)s
+        """
+
+        with conn.cursor() as cursor:
+            cursor.execute(sql, params)
+
+    def check_if_store_out(self, conn, params):
+        sql = """
+            SELECT
+                seller_status_type_id
+            FROM
+                sellers
+            WHERE
+                id = %(seller_id)s
+        """
+        
+        with conn.cursor() as cursor:
+            cursor.execute(sql, params)
+            return cursor.fetchone()
+
+    def change_seller_is_deleted(self, conn, params):
+        sql = """
+            UPDATE 
+                sellers
+            SET 
+                is_deleted = 1
             WHERE
                 id = %(seller_id)s
         """
 
         with conn.cursor() as cursor:
             cursor.execute(sql, params)
-            
-
 
     def change_seller_history(self, conn, params):
         sql = """
@@ -532,8 +562,10 @@ class AccountDao:
         sql_select_seller = """
             SELECT
                 s.id AS seller_id,
+                s.seller_identification,
                 s.profile_image_url,
                 sst.name AS seller_status_type,
+                s.seller_status_type_id,
                 s.korean_brand_name,
                 s.english_brand_name,
                 s.seller_identification,
@@ -554,7 +586,7 @@ class AccountDao:
             INNER JOIN
                 seller_status_type AS sst ON s.seller_status_type_id = sst.id
             WHERE
-                seller_identification = %(seller_identification)s
+                s.id = %(seller_id)s
         """
 
         sql_select_manager = """
@@ -567,9 +599,8 @@ class AccountDao:
                 sellers AS s
             INNER JOIN
                 managers AS m ON s.id = m.seller_id
-            WHERE
-                s.seller_identification = %(seller_identification)s;
-            ;
+            WHERE 
+                s.id = %(seller_id)s;
         """
         with conn.cursor() as cursor:
             cursor.execute(sql_select_seller, params)
@@ -582,3 +613,232 @@ class AccountDao:
 
             return seller_info, manager_info
 
+
+    def get_managers_count(self, conn, params):
+        sql = """
+            SELECT
+                id AS manager_id,
+                seller_id,
+                name AS manager_name,
+                phone AS manager_phone,
+                email AS manager_email
+            FROM
+                managers
+            WHERE
+                    seller_id = %(seller_id)s
+                AND
+                    is_deleted = 0
+        """
+
+        with conn.cursor() as cursor:
+            cursor.execute(sql, params)
+            return cursor.fetchall()
+            
+
+    def update_managers_and_history(self, conn, manager_params):
+        sql_update_manager = """
+            UPDATE
+                managers
+            SET
+                name = %(manager_name)s,
+                email = %(manager_email)s,
+                phone = %(manager_phone)s
+            WHERE
+                    seller_id = %(seller_id)s 
+                AND
+                    id = %(manager_id)s
+            """
+        
+        sql_insert_history = """
+            INSERT INTO managers_history (
+                manager_id,
+                name,
+                phone,
+                email,
+                is_deleted,
+                modify_account_id
+            ) 
+            SELECT 
+                id,
+                name,
+                phone,
+                email,
+                is_deleted,
+                %(account_id)s
+            FROM
+                managers
+            WHERE
+                    seller_id = %(seller_id)s
+                AND
+                    id = %(manager_id)s
+        """
+            
+        with conn.cursor() as cursor:
+            cursor.executemany(sql_update_manager, manager_params)
+        
+        with conn.cursor() as cursor:
+            cursor.executemany(sql_insert_history, manager_params)
+
+    def delete_managers_and_history(self, conn, current_managers_in_db):
+        sql_delete_manager = """
+            UPDATE
+                managers
+            SET
+                is_deleted = 1
+            WHERE
+                    seller_id = %(seller_id)s
+                AND
+                    id = %(manager_id)s
+        """
+
+        sql_insert_history = """
+            INSERT INTO managers_history (
+                manager_id,
+                name,
+                phone,
+                email,
+                is_deleted,
+                modify_account_id
+            ) 
+            SELECT 
+                id,
+                name,
+                phone,
+                email,
+                is_deleted,
+                %(account_id)s
+            FROM
+                managers
+            WHERE
+                    seller_id = %(seller_id)s
+                AND
+                    id = %(manager_id)s
+        """
+
+        with conn.cursor() as cursor:
+            cursor.executemany(sql_delete_manager, current_managers_in_db)
+
+        with conn.cursor() as cursor:
+            cursor.executemany(sql_insert_history, current_managers_in_db)
+
+    def insert_managers_and_history(self, conn, manager_params):
+        sql_insert_manager = """
+            INSERT INTO managers (
+                seller_id,
+                name,
+                phone,
+                email
+            ) VALUES (
+                %(seller_id)s,
+                %(manager_name)s,
+                %(manager_phone)s,
+                %(manager_email)s
+            )
+        """
+
+        sql_insert_history = """
+            INSERT INTO managers_history (
+                manager_id,
+                name,
+                phone,
+                email,
+                is_deleted,
+                modify_account_id
+            ) 
+            SELECT 
+                id,
+                name,
+                phone,
+                email,
+                is_deleted,
+                %(account_id)s
+            FROM
+                managers
+            WHERE
+                seller_id = %(seller_id)s
+        """
+
+        with conn.cursor() as cursor:
+            cursor.executemany(sql_insert_manager, manager_params)
+        
+        with conn.cursor() as cursor:
+            cursor.executemany(sql_insert_history, manager_params)
+
+
+    def update_seller_info(self, conn, params):
+        sql_update_seller = """
+            UPDATE
+                sellers
+            SET
+                property_id = (SELECT property_id FROM sub_property WHERE id = %(seller_sub_property_id)s),
+                sub_property_id = %(seller_sub_property_id)s,
+                zip_code = %(zip_code)s,
+                address = %(address)s,
+                detail_address = %(detail_address)s,
+                korean_brand_name = %(korean_brand_name)s,
+                english_brand_name = %(english_brand_name)s,
+                customer_center_number = %(customer_center_phone)s,
+                customer_center = %(customer_center)s,
+                profile_image_url =%(profile_image_url)s,
+                background_image_url =%(background_image_url)s,
+                description = %(description)s,
+                detail_description = %(detail_description)s,
+                open_at = %(customer_open_time)s,
+                close_at = %(customer_close_time)s
+            WHERE
+                id = %(seller_id)s;
+            """
+
+        with conn.cursor() as cursor:
+            cursor.execute(sql_update_seller, params)
+    
+    
+    def insert_seller_history(self, conn, params):
+        sql = """
+            INSERT INTO sellers_history (
+                seller_id,
+                modify_account_id,
+                is_deleted,
+                property_id,
+                sub_property_id,
+                seller_status_type_id,
+                zip_code,
+                address,
+                detail_address,
+                korean_brand_name,
+                english_brand_name,
+                customer_center_number,
+                profile_image_url,
+                background_image_url,
+                description,
+                detail_description,
+                open_at,
+                close_at
+            )
+            SELECT
+                id,
+                %(account_id)s,
+                is_deleted,
+                property_id,
+                sub_property_id,
+                seller_status_type_id,
+                zip_code,
+                address,
+                detail_address,
+                korean_brand_name,
+                english_brand_name,
+                customer_center_number,
+                profile_image_url,
+                background_image_url,
+                description,
+                detail_description,
+                open_at,
+                close_at
+            FROM
+                sellers
+            WHERE
+                id = %(seller_id)s;
+        """
+
+        with conn.cursor() as cursor:
+            cursor.execute(sql, params)

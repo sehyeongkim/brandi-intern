@@ -67,6 +67,7 @@ class OrderService:
                 "order_list" : [
                     {
                         "color": result["color_name"],
+                        "orders_detail_id": result["orders_detail_id"],
                         "order_created_at": result["created_at"],
                         "order_detail_number": result["detail_order_number"],
                         "brand_name": result["korean_brand_name"],

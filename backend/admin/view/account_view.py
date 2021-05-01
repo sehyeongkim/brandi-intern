@@ -1,6 +1,6 @@
 from flask.views import MethodView
 from flask import request, jsonify, g
-from flask_request_validator import Param, Pattern, JSON, validate_params, ValidRequest, GET, Min, Enum
+from flask_request_validator import Param, Pattern, JSON, validate_params, ValidRequest, GET, Min, Enum, HEADER
 from flask_request_validator.error_formatter import demo_error_formatter
 from flask_request_validator.exceptions import InvalidRequestError, InvalidHeadersError, RuleError
 
@@ -97,6 +97,7 @@ class SellerListView(MethodView):
 
     @LoginRequired("seller")
     @validate_params(
+        Param('Content-Type', HEADER, str, required=False),
         Param('id', GET, int, required=False),
         Param('seller_identification', GET, str, required=False),
         Param('english_brand_name', GET, str, required=False),
@@ -123,15 +124,20 @@ class SellerListView(MethodView):
         conn = None
         try:
             params = valid.get_params()
+            headers = valid.get_headers()
             conn=get_connection()
-            seller_list_results = self.service.get_seller_list(conn, params)
+            seller_list_results = self.service.get_seller_list(conn, params, headers)
+
+            if 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' in headers.values():
+                today = datetime.today().strftime('%Y-%m-%d')
+                return send_file(seller_list_results, attachment_filename=f'{today}seller_list.xls', as_attachment=True)
 
             return get_response(seller_list_results), 200
         finally:
             conn.close()
     
     @LoginRequired("seller")
-    def patch(self):
+    def patch(self, seller_id):
         """셀러 계정의 입점 상태 변화
 
         셀러 계정의 입점 상태를 변화하는 함수(입점신청, 입점, 휴점, 휴점신청 등)
@@ -149,15 +155,17 @@ class SellerListView(MethodView):
             conn = get_connection()
 
             params["account_id"] = g.account_id
+            params["seller_id"] = seller_id
+            params
             self.service.change_seller_status_type(conn, params)
 
             conn.commit()
 
             return get_response("SUCCESS")
-        # except Exception as e:
-        #     if conn:
-        #         conn.rollback()
-        #     raise e
+        except Exception as e:
+            if conn:
+                conn.rollback()
+            raise e
         finally:
             try:
                 conn.close()
@@ -170,7 +178,7 @@ class SellerView(MethodView):
         self.service=service
     
     @LoginRequired("seller")
-    def get(self, seller_identification):
+    def get(self, seller_id):
         """셀러 계정 수정을 위한 상세정보
 
         셀러 계정 수정을 위해 가져오는 상세 정보들을 표출
@@ -187,11 +195,9 @@ class SellerView(MethodView):
         
         conn = None
         try:
-            path_param = request.view_args["seller_identification"]
             params = dict()
-            params["seller_identification"] = path_param
-            conn=get_connection()
-
+            params["seller_id"] = seller_id
+            conn = get_connection()
             seller_info = self.service.get_seller_info(conn, params)
 
             return get_response(seller_info), 200
@@ -200,3 +206,38 @@ class SellerView(MethodView):
                 conn.close()
             except Exception as e:
                 raise DatabaseCloseFail('서버에 알 수 없는 오류가 발생했습니다.')
+    
+
+    @LoginRequired("seller")
+    def patch(self, seller_id):
+        conn = None
+        try:
+            params = request.get_json()
+            conn = get_connection()
+            params["account_id"] = g.account_id
+            params["account_type_id"] = g.account_type_id
+            params["seller_id"] = seller_id
+            manager_params = params["manager_info_list"]
+            del params["manager_info_list"]
+
+
+            # manager id 다 가져오기/ 원래꺼 지우고 다시 하는게 더 나을듯? / 데이터베이스에 더 적게 잇을 때 -> 추가/ 데이터베이스에 더 많을 때 -> 삭제
+            for manager_param in manager_params:
+                manager_param["account_id"] = g.account_id
+                manager_param["seller_id"] = seller_id
+            
+            self.service.update_seller_info(conn, params, manager_params)
+
+            conn.commit()
+
+            return get_response("SUCCESS")
+        except Exception as e:
+            if conn:
+                conn.rollback()
+            raise e
+        finally:
+            try:
+                conn.close()
+            except Exception as e:
+                raise DatabaseCloseFail('서버에 알 수 없는 오류가 발생했습니다.')
+        

@@ -30,8 +30,9 @@ class OrderDao:
             SELECT 
         """
         order_info = """
-                DATE_FORMAT(o.created_at, '%%Y-%%m-%%d %%h:%%i:%%s') AS created_at,
+                o.created_at AS created_at,
                 o.order_number, 
+                d.id AS orders_detail_id,
                 d.detail_order_number, 
                 s.korean_brand_name,
                 p.title,  
@@ -296,7 +297,7 @@ class OrderDao:
         sql_select_info = """
             SELECT 
                 o.order_number, 
-                DATE_FORMAT(o.created_at, '%%Y-%%m-%%d %%h:%%i:%%s') AS created_at,
+                o.created_at AS created_at,
                 od.detail_order_number, 
                 ost.name AS order_status_type, 
                 u.phone as order_phone,
@@ -349,7 +350,7 @@ class OrderDao:
 
         sql_select_history = """
             SELECT 
-                DATE_FORMAT(odh.updated_at, '%%Y-%%m-%%d %%h:%%i:%%s') AS updated_at,
+                odh.updated_at AS updated_at,
                 ost.name AS order_status_type
             FROM 
                 orders_detail AS od

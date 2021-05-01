@@ -1,12 +1,14 @@
 import bcrypt, jwt
 
+from flask import g
 from cachetools import TTLCache, cached
 import time
 from config import SECRET_KEY
 from admin.model import AccountDao
-from utils.custom_exception import SignUpFail, SignInError, TokenCreateError
-
+from utils.custom_exception import SignUpFail, SignInError, TokenCreateError, MasterLoginRequired
+from utils.constant import MASTER, SELLER, USER, STORE_OUT, STORE_REJECTED
 from utils.formatter import CustomJSONEncoder
+
 
 class AccountService:
     def __new__(cls, *args, **kwargs):
@@ -151,14 +153,11 @@ class AccountService:
             elif seller_status_type in ["입점거절", "퇴점"]:
                 continue
 
-        # 캐시를 이용했을 때 시간을 측정
-        # s = time.time()
-        # print("status_type: ", time.time() -s)    
         return results
 
-    def get_seller_list(self, conn, params):
+    def get_seller_list(self, conn, params, headers):
 
-        params['page'] = (params['page'] - 1) * params['limit']
+        params['offset'] = (params['page'] - 1) * params['limit']
 
         if 'end_date' in params:
             params['end_date'] +=  timedelta(days=1)
@@ -170,12 +169,18 @@ class AccountService:
         if 'start_date' in params and 'end_date' in params and params['start_date'] > params['end_date']:
             raise  StartDateFail('조회 시작 날짜가 끝 날짜보다 큽니다.')
 
+        # HEADERS로 엑셀파일 요청
+        if 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' in headers.values():
+            result = self.account_dao.get_seller_list(conn, params, headers)
+            output = BytesIO()
+
+
         seller_list, seller_count = self.account_dao.get_seller_list(conn, params)
 
         seller_list_info = {
             "seller_list": [
                 {
-                    "id": seller["seller_id"],
+                    "seller_id": seller["seller_id"],
                     "seller_identification": seller["seller_identification"],
                     "english_brand_name": seller["english_brand_name"],
                     "korean_brand_name": seller["korean_brand_name"],
@@ -194,7 +199,11 @@ class AccountService:
     
     def change_seller_status_type(self, conn, params):
         self.account_dao.change_seller_status_type(conn, params)
+        # 데이터베이스 다시 확인하고 수정 입점거절, 퇴점으로 바꾸기
+        if self.account_dao.check_if_store_out(conn, params)["seller_status_type_id"] in [STORE_REJECTED, STORE_OUT]:
+            self.account_dao.change_seller_is_deleted(conn, params)
         self.account_dao.change_seller_history(conn, params)
+
 
     def get_seller_info(self, conn, params):
         """셀러 상세 정보 formatting
@@ -241,6 +250,7 @@ class AccountService:
             "profile_image_url": seller_info["profile_image_url"],
             "seller_status_type": seller_info["seller_status_type"],
             "korean_brand_name": seller_info["korean_brand_name"],
+            "seller_status_type_id": seller_info["seller_status_type_id"],
             "english_brand_name": seller_info["english_brand_name"],
             "seller_identification": seller_info["seller_identification"],
             "background_image_url": seller_info["background_image_url"],
@@ -266,3 +276,44 @@ class AccountService:
         }
 
         return seller_result
+
+
+    def update_seller_info(self, conn, params, manager_params):
+
+        # 마스터인지 셀러인지 확인
+        # 셀러인 경우 들어오면 안되는 정보들은 막아줌
+        if params.get("account_type_id") == SELLER:
+            if params.get("seller_sub_property") or params.get("seller_sub_property_id") or params.get("korean_brand_name") or params.get("english_brand_name"):
+                raise MasterLoginRequired("수정 권한이 없습니다.")
+
+        # db에 있는 현재 담당자
+        current_managers_in_db = self.account_dao.get_managers_count(conn, params)
+        # 현재 db에 있는 manager_id를 요청값에 추가하기 위함
+        for i, manager_info in enumerate(manager_params):
+            for j, current_manager_in_db in enumerate(current_managers_in_db):
+                if i == j:
+                    manager_info["manager_id"] = current_manager_in_db["manager_id"]
+                    continue
+        
+        # db에 있는 담당자수가 더 많을 때 -> 삭제해야 함
+        if len(current_managers_in_db) > len(manager_params):
+            # 요청값을 기준으로 수정, 삭제할 개수 정하기
+            self.account_dao.update_managers_and_history(conn, manager_params[:len(manager_params)])
+
+            # db에 담당자 수가 많을 경우에는 account_id가 필요함
+            for current_manager_in_db in current_managers_in_db:
+                current_manager_in_db["account_id"] = g.account_id
+            self.account_dao.delete_managers_and_history(conn, current_managers_in_db[len(manager_params):])
+        
+        # db에 있는 담당자수와 요청 수가 같을 때 -> 수정만 함
+        elif len(current_managers_in_db) == len(manager_params):
+            self.account_dao.update_managers_and_history(conn, manager_params)
+        
+        # db에 있는 담당자수가 더 적을 때 -> 추가해야 함
+        else:
+            # 현재 db에 있는 담당자 수를 기준으로 수정, 추가할 개수 정하기
+            self.account_dao.update_managers_and_history(conn, manager_params[:len(current_managers_in_db)])
+            self.account_dao.insert_managers_and_history(conn, manager_params[len(current_managers_in_db):])
+
+        self.account_dao.update_seller_info(conn, params)
+        self.account_dao.insert_seller_history(conn, params)
