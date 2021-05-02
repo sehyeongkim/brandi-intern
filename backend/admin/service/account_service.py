@@ -138,7 +138,27 @@ class AccountService:
 
     @cached(cache = TTLCache(12, 10))
     def get_status_type(self, conn, seller_status_type):
+        """셀러 상태를 가져오는 함수
 
+        DB로부터 입점, 휴점, 퇴점 등 셀러의 상태 관련 데이터를 가져오는 함수
+
+        Args:
+            conn (Connection): DB커넥션 객체
+            seller_status_type (str): 현재 셀러의 입점 상태
+
+        Returns:
+            results (list): 
+                [
+                    {
+                        'button_name': 버튼 이름, 
+                        'to_status_type_id': 버튼을 클릭하면 이동하는 상태 id
+                    }, 
+                    {
+                        'button_name': 버튼 이름, 
+                        'to_status_type_id': 버튼을 클릭하면 이동하는 상태 id
+                    }
+                ]
+        """
         # status_name, seller_status_type_id, button_id, button_name, to_status_type_id가 포함된 리스트        
         seller_status_type_button_lists = self.account_dao.get_seller_status(conn, seller_status_type)
 
@@ -152,11 +172,61 @@ class AccountService:
                 results.append(seller_button_info)
             elif seller_status_type in ["입점거절", "퇴점"]:
                 continue
-
+        
         return results
 
     def get_seller_list(self, conn, params, headers):
+        """셀러 계정 리스트
 
+        특정 조건(params)에 따라서 표출되는 셀러 계정 리스트
+
+        Args:
+            conn (Connection): DB커넥션 객체
+            params (dict): 
+                {
+                    'page': 페이지,
+                    'limit': 노출 개수,
+                    'seller_id': 셀러 pk 번호,
+                    'seller_identification': 셀러 아이디,
+                    'english_brand_name': 셀러 영문 브랜드명,
+                    'korean_brand_name': 셀러 한글 브랜드명,
+                    'manager_name': 담당자 이름,
+                    'seller_status_type': 셀러 현재 입점 상태,
+                    'manager_phone': 담당자 전화번호,
+                    'manager_email': 담당자 이메일,
+                    'sub_property': 셀러 2차속성,
+                    'seller_created_date': 셀러 생성일
+                }
+            headers (dict): 
+                {
+                    'Content-Type': 'application/vnd.ms-excel'
+                }
+
+        Raises:
+            StartDateFail: 조회 시작 날짜가 끝 날짜보다 클 경우 발생하는 에러
+
+        Returns:
+           seller_list_info (list) : 
+                [
+                    {
+                        "seller_id": 셀러 pk번호,
+                        "seller_identification": 셀러 아이디,
+                        "english_brand_name": 셀러 한글 브랜드명,
+                        "korean_brand_name": 셀러 영어 브랜드명,
+                        "manager_name": 담당자 이름,
+                        "seller_status_type": 셀러 입점 상태,
+                        "seller_status_type_button": 셀러 입점 상태 변경 버튼,
+                        "manager_phone": 담당자 전화번호,
+                        "manager_email": 담당자 이메일,
+                        "sub_property": 셀러 2차 속성,
+                        "seller_created_date": 셀러 생성 날짜
+                    } for seller in seller_list
+                ],
+                "total_count": seller_count["count"]
+        """
+
+        print(headers)
+        print(type(headers))
         params['offset'] = (params['page'] - 1) * params['limit']
 
         if 'end_date' in params:
@@ -198,8 +268,21 @@ class AccountService:
         return seller_list_info
     
     def change_seller_status_type(self, conn, params):
+        """셀러 상태 변경 함수
+
+        셀러의 상태 변경 버튼을 누를 시, 셀러의 입점상태가 변경되는 함수
+
+        Args:
+            conn (Connection): DB커넥션 객체
+            params (dict): 
+                {
+                    'to_status_type_id': 변경될 셀러 상태 번호, 
+                    'account_id': 회원 pk 번호, 
+                    'seller_id': 셀러 pk 번호
+                }
+        """
         self.account_dao.change_seller_status_type(conn, params)
-        # 데이터베이스 다시 확인하고 수정 입점거절, 퇴점으로 바꾸기
+        
         if self.account_dao.check_if_store_out(conn, params)["seller_status_type_id"] in [STORE_REJECTED, STORE_OUT]:
             self.account_dao.change_seller_is_deleted(conn, params)
         self.account_dao.change_seller_history(conn, params)
@@ -211,8 +294,8 @@ class AccountService:
         데이터베이스에서 가져온 셀러 정보를 dictionary 형태로 formatting하는 함수
 
         Args:
-            conn (Connection): 데이터베이스 커넥션 객체
-            params (dict): {"seller_identification" : 셀러 아이디
+            conn (Connection): DB커넥션 객체
+            params (dict): {"seller_identification" : 셀러 아이디}
 
         Returns:
             seller_result (dict): 셀러 정보가 formatting된 결과
@@ -279,6 +362,53 @@ class AccountService:
 
 
     def update_seller_info(self, conn, params, manager_params):
+        """셀러 수정 
+
+        셀러의 정보를 수정하는 함수
+
+        Args:
+            conn (Connection): DB커넥션 객체
+            params (dict): 
+                {
+                    'profile_image_url': 셀러 프로필 이미지, 
+                    'background_image_url': 배경 이미지, 
+                    'seller_sub_property': 셀러 2차 속성, 
+                    'seller_sub_property_id': 2차 속성 id, 
+                    'korean_brand_name': 셀러 한글 브랜드명, 
+                    'english_brand_name': 셀러 영어 브랜드명, 
+                    'description': 한 줄 소개, 
+                    'detail_description': 상세 소개, 
+                    'zip_code': 우편번호, 
+                    'address': 주소, 
+                    'detail_address': 상세주소, 
+                    'customer_center': 고객센터, 
+                    'customer_center_phone': 고객센터 전화번호, 
+                    'customer_open_time': 고객센터 시작 시간, 
+                    'customer_close_time': 고객센터 마감 시간, 
+                    'delivery_info': 배송 정보, 
+                    'exchange_refund_info': 교환/환불 정보, 
+                    'account_id': 계정 id, 
+                    'account_type_id': 계정 type id, 
+                    'seller_id': 셀러 id
+                }
+            manager_params (list):     
+                "manager_info_list": 
+                [
+                    {
+                        "manager_name": 매니저,
+                        "manager_email": 매니저 이메일,
+                        "manager_phone": 매니저 전화번호
+                    },
+                    {
+                        "manager_name": 매니저2,
+                        "manager_email": 매니저2 이메일,
+                        "manager_phone": 매니저2 전화번호
+                    }
+                ],
+
+        Raises:
+            MasterLoginRequired: 셀러로 로그인시 변경 권한이 없는 정보를 수정하려 했을 때
+        """
 
         # 마스터인지 셀러인지 확인
         # 셀러인 경우 들어오면 안되는 정보들은 막아줌
@@ -287,7 +417,7 @@ class AccountService:
                 raise MasterLoginRequired("수정 권한이 없습니다.")
 
         # db에 있는 현재 담당자
-        current_managers_in_db = self.account_dao.get_managers_count(conn, params)
+        current_managers_in_db = self.account_dao.get_managers_info(conn, params)
         # 현재 db에 있는 manager_id를 요청값에 추가하기 위함
         for i, manager_info in enumerate(manager_params):
             for j, current_manager_in_db in enumerate(current_managers_in_db):
@@ -298,22 +428,27 @@ class AccountService:
         # db에 있는 담당자수가 더 많을 때 -> 삭제해야 함
         if len(current_managers_in_db) > len(manager_params):
             # 요청값을 기준으로 수정, 삭제할 개수 정하기
-            self.account_dao.update_managers_and_history(conn, manager_params[:len(manager_params)])
+            self.account_dao.update_managers_info(conn, manager_params[:len(manager_params)])
+            self.account_dao.insert_managers_history(conn, manager_params[:len(manager_params)])
 
             # db에 담당자 수가 많을 경우에는 account_id가 필요함
             for current_manager_in_db in current_managers_in_db:
                 current_manager_in_db["account_id"] = g.account_id
-            self.account_dao.delete_managers_and_history(conn, current_managers_in_db[len(manager_params):])
+            self.account_dao.delete_managers_info(conn, current_managers_in_db[len(manager_params):])
+            self.account_dao.insert_managers_history(conn, current_managers_in_db[len(manager_params):])
+
         
         # db에 있는 담당자수와 요청 수가 같을 때 -> 수정만 함
         elif len(current_managers_in_db) == len(manager_params):
-            self.account_dao.update_managers_and_history(conn, manager_params)
+            self.account_dao.update_managers_info(conn, manager_params)
         
         # db에 있는 담당자수가 더 적을 때 -> 추가해야 함
         else:
             # 현재 db에 있는 담당자 수를 기준으로 수정, 추가할 개수 정하기
-            self.account_dao.update_managers_and_history(conn, manager_params[:len(current_managers_in_db)])
-            self.account_dao.insert_managers_and_history(conn, manager_params[len(current_managers_in_db):])
+            self.account_dao.update_managers_info(conn, manager_params[:len(current_managers_in_db)])
+            self.account_dao.insert_managers_info(conn, manager_params[len(current_managers_in_db):])
+            self.account_dao.insert_managers_history(conn, manager_params[len(current_managers_in_db):])
 
+        # 셀러 정보 수정 & 셀러 history 추가
         self.account_dao.update_seller_info(conn, params)
         self.account_dao.insert_seller_history(conn, params)
