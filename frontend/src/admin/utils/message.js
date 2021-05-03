@@ -3,14 +3,20 @@
 import { Modal } from 'ant-design-vue'
 
 export default {
-  error (message, onOk) {
+  error(message, onOk) {
     Modal.error({
       content: message,
       onOk: onOk
     })
   },
-  success (message, onOk) {
+  success(message, onOk) {
     Modal.success({
+      content: message,
+      onOk: onOk
+    })
+  },
+  warning(message, onOk) {
+    Modal.warning({
       content: message,
       onOk: onOk
     })

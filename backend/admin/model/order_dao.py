@@ -1,4 +1,5 @@
 import pymysql
+from flask import g
 
 from flask import g
 
@@ -237,7 +238,6 @@ class OrderDao:
         with conn.cursor() as cursor:
             cursor.executemany(sql, possible_to_patch)
 
-        
     def insert_order_detail_history(self, conn, results):
         """주문 히스토리 데이터 삽입
 
@@ -274,7 +274,6 @@ class OrderDao:
                 WHERE
                     id = %(orders_detail_id)s
             """
-
             data["account_id"] = g.account_id
             with conn.cursor() as cursor:
                 cursor.execute(sql, data)
@@ -369,7 +368,7 @@ class OrderDao:
             cursor.execute(sql_select_history, params)
             order_history = cursor.fetchall()
 
-            return result_1, result_2
+            return order_info, order_history
 
     def get_dashboard_seller(self, conn, account_id):
         #전체상품, 노출상품

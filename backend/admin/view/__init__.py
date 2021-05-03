@@ -1,11 +1,12 @@
 from .product_view import (
                             ProductView, 
                             ProductDetailView, 
-                            ProductCategoryView,
+                            ProductSubCategoryView,
                             ProductSellerView,
                             ProductSellerSearchView,
                             ProductColorView,
-                            ProductSizeView
+                            ProductSizeView,
+                            ProductContentImageView
 )
 
 from .order_view import (
@@ -16,7 +17,9 @@ from .order_view import (
 
 from .account_view import (
                             AccountSignUpView,
-                            AccountLogInView
+                            AccountLogInView,
+                            SellerListView,
+                            SellerView
 )
 
 from utils.error_handler import error_handle
@@ -37,16 +40,16 @@ def create_endpoints(app, services):
                     view_func=ProductDetailView.as_view('product_detail_view', product_service), 
                     methods=['GET'])
 
-    app.add_url_rule("/products/seller/<int:category_id>", 
-                    view_func=ProductCategoryView.as_view('product_category_view', product_service), 
+    app.add_url_rule("/products/seller", 
+                    view_func=ProductSellerSearchView.as_view('product_seller_search_view', product_service), 
                     methods=['GET'])
 
     app.add_url_rule("/products/seller/<int:seller_id>",
                     view_func=ProductSellerView.as_view('product_seller_view', product_service),
                     methods=['GET'])
-
-    app.add_url_rule("/products/seller", 
-                    view_func=ProductSellerSearchView.as_view('product_seller_search_view', product_service), 
+    
+    app.add_url_rule("/products/subcategory/<int:category_id>", 
+                    view_func=ProductSubCategoryView.as_view('product_sub_category_view', product_service), 
                     methods=['GET'])
 
     app.add_url_rule("/products/color",
@@ -56,6 +59,10 @@ def create_endpoints(app, services):
     app.add_url_rule("/products/size",
                     view_func=ProductSizeView.as_view('product_size_view', product_service),
                     methods=['GET'])
+
+    app.add_url_rule("/products/image",
+                    view_func=ProductContentImageView.as_view('product_content_image_view', product_service),
+                    methods=['POST'])
 
     # order
     app.add_url_rule("/orders",
@@ -86,5 +93,18 @@ def create_endpoints(app, services):
     app.add_url_rule("/seller/signin",
                     view_func=AccountLogInView.as_view('seller_login_view', account_service),
                     methods=['POST'])
+    
+    app.add_url_rule("/sellers",
+                    view_func=SellerListView.as_view('seller_list_view', account_service),
+                    methods=['GET'])
+
+    app.add_url_rule("/sellers",
+                    view_func=SellerListView.as_view('seller_update_status_view', account_service),
+                    methods=["PATCH"]
+                    )
+    
+    app.add_url_rule("/sellers/<seller_identification>",
+                    view_func=SellerView.as_view('seller_view', account_service),
+                    methods=["GET"])
     
     error_handle(app)

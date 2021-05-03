@@ -1,16 +1,17 @@
 from flask.views import MethodView
-from flask import request, jsonify
-from flask_request_validator import Param, Pattern, JSON, validate_params, ValidRequest
+from flask import request, jsonify, g
+from flask_request_validator import Param, Pattern, JSON, validate_params, ValidRequest, GET, Min, Enum
 from flask_request_validator.error_formatter import demo_error_formatter
 from flask_request_validator.exceptions import InvalidRequestError, InvalidHeadersError, RuleError
 
 from utils.custom_exception import DatabaseCloseFail
-from utils.response import post_response
-
+from utils.response import post_response, get_response
+from utils.decorator import LoginRequired
 from connection import get_connection
 from utils.decorator import LoginRequired
 
 
+from timeit import repeat
 
 class AccountSignUpView(MethodView):
     def __init__(self, service):
@@ -81,7 +82,120 @@ class AccountLogInView(MethodView):
                         "accessToken" : result['accessToken'],
                         "account_type_id" : result['account_type_id'],
                         "status_code" : 200
-                        }), 200
+                        })
+
+        finally:
+            try:
+                conn.close()
+            except Exception as e:
+                raise DatabaseCloseFail('서버에 알 수 없는 오류가 발생했습니다.')
+
+
+
+class SellerListView(MethodView):
+    def __init__(self, service):
+        self.service=service
+
+    @LoginRequired("seller")
+    @validate_params(
+        Param('id', GET, int, required=False),
+        Param('seller_identification', GET, str, required=False),
+        Param('english_brand_name', GET, str, required=False),
+        Param('korean_brand_name', GET, str, required=False),
+        Param('manager_name', GET, str, required=False),
+        Param('seller_status_type_id', GET, str, required=False),
+        Param('manager_phone', GET, str, required=False),
+        Param('manager_email', GET, str, required=False),
+        Param('sub_property_id', GET, int, required=False),
+        Param('start_date', GET, str, required=False),
+        Param('end_date', GET, str, required=False),
+        Param('page', GET, int, required=False, default=1, rules=[Min(1)]),
+        Param('limit', GET, int, required=False, default=10, rules=[Enum(10, 20, 50)])
+    )
+    def get(self, valid):
+        """셀러 계정 리스트 조회
+
+        Args:
+            valid (ValidRequest): parameter로 들어온 값
+
+        Returns:
+            seller_list_results (list): 
+        """
+        conn = None
+        try:
+            params = valid.get_params()
+            conn=get_connection()
+            seller_list_results = self.service.get_seller_list(conn, params)
+
+            return get_response(seller_list_results), 200
+        finally:
+            conn.close()
+    
+    @LoginRequired("seller")
+    def patch(self):
+        """셀러 계정의 입점 상태 변화
+
+        셀러 계정의 입점 상태를 변화하는 함수(입점신청, 입점, 휴점, 휴점신청 등)
+
+        Raises:
+            e: 예상치 못한 에러
+            DatabaseCloseFail: 데이터베이스 close에 실패했을 때 발생하는 에러
+
+        Returns:
+           get_response (dict) : 성공시 SUCCESS 반환
+        """
+        conn = None
+        try:
+            params = request.get_json()
+            conn = get_connection()
+
+            params["account_id"] = g.account_id
+            self.service.change_seller_status_type(conn, params)
+
+            conn.commit()
+
+            return get_response("SUCCESS")
+        # except Exception as e:
+        #     if conn:
+        #         conn.rollback()
+        #     raise e
+        finally:
+            try:
+                conn.close()
+            except Exception as e:
+                raise DatabaseCloseFail('서버에 알 수 없는 오류가 발생했습니다.')
+
+
+class SellerView(MethodView):
+    def __init__(self, service):
+        self.service=service
+    
+    @LoginRequired("seller")
+    def get(self, seller_identification):
+        """셀러 계정 수정을 위한 상세정보
+
+        셀러 계정 수정을 위해 가져오는 상세 정보들을 표출
+
+        Args:
+            seller_identification (str): 셀러 아이디
+
+        Raises:
+            DatabaseCloseFail: 데이터베이스 close에 실패했을 때 발생하는 에러
+
+        Returns:
+            seller_info (dict): 셀러 상세 정보를 표출
+        """
+        
+        conn = None
+        try:
+            path_param = request.view_args["seller_identification"]
+            params = dict()
+            params["seller_identification"] = path_param
+            conn=get_connection()
+
+            seller_info = self.service.get_seller_info(conn, params)
+
+            return get_response(seller_info), 200
         finally:
             try:
                 conn.close()

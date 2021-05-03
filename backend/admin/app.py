@@ -14,6 +14,7 @@ from service import (
 from view import create_endpoints
 
 from utils.error_handler import error_handle
+from utils.formatter import CustomJSONEncoder
 
 class Service:
     pass
@@ -29,10 +30,11 @@ def create_app():
     services.order_service = OrderService()
     services.account_service = AccountService()
 
+    app.json_encoder = CustomJSONEncoder
     # endpoint 생성
     create_endpoints(app, services)
     
-    # app.json_encoder = CustomJSONEncoder
+    app.json_encoder = CustomJSONEncoder
     
     error_handle(app)
 

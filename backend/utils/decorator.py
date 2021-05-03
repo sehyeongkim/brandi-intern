@@ -73,9 +73,10 @@ class LoginRequired:
 
             finally:
                 if conn:
-                    try:
-                        conn.close()
-                    except Exception:
-                        raise DatabaseCloseFail('서버와 연결을 종료하는 중 에러가 발생했습니다.')
+                    conn.close()
+                # try:
+                #     conn.close()
+                # except Exception:
+                #     raise DatabaseCloseFail('서버와 연결을 종료하는 중 에러가 발생했습니다.')
 
         return wrapper

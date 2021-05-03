@@ -4,20 +4,20 @@ import _ from 'lodash'
 export default {
   store: store,
   computed: {
-    constants () {
+    constants() {
       return this.$store.state.const
     }
   },
   methods: {
-    isMaster () {
+    isMaster() {
       return localStorage.getItem('user_type_id') === '3' || localStorage.getItem('user_type_id') === 3
     },
-    isSeller () {
+    isSeller() {
       return localStorage.getItem('user_type_id') === '2' || localStorage.getItem('user_type_id') === 2
     },
-    difference (object, base) {
-      function changes (object, base) {
-        return _.transform(object, function (result, value, key) {
+    difference(object, base) {
+      function changes(object, base) {
+        return _.transform(object, function(result, value, key) {
           if (!_.isEqual(value, base[key])) {
             result[key] = (_.isObject(value) && _.isObject(base[key])) ? changes(value, base[key]) : value
           }

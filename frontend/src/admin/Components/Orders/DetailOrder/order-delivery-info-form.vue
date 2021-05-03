@@ -2,27 +2,28 @@
   <div>
     <a-descriptions bordered size="small" class="seller-from" label-width="20%" :column="2">
       <a-descriptions-item label="회원번호">
-        -
+        {{ dataStore.detailData.user_id }}
       </a-descriptions-item>
       <a-descriptions-item label="주문자명">
-        {{ dataStore.detailData.orderName }}
+        {{ dataStore.detailData.orderer_name }}
       </a-descriptions-item>
 
       <a-descriptions-item label="수령자명">
-        {{ dataStore.detailData.recipientName }}
+        {{ dataStore.detailData.recipient }}
       </a-descriptions-item>
       <a-descriptions-item label="연락처">
-        {{ dataStore.detailData.recipientPhone }}
+        {{ dataStore.detailData.recipient_phone }}
          <a-button type="danger" size="small">변경</a-button>
       </a-descriptions-item>
 
       <a-descriptions-item label="배송지">
-        {{ dataStore.detailData.recipientAddress }}
-        {{ dataStore.detailData.recipientAddressDetail }}
-        ({{ dataStore.detailData.recipientPostalCode }})
+        {{ dataStore.detailData.address }}
+        <!-- {{ dataStore.detailData.recipientAddressDetail }}
+        ({{ dataStore.detailData.recipientPostalCode }}) -->
       </a-descriptions-item>
       <a-descriptions-item label="배송시 요청사항">
-        일반배송 : 직접 받겠습니다
+        {{ dataStore.detailData.delivery_memo }}
+        <!-- 일반배송 : 직접 받겠습니다 -->
         <a-button type="info">배송지 변경</a-button>
       </a-descriptions-item>
 
