@@ -125,8 +125,6 @@ class DashboardSellerView(MethodView):
         """Seller Dashboard Page
      
         Seller 로그인 시 상품,판매 현황 출력
-
-        Args: 
             
         Returns:
             dict: 전체상품, 판매중상품, 배송준비중, 배송완료, 결제건수(30일간), 결제금액(30일간)
