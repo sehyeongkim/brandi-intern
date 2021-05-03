@@ -558,6 +558,7 @@ class AccountDao:
         with conn.cursor() as cursor:
             cursor.execute(sql, params)
 
+
     def change_seller_history(self, conn, params):
         """셀러 히스토리 변경
 
@@ -698,6 +699,7 @@ class AccountDao:
         sql_select_manager = """
             SELECT
                 s.id AS seller_id,
+                m.id AS manager_id,
                 m.name AS manager_name,
                 m.phone AS manager_phone,
                 m.email AS manager_email
@@ -706,8 +708,11 @@ class AccountDao:
             INNER JOIN
                 managers AS m ON s.id = m.seller_id
             WHERE 
-                s.id = %(seller_id)s;
+                    s.id = %(seller_id)s
+                AND
+                    m.is_deleted = 0;
         """
+        
         with conn.cursor() as cursor:
             cursor.execute(sql_select_seller, params)
             seller_info = cursor.fetchone()
@@ -826,9 +831,7 @@ class AccountDao:
                 email = %(manager_email)s,
                 phone = %(manager_phone)s
             WHERE
-                    seller_id = %(seller_id)s 
-                AND
-                    id = %(manager_id)s
+                id = %(manager_id)s
             """
 
         with conn.cursor() as cursor:
@@ -842,14 +845,16 @@ class AccountDao:
         Args:
             conn (Connection): DB커넥션 객체
             current_managers_in_db (list):
-                {
-                    "manager_name": 매니저,
-                    "manager_email": 매니저 이메일,
-                    "manager_phone": 매니저 전화번호
-                    'account_id': 계정 id, 
-                    'manager_id': 담당자 id, 
-                    'seller_id': 셀러 id, 
-                }
+                [
+                    {
+                        "manager_name": 매니저,
+                        "manager_email": 매니저 이메일,
+                        "manager_phone": 매니저 전화번호
+                        'account_id': 계정 id, 
+                        'manager_id': 담당자 id, 
+                        'seller_id': 셀러 id, 
+                    }
+                ]
         """
 
         sql = """
@@ -858,9 +863,7 @@ class AccountDao:
             SET
                 is_deleted = 1
             WHERE
-                    seller_id = %(seller_id)s
-                AND
-                    id = %(manager_id)s
+                id = %(manager_id)s
         """
         
         with conn.cursor() as cursor:
@@ -884,24 +887,45 @@ class AccountDao:
                     }
                 ]
         """
-
-        sql = """
-            INSERT INTO managers (
-                seller_id,
-                name,
-                phone,
-                email
-            ) VALUES (
-                %(seller_id)s,
-                %(manager_name)s,
-                %(manager_phone)s,
-                %(manager_email)s
-            )
-        """
-
-        with conn.cursor() as cursor:
-            cursor.executemany(sql, manager_params)
         
+        manager_list = list()
+        for manager in manager_params:
+            sql_insert = """
+                INSERT INTO managers (
+                    seller_id,
+                    name,
+                    phone,
+                    email
+                ) VALUES (
+                    %(seller_id)s,
+                    %(manager_name)s,
+                    %(manager_phone)s,
+                    %(manager_email)s
+                )
+            """
+
+            sql_select = """
+                SELECT
+                    id AS manager_id,
+                    seller_id,
+                    name AS manager_name,
+                    phone AS manager_phone,
+                    email AS manager_email
+                FROM
+                    managers
+                WHERE
+                    id = (SELECT last_insert_id())
+            """
+
+            with conn.cursor() as cursor:
+                cursor.execute(sql_insert, manager)
+            
+            with conn.cursor() as cursor:
+                cursor.execute(sql_select)
+                manager_list.append(cursor.fetchone())
+        
+        return manager_list
+
     def insert_managers_history(self, conn, manager_params):
         """ 담당자 history 추가
 
@@ -941,7 +965,8 @@ class AccountDao:
             FROM
                 managers
             WHERE
-                seller_id = %(seller_id)s
+                id= %(manager_id)s
+                
         """
 
         with conn.cursor() as cursor:

@@ -27,25 +27,25 @@ class OrderService:
         Returns:
             order_list_info (dict) : 
                     order_list_info: 
-                            order_list_info = {
-                                    "order_list" : [
-                                        {
-                                            "color_id": 색상 아이디,
-                                            "order_created_at": 주문 생성 날짜,
-                                            "order_detail_number": 주문 상세 번호,
-                                            "brand_name": 브랜드명,
-                                            "order_number": 주문 번호,
-                                            "order_status_type_id": 주문 상태 아이디,
-                                            "order_username": 주문자명,
-                                            "orderer_phone": 주문자 전화번호,
-                                            "price": 상품 가격,
-                                            "quantity": 구매 수량,
-                                            "size_id": 사이즈 아이디,
-                                            "product_name": 상품명
-                                        } for order in order_detail
-                                    ],
-                                    "total_count": 주문 전체 수
-                            }     
+                        order_list_info = {
+                            "order_list" : [
+                                {
+                                    "color_id": 색상 아이디,
+                                    "order_created_at": 주문 생성 날짜,
+                                    "order_detail_number": 주문 상세 번호,
+                                    "brand_name": 브랜드명,
+                                    "order_number": 주문 번호,
+                                    "order_status_type_id": 주문 상태 아이디,
+                                    "order_username": 주문자명,
+                                    "orderer_phone": 주문자 전화번호,
+                                    "price": 상품 가격,
+                                    "quantity": 구매 수량,
+                                    "size_id": 사이즈 아이디,
+                                    "product_name": 상품명
+                                } for order in order_detail
+                            ],
+                            "total_count": 주문 전체 수
+                        }     
             500 : Exceptions  
                 StartDateFail : 조회 날짜가 알맞지 않을 때 발생하는 에러
                 KeyError : 데이터베이스의 key값이 맞지 않을 때 발생하는 에러
@@ -113,17 +113,21 @@ class OrderService:
         match_status_types = list()
         # 요청된 주문 상태 중 유효하지 않은 값을 넣는 리스트
         not_match_status_types = list()
-        # 요청된 변경할 주문 상태값이 유효한가.
+        # 요청된 변경할 주문 상태값이 유효한가 확인하기 위해 DB에서 모든 row를 가져온다.
         order_status_types = self.order_dao.get_status_type(conn)
+
+        # for문을 돌면서 DB에 있는 값이 들어왔는지 확인
         for data in params:
             match_status = list(filter(lambda d: d.get('id') == data.get('order_status_type_id'), order_status_types))
             if match_status:
                 match_status_types.append(data)
             else:
                 not_match_status_types.append(data)
+
         # 현재 데이터의 order_status_type_id가 무엇인지 확인
         order_detail_results = self.order_dao.check_if_possible_change(conn, match_status_types)
         
+        # DB에 존재하면서, 바꿀 수 있는 값인지 확인
         possible_to_patch = list()
         impossible_to_patch = list()
         for db_data in order_detail_results:
@@ -183,8 +187,8 @@ class OrderService:
                         },
                         "order_history": [
                                     {
-                                        "update_time": history["updated_at"],
-                                        "order_status_type": history["order_status_type"]
+                                        "update_time": 수정시간,
+                                        "order_status_type": 주문 상태 타입
                                     }
                                     for history in order_histories
                                 ]

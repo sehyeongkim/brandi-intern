@@ -1,7 +1,7 @@
 # order_status
-PURCHASE_COMPLETE = 4
-CANCEL_COMPLETE = 7
-REFUND_COMPLETE = 9
+PURCHASE_COMPLETE = 4 # 구매확정
+CANCEL_COMPLETE = 7 # 취소완료
+REFUND_COMPLETE = 9 # 환불완료
 
 
 # account_type_id

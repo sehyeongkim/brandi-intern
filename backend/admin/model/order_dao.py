@@ -303,7 +303,6 @@ class OrderDao:
             conn (Connection): DB 커넥션 객체
             possible_change_order_status (list): order_service에서 걸러진 주문들 (주문 상태를 변경하지 못하는 주문들은 제외됨)
         """
-        possible_to_patch
         sql = """
             UPDATE 
                 orders_detail
@@ -352,6 +351,8 @@ class OrderDao:
                 WHERE
                     id = %(orders_detail_id)s
             """
+
+            # modify account id를 위해서 추가
             data["account_id"] = g.account_id
             with conn.cursor() as cursor:
                 cursor.execute(sql, data)

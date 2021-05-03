@@ -61,7 +61,6 @@ class AccountLogInView(MethodView):
     def __init__(self, service):
         self.service = service
 
-    
     @validate_params(
         Param('id', JSON, str, rules=[Pattern("^[a-z]+[a-z0-9@.]{4,19}$")], required=True),
         Param('password', JSON, str, rules=[Pattern('^[A-Za-z0-9@#$]{6,12}$')], required=True)
@@ -90,7 +89,6 @@ class AccountLogInView(MethodView):
                 conn.close()
             except Exception as e:
                 raise DatabaseCloseFail('서버에 알 수 없는 오류가 발생했습니다.')
-
 
 
 class SellerListView(MethodView):
@@ -156,9 +154,10 @@ class SellerListView(MethodView):
             params = request.get_json()
             conn = get_connection()
 
+            # 수정할 셀러 계정과 history를 위해 추가
             params["account_id"] = g.account_id
             params["seller_id"] = seller_id
-            params
+            
             self.service.change_seller_status_type(conn, params)
 
             conn.commit()
@@ -172,7 +171,7 @@ class SellerListView(MethodView):
             try:
                 conn.close()
             except Exception as e:
-                raise DatabaseCloseFail('서버에 알 수 없는 오류가 발생했습니다.')
+                raise DatabaseCloseFail('서버의 데이터베이스에서 문제가 발생하였습니다. 고객센터에 문의하세요.')
 
 
 class SellerView(MethodView):
@@ -198,8 +197,10 @@ class SellerView(MethodView):
         conn = None
         try:
             params = dict()
+            # seller_id를 확인하기 위해 추가
             params["seller_id"] = seller_id
             conn = get_connection()
+            # 셀러 상세 정보
             seller_info = self.service.get_seller_info(conn, params)
 
             return get_response(seller_info), 200
@@ -207,32 +208,55 @@ class SellerView(MethodView):
             try:
                 conn.close()
             except Exception as e:
-                raise DatabaseCloseFail('서버에 알 수 없는 오류가 발생했습니다.')
+                raise DatabaseCloseFail('서버의 데이터베이스에서 문제가 발생하였습니다. 고객센터에 문의하세요.')
     
 
     @LoginRequired("seller")
     def patch(self, seller_id):
+        """셀러의 정보를 수정
+
+        셀러의 정보를 수정하는 함수
+
+        Args:
+            seller_id (int): path parameter로 들어오는 셀러 id
+
+        Raises:
+            TooMuchDataRequests: 담당자는 3명까지 들어올 수 있으나 더 많이 들어올 경우 발생하는 에러
+            e: 예상치 못한 에러가 발생
+            DatabaseCloseFail: DB의 커넥션이 존재하지 않을 때 발생하는 close 에러
+
+        Returns:
+            post_response("SUCCESS"): 성공시 SUCCESS 메시지
+        """
         conn = None
         try:
             params = request.get_json()
             conn = get_connection()
+            # db의 modify account id를 지정하기 위해 필요
             params["account_id"] = g.account_id
+            # service의 update_seller_info에서 manager와 seller인지 구별하기 위해서 필요
             params["account_type_id"] = g.account_type_id
+            # 해당 셀러의 manager 정보 리스트를 가져오기 위해 필요
             params["seller_id"] = seller_id
+
             manager_params = params["manager_info_list"]
+
+            if len(manager_params) > 3:
+                raise TooMuchDataRequests("매니저는 3명까지 들어올 수 있습니다.")
+
+            # sql로 nested형태가 들어오면 에러 발생하므로 "manager_info_list"를 delete 해준다.
             del params["manager_info_list"]
 
-
-            # manager id 다 가져오기/ 원래꺼 지우고 다시 하는게 더 나을듯? / 데이터베이스에 더 적게 잇을 때 -> 추가/ 데이터베이스에 더 많을 때 -> 삭제
+            # insert, select, update에 필요한 account_id와 seller_id를 미리 추가
             for manager_param in manager_params:
                 manager_param["account_id"] = g.account_id
                 manager_param["seller_id"] = seller_id
-            
+
             self.service.update_seller_info(conn, params, manager_params)
 
             conn.commit()
 
-            return get_response("SUCCESS")
+            return post_response("SUCCESS")
         except Exception as e:
             if conn:
                 conn.rollback()
@@ -241,5 +265,31 @@ class SellerView(MethodView):
             try:
                 conn.close()
             except Exception as e:
-                raise DatabaseCloseFail('서버에 알 수 없는 오류가 발생했습니다.')
-        
+                raise DatabaseCloseFail('서버의 데이터베이스에서 문제가 발생하였습니다. 고객센터에 문의하세요.')
+
+    
+class AccountImageView(MethodView):
+    def __init__(self, service):
+        self.service = service
+    
+    @LoginRequired("seller")
+    def patch(self, seller_id):
+        """셀러 프로필, 배경 이미지 수정
+
+        셀러의 프로필 이미지 혹은 배경 이미지를 수정
+
+        Returns:
+            url : s3에 등록된 이미지 url
+        """
+        # 프로필 이미지가 들어왔을 때
+        if 'profile' in request.files:
+            img_obj = request.files.get('profile')
+            image_type = 'profile'
+        # 배경 이미지가 들어왔을 때    
+        else:
+            img_obj = request.files.get('background')
+            image_type = 'background'
+
+        # image_type은 create_image_url에서 폴더를 다르게 설정하기 위함
+        url = self.service.create_image_url(img_obj, image_type)
+        return post_response(url)

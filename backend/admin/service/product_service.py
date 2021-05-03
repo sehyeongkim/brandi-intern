@@ -5,6 +5,8 @@ import xlwt
 from io import BytesIO
 import copy
 
+from connection import get_s3_connection, BUCKET_NAME, REGION
+
 class ProductService:
     def __new__(cls, *args, **kwargs):
         if not hasattr(cls, '_instance'):
@@ -265,3 +267,16 @@ class ProductService:
     # 상품 등록 창에서 size list 뿌려주기
     def get_products_size_list(self, conn):
         return self.product_dao.get_products_size_list(conn)
+
+    def upload_file_to_s3(self, img_obj, folder: str):
+        s3_conn = get_s3_connection()
+        uploaded_at = str(datetime.now())
+        filename = img_obj.filename
+        key = folder + uploaded_at + filename
+        # 띄어쓰기, 콜론 등 필요없는 부분을 제거하기 위함
+        key = name.replace(" ", "").replace(":","")
+        s3_conn.upload_fileobj(Fileobj=img_obj,
+                                Bucket=BUCKET_NAME,
+                                Key=key)
+        url = f"https://{BUCKET_NAME}.s3.{REGION}.amazonaws.com/{key}"
+        return url

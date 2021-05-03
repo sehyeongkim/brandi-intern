@@ -1,4 +1,4 @@
-import bcrypt, jwt, xlwt
+import bcrypt, jwt, xlwt, copy
 
 from flask import g
 from cachetools import TTLCache, cached
@@ -8,6 +8,9 @@ from admin.model import AccountDao
 from utils.custom_exception import SignUpFail, SignInError, TokenCreateError, MasterLoginRequired
 from utils.constant import MASTER, SELLER, USER, STORE_OUT, STORE_REJECTED
 from utils.formatter import CustomJSONEncoder
+
+# 이미지 업로드 재사용을 위함
+from service.product_service import ProductService
 
 from io import BytesIO
 
@@ -310,10 +313,15 @@ class AccountService:
                     'seller_id': 셀러 pk 번호
                 }
         """
+        # 셀러 상태를 변경
         self.account_dao.change_seller_status_type(conn, params)
         
+        # 셀러 상태 변경 후, is_deleted 여부 결정
+        # STORE_REJECTED: 입점 거절, STORE_OUT: 퇴점
         if self.account_dao.check_if_store_out(conn, params)["seller_status_type_id"] in [STORE_REJECTED, STORE_OUT]:
             self.account_dao.change_seller_is_deleted(conn, params)
+        
+        # history 추가
         self.account_dao.change_seller_history(conn, params)
 
 
@@ -348,6 +356,7 @@ class AccountService:
                     "exchange_refund_info": 교환/환불 정보,
                     "manager_info_list": [
                         {
+                            "manager_id": 담당자 id,
                             "manager_name": 담당자 이름,
                             "manager_phone": 담당자 전화번호,
                             "manager_email": 담당자 이메일
@@ -356,6 +365,7 @@ class AccountService:
                     ]
                 }
         """
+        # 셀러 정보와 담당자 정보를 둘 다 가져옴
         seller_info, manager_info = self.account_dao.get_seller_info(conn, params)
 
         seller_result = {
@@ -378,7 +388,8 @@ class AccountService:
             "delivery_info": seller_info["delivery_info"],
             "exchange_refund_info": seller_info["exchange_refund_info"],
             "manager_info_list": [
-                {
+                {   
+                    "manager_id":manager["manager_id"],
                     "manager_name": manager["manager_name"],
                     "manager_phone": manager["manager_phone"],
                     "manager_email": manager["manager_email"]
@@ -424,6 +435,7 @@ class AccountService:
                 "manager_info_list": 
                 [
                     {
+                        "manager_id": 매니저 id,
                         "manager_name": 매니저,
                         "manager_email": 매니저 이메일,
                         "manager_phone": 매니저 전화번호
@@ -445,39 +457,59 @@ class AccountService:
             if params.get("seller_sub_property") or params.get("seller_sub_property_id") or params.get("korean_brand_name") or params.get("english_brand_name"):
                 raise MasterLoginRequired("수정 권한이 없습니다.")
 
-        # db에 있는 현재 담당자
-        current_managers_in_db = self.account_dao.get_managers_info(conn, params)
-        # 현재 db에 있는 manager_id를 요청값에 추가하기 위함
-        for i, manager_info in enumerate(manager_params):
-            for j, current_manager_in_db in enumerate(current_managers_in_db):
-                if i == j:
-                    manager_info["manager_id"] = current_manager_in_db["manager_id"]
-                    continue
+        manager_info_list_in_db = self.account_dao.get_managers_info(conn, params)
         
-        # db에 있는 담당자수가 더 많을 때 -> 삭제해야 함
-        if len(current_managers_in_db) > len(manager_params):
-            # 요청값을 기준으로 수정, 삭제할 개수 정하기
-            self.account_dao.update_managers_info(conn, manager_params[:len(manager_params)])
-            self.account_dao.insert_managers_history(conn, manager_params[:len(manager_params)])
+        # 이후에 기존 정보가 필요할 때를 대비해서 deepcopy
+        cp_manager_info_list_in_db = copy.deepcopy(manager_info_list_in_db)
+        cp_manager_params = copy.deepcopy(manager_params)
 
-            # db에 담당자 수가 많을 경우에는 account_id가 필요함
-            for current_manager_in_db in current_managers_in_db:
-                current_manager_in_db["account_id"] = g.account_id
-            self.account_dao.delete_managers_info(conn, current_managers_in_db[len(manager_params):])
-            self.account_dao.insert_managers_history(conn, current_managers_in_db[len(manager_params):])
+        to_update_managers = list()
+        # get으로 가져왔을 때 manager_id를 가져오기 때문에, manager_id가 있으면 수정
+        for manager_in_db in cp_manager_info_list_in_db:
+            for manager_in_rq in cp_manager_params:
+                if manager_in_db.get("manager_id") == manager_in_rq.get("manager_id"):
+                    to_update_managers.append(manager_in_rq)
+                    # delete와 insert를 할 부분만 남겨놓기 위해서 remove로 삭제
+                    cp_manager_info_list_in_db.remove(manager_in_db)
+                    cp_manager_params.remove(manager_in_rq)
+                    break
+        
+        # 삭제할 매니저 정보와 삽입할 매니저 정보 리스트 (이름 바꾸기)
+        to_delete_managers = cp_manager_info_list_in_db
+        to_insert_managers = cp_manager_params
 
+        # manager 수정
+        self.account_dao.update_managers_info(conn, to_update_managers)
         
-        # db에 있는 담당자수와 요청 수가 같을 때 -> 수정만 함
-        elif len(current_managers_in_db) == len(manager_params):
-            self.account_dao.update_managers_info(conn, manager_params)
+        # manager 삭제
+        self.account_dao.delete_managers_info(conn, to_delete_managers)
         
-        # db에 있는 담당자수가 더 적을 때 -> 추가해야 함
-        else:
-            # 현재 db에 있는 담당자 수를 기준으로 수정, 추가할 개수 정하기
-            self.account_dao.update_managers_info(conn, manager_params[:len(current_managers_in_db)])
-            self.account_dao.insert_managers_info(conn, manager_params[len(current_managers_in_db):])
-            self.account_dao.insert_managers_history(conn, manager_params[len(current_managers_in_db):])
+        # manager_id가 함께 있는 리스트 (INSERT와 SELECT를 동시에 하는 함수)
+        to_insert_managers_with_id = self.account_dao.insert_managers_info(conn, to_insert_managers)
+
+        # modify_account_id를 추가하기 위해서 account_id 추가
+        for manager in to_insert_managers_with_id + to_delete_managers:        
+            manager["account_id"] = g.account_id
+
+        # history에 변경된 내역을 모두 적용하기 위해서 + 연산 실행
+        to_insert_history = to_update_managers + to_delete_managers + to_insert_managers_with_id
+        self.account_dao.insert_managers_history(conn, to_insert_history)
 
         # 셀러 정보 수정 & 셀러 history 추가
         self.account_dao.update_seller_info(conn, params)
         self.account_dao.insert_seller_history(conn, params)
+    
+
+    def create_image_url(self, img_obj, image_type):
+        # url에는 string 필요
+        str_account_id = str(g.account_id)     
+        # 프로필 이미지가 들어왔을 때 folder 경로
+        if image_type == 'profile':
+            folder = f'seller-profile-image/{str_account_id}/'
+        # 배경 이미지가 들어왔을 때 folder 경로
+        else:
+            folder = f'seller-background-image/{str_account_id}/'
+
+        # ProductService()의 upload_file_to_s3 활용 
+        url = ProductService().upload_file_to_s3(img_obj, folder)
+        return url
