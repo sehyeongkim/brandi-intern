@@ -42,7 +42,7 @@ class OrderService:
                                             "quantity": 구매 수량,
                                             "size_id": 사이즈 아이디,
                                             "product_name": 상품명
-                                        } for result in order_detail
+                                        } for order in order_detail
                                     ],
                                     "total_count": 주문 전체 수
                             }     
@@ -66,20 +66,20 @@ class OrderService:
         order_list_info = {
                 "order_list" : [
                     {
-                        "color": result["color_name"],
-                        "orders_detail_id": result["orders_detail_id"],
-                        "order_created_at": result["created_at"],
-                        "order_detail_number": result["detail_order_number"],
-                        "brand_name": result["korean_brand_name"],
-                        "order_number": result["order_number"],
-                        "order_status_type": result["order_status_type"],
-                        "order_username": result["order_username"],
-                        "orderer_phone": result["orderer_phone"],
-                        "quantity": result["quantity"],
-                        "size": result["size_name"],
-                        "product_name": result["title"],
-                        "total_price": int(result["price"] * result["quantity"]) if result["discount_rate"] == 0 else int(result["price"] * (1-result["discount_rate"]) * result["quantity"])
-                    } for result in orders_info # 이름
+                        "color": order["color_name"],
+                        "orders_detail_id": order["orders_detail_id"],
+                        "order_created_at": order["created_at"],
+                        "order_detail_number": order["detail_order_number"],
+                        "brand_name": order["korean_brand_name"],
+                        "order_number": order["order_number"],
+                        "order_status_type": order["order_status_type"],
+                        "order_username": order["order_username"],
+                        "orderer_phone": order["orderer_phone"],
+                        "quantity": order["quantity"],
+                        "size": order["size_name"],
+                        "product_name": order["title"],
+                        "total_price": int(order["price"] * order["quantity"]) if order["discount_rate"] == 0 else int(order["price"] * (1-order["discount_rate"]) * order["quantity"])
+                    } for order in orders_info 
                 ],
                 "total_count": order_count["count"]
         }

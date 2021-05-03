@@ -140,7 +140,7 @@ class ProductDao:
             cursor.execute(product_sql, params)
             product_result = cursor.fetchall()
 
-            if 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' in headers.values():
+            if 'application/vnd.ms-excel' in headers.values():
                 return product_result
 
             cursor.execute(total_sql, params)

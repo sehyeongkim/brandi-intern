@@ -1,5 +1,7 @@
+from datetime import datetime
+
 from flask.views import MethodView
-from flask import request, jsonify, g
+from flask import request, jsonify, g, send_file
 from flask_request_validator import Param, Pattern, JSON, validate_params, ValidRequest, GET, Min, Enum, HEADER
 from flask_request_validator.error_formatter import demo_error_formatter
 from flask_request_validator.exceptions import InvalidRequestError, InvalidHeadersError, RuleError
@@ -128,7 +130,7 @@ class SellerListView(MethodView):
             conn=get_connection()
             seller_list_results = self.service.get_seller_list(conn, params, headers)
 
-            if 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' in headers.values():
+            if 'application/vnd.ms-excel' in headers.values():
                 today = datetime.today().strftime('%Y-%m-%d')
                 return send_file(seller_list_results, attachment_filename=f'{today}seller_list.xls', as_attachment=True)
 

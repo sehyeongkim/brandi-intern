@@ -1,4 +1,4 @@
-import bcrypt, jwt
+import bcrypt, jwt, xlwt
 
 from flask import g
 from cachetools import TTLCache, cached
@@ -9,6 +9,7 @@ from utils.custom_exception import SignUpFail, SignInError, TokenCreateError, Ma
 from utils.constant import MASTER, SELLER, USER, STORE_OUT, STORE_REJECTED
 from utils.formatter import CustomJSONEncoder
 
+from io import BytesIO
 
 class AccountService:
     def __new__(cls, *args, **kwargs):
@@ -225,8 +226,6 @@ class AccountService:
                 "total_count": seller_count["count"]
         """
 
-        print(headers)
-        print(type(headers))
         params['offset'] = (params['page'] - 1) * params['limit']
 
         if 'end_date' in params:
@@ -240,10 +239,40 @@ class AccountService:
             raise  StartDateFail('조회 시작 날짜가 끝 날짜보다 큽니다.')
 
         # HEADERS로 엑셀파일 요청
-        if 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' in headers.values():
-            result = self.account_dao.get_seller_list(conn, params, headers)
+        if 'application/vnd.ms-excel' in headers.values():
+            seller_info_list = self.account_dao.get_seller_list(conn, params, headers)
             output = BytesIO()
 
+            workbook = xlwt.Workbook(encoding='utf-8')
+            worksheet = workbook.add_sheet(u'시트1')
+            worksheet.write(0, 0, u'번호')
+            worksheet.write(0, 1, u'셀러아이디')
+            worksheet.write(0, 2, u'영문이름')
+            worksheet.write(0, 3, u'한글이름')
+            worksheet.write(0, 4, u'담당자이름')
+            worksheet.write(0, 5, u'셀러상태')
+            worksheet.write(0, 6, u'담당자연락처')
+            worksheet.write(0, 7, u'담당자이메일')
+            worksheet.write(0, 8, u'셀러속성')
+            worksheet.write(0, 9, u'등록일시')
+
+            idx = 1
+            for row in seller_info_list:
+                worksheet.write(idx, 0, row['seller_id'])
+                worksheet.write(idx, 1, row['seller_identification'])
+                worksheet.write(idx, 2, row['english_brand_name'])
+                worksheet.write(idx, 3, row['korean_brand_name'])
+                worksheet.write(idx, 4, row['manager_name'])
+                worksheet.write(idx, 5, row['seller_status_type'])
+                worksheet.write(idx, 6, row['manager_phone'])
+                worksheet.write(idx, 7, row['manager_email'])
+                worksheet.write(idx, 8, row['sub_property'])
+                worksheet.write(idx, 9, str(row['seller_created_date']))
+                idx += 1
+            
+            workbook.save(output)
+            output.seek(0)
+            return output
 
         seller_list, seller_count = self.account_dao.get_seller_list(conn, params)
 

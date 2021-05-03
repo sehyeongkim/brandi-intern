@@ -332,7 +332,7 @@ class AccountDao:
             return cursor.fetchall()
             
 
-    def get_seller_list(self, conn, params):
+    def get_seller_list(self, conn, params, headers):
         """ 셀러 계정 리스트
 
         셀러 계정 관리에서 셀러 리스트를 가져오는 함수
@@ -462,6 +462,9 @@ class AccountDao:
         with conn.cursor() as cursor:
             cursor.execute(sql_select_seller_info, params)
             seller_info_list = cursor.fetchall()
+
+            if 'application/vnd.ms-excel' in headers.values():
+                return seller_info_list
 
             cursor.execute(sql_select_seller_count, params)
             seller_counts = cursor.fetchone()

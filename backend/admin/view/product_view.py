@@ -56,7 +56,7 @@ class ProductView(MethodView):
             result = self.service.get_products_list(conn, params, headers)
             
             # HEADERS로 엑셀파일 요청
-            if 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' in headers.values():
+            if 'application/vnd.ms-excel' in headers.values():
                 today = datetime.today().strftime('%Y-%m-%d')
                 return send_file(result, attachment_filename=f'{today}product_list.xls', as_attachment=True)
 
