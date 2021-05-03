@@ -331,6 +331,7 @@ class ProductService:
         Returns:
             [dict]]: product_detail = {
                         'basic_info': {
+                            'product_id' : 상품아이디,
                             'product_code': 상품코드,
                             'selling': 판매여부,
                             'displayed': 진열여부,
@@ -388,6 +389,7 @@ class ProductService:
 
         product_detail = {
             'basic_info': {
+                'product_id' : product_result['product_id'],
                 'product_code': product_result['product_code'],
                 'selling': product_result['is_selling'],
                 'displayed': product_result['is_displayed'],

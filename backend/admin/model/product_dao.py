@@ -424,7 +424,8 @@ class ProductDao:
                 p.discount_start_date as discount_start_date,
                 p.discount_end_date as discount_end_date,
                 p.min_amount,
-                p.max_amount
+                p.max_amount,
+                p.id as product_id
             FROM 
                 products as p
             INNER JOIN
