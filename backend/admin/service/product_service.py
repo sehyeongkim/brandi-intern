@@ -49,8 +49,13 @@ class ProductService:
             raise  StartDateFail('조회 시작 날짜가 끝 날짜보다 큽니다.')
         
         # HEADERS로 엑셀파일 요청
-        if 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' in headers.values():
+        if 'application/vnd.ms-excel' in headers.values():
             result = self.product_dao.get_products_list(conn, params, headers)
+            
+            # 할인가격 key, value 추가
+            for product in result:
+                product['discount_price'] = product['price'] - (product['price'] * product['discount_rate'])
+            
             output = BytesIO()
 
             workbook = xlwt.Workbook(encoding='utf-8')
@@ -89,6 +94,10 @@ class ProductService:
             return output
         
         product_result, total_count_result = self.product_dao.get_products_list(conn, params, headers)
+        
+        # 할인가격 key, value 추가
+        for product in product_result:
+            product['discount_price'] = product['price'] - (product['price'] * product['discount_rate'])
 
         result = {
             'total_count' : total_count_result['total_count'],
