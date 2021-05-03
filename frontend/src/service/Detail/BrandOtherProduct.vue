@@ -15,8 +15,8 @@ export default {
     products: Array
   },
   methods: {
-    linkToDetail (product) {
-      this.$router.push(`/detail/${product.id}`)
+    linkToDetail(product) {
+      this.$router.push(`/detail/${product.product_id}`)
     }
   }
 }

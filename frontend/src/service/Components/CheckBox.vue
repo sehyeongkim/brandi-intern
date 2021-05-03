@@ -11,24 +11,24 @@ export default {
   props: {
     value: Boolean
   },
-  data () {
+  data() {
     return {
       checked: false
     }
   },
   methods: {
-    click () {
+    click() {
       this.checked = !this.checked
       this.$emit('input', this.checked)
       this.$emit('change', this.checked)
     },
-    change () {
+    change() {
       this.$emit('input', this.checked)
       this.$emit('change', this.checked)
     }
   },
   watch: {
-    value (v) {
+    value(v) {
       this.checked = v
     }
   }

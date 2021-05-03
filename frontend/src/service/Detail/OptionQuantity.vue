@@ -28,7 +28,7 @@
     </div>
     <p>
       {{
-        item.price * item.quantity | makeComma
+        (item.price + item.addPrice) * item.quantity | makeComma
       }}원
     </p>
   </div>
@@ -41,7 +41,7 @@ export default {
   props: {
     item: {
       type: Object,
-      default () {
+      default() {
         return {
           quantity: 1,
           color: 'color',
@@ -52,17 +52,17 @@ export default {
     }
   },
   methods: {
-    subQuantity () {
+    subQuantity() {
       if (this.item.quantity > 1) {
         this.item.quantity--
       }
     },
-    addQuantity () {
+    addQuantity() {
       if (this.item.quantity < 20) {
         this.item.quantity++
       }
     },
-    remove () {
+    remove() {
       this.$emit('remove', this.item)
     }
   }

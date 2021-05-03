@@ -1,9 +1,9 @@
 export default {
-  ExpireTokenException: function (message) {
+  ExpireTokenException: (message) => {
     this.message = message
     this.name = 'ExpireTokenException'
   },
-  TimeoutException: function (message) {
+  TimeoutException: (message) => {
     this.message = message
     this.name = 'TimeoutException'
   }

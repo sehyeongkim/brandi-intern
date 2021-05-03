@@ -4,12 +4,12 @@ const serviceStore = {
     accessToken: localStorage.getItem('access_token')
   },
   getters: {
-    getToken (state) {
+    getToken(state) {
       return state.accessToken
     }
   },
   mutations: {
-    getStorageToken (state) {
+    getStorageToken(state) {
       state.accessToken = localStorage.getItem('access_token')
     }
   }
