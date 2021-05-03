@@ -2,17 +2,17 @@
   <div>
     <a-descriptions bordered size="small" class="seller-from" label-width="20%">
       <a-descriptions-item label="상품코드" :span="3" v-if="!dataStore.isNew">
-        SB000000000009045050
+        {{ dataStore.detailData.product_code }}
         <a-button type="success" size="small" @click="showHistoryModal">수정이력보기</a-button>
       </a-descriptions-item>
       <a-descriptions-item label="판매여부" :span="3">
-        <a-radio-group v-model="dataStore.detailData.isSelling">
+        <a-radio-group v-model="dataStore.detailData.basic_info.selling">
           <a-radio :value="1">판매</a-radio>
           <a-radio :value="0">미판매</a-radio>
         </a-radio-group>
       </a-descriptions-item>
       <a-descriptions-item label="진열여부" :span="3">
-        <a-radio-group v-model="dataStore.detailData.isDisplay">
+        <a-radio-group v-model="dataStore.detailData.basic_info.displayed">
           <a-radio :value="1">진열</a-radio>
           <a-radio :value="0">미진열</a-radio>
         </a-radio-group>
@@ -78,26 +78,26 @@
       </a-descriptions-item>
       <a-descriptions-item :span="3">
         <template slot="label">상품명 <span class="required">*</span></template>
-        <a-input placeholder="상품명" class="large-size" v-model="dataStore.detailData.productName" /><br/>
+        <a-input placeholder="상품명" class="large-size" v-model="dataStore.detailData.basic_info.title" /><br/>
         <info-text label="상품명에는 쌍따옴표(&quot;) 또는 홑따옴표(')를 포함할 수 없습니다."></info-text><br/>
         <info-text label="상품명에는 4byte 이모지를 포함할 수 없습니다."></info-text>
       </a-descriptions-item>
       <a-descriptions-item label="한줄 상품 설명" :span="3" v-if="false">
-        <a-input placeholder="한줄 상품 설명" class="large-size" v-model="dataStore.detailData.brand_name_english" />
+        <a-input placeholder="한줄 상품 설명" class="large-size" v-model="dataStore.detailData.basic_info.simple_description" />
       </a-descriptions-item>
       <a-descriptions-item :span="3">
         <template slot="label">이미지 등록 <span class="required">*</span></template>
 
-        <template v-for="i in [0,1,2,3,4]">
+        <!-- <template v-for="i in [0,1,2,3,4]">
           <image-upload v-model="dataStore.detailData.productThumbnailImages[i]" :key="i"/>
-        </template>
+        </template> -->
         <br>
         <info-text label="640 * 720 사이즈 이상 등록 가능하며 확장자는 jpg 만 등록 가능합니다."/>
 
       </a-descriptions-item>
       <a-descriptions-item :span="3">
         <template slot="label">상세 상품 정보 <span class="required">*</span></template>
-        <a-textarea v-model="dataStore.detailData.contentsImage">곧 만들예정</a-textarea>
+        <a-textarea v-model="dataStore.detailData.basic_info.detail_description">곧 만들예정</a-textarea>
       </a-descriptions-item>
     </a-descriptions>
     <product-history-modal ref="historyModal"/>
@@ -106,23 +106,24 @@
 
 <script>
 /* eslint-disable vue/valid-v-model */
-import ImageUpload from '@/admin/Components/Common/image-upload'
+// import ImageUpload from '@/admin/Components/Common/image-upload'
 import InfoText from '@/admin/Components/Common/info-text'
 import ProductHistoryModal from './product-history-modal'
 export default {
   components: {
-    ImageUpload,
+    // ImageUpload,
     InfoText,
     ProductHistoryModal
   },
   props: {
     dataStore: {
-      default () {
-        return {}
+      default() {
+        return {
+        }
       }
     }
   },
-  data () {
+  data() {
     return {
       data: {
         seller_property_id: 1,
@@ -136,28 +137,28 @@ export default {
     }
   },
   computed: {
-    firstCategory () {
+    firstCategory() {
       return this.dataStore.productCategory
         .filter(d => d.level === 1)
         .map(d => { return { value: d.id, text: d.name } })
     },
-    secondCategory () {
+    secondCategory() {
       return this.dataStore.productCategory
         .filter(d => d.level === 2)
         .map(d => { return { value: d.id, text: d.name } })
     }
   },
   methods: {
-    showHistoryModal () {
+    showHistoryModal() {
       this.$refs.historyModal.show()
     },
-    setFormData (value) {
+    setFormData(value) {
 
     },
-    validate () {
+    validate() {
       return true
     },
-    getData () {
+    getData() {
       return JSON.parse(JSON.stringify(this.data))
     }
   }
