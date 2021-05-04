@@ -307,25 +307,7 @@ class AccountDao:
                     ],
 
         """
-        # sql = """
-        #     SELECT
-        #         st.name AS status_name,
-        #         stb.seller_status_type_id,
-        #         stb.seller_status_button_id,
-        #         sb.name as button_name,
-        #         sb.to_status_type_id AS to_status_type_id
-        #     FROM
-        #         seller_status_type_button AS stb
-        #     right outer JOIN
-        #         seller_status_type AS st 
-        #         on st.id = stb.seller_status_type_id
-        #     left outer JOIN
-        #         seller_status_button As sb
-        #         on sb.id = stb.seller_status_button_id
-        #     WHERE
-        #         st.name = %(seller_status_type)s
-        #     ORDER BY st.id ASC;
-        # """
+
         sql = """
             SELECT 
                 sst.name AS status_name,
