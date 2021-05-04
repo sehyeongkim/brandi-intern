@@ -1,4 +1,4 @@
-from .product_view import (
+from admin.view.product_view import (
                             ProductView, 
                             ProductDetailView, 
                             ProductSubCategoryView,
@@ -9,13 +9,13 @@ from .product_view import (
                             ProductContentImageView
 )
 
-from .order_view import (
+from admin.view.order_view import (
                             DashboardSellerView,
                             OrderListView,
                             OrderView
 )
 
-from .account_view import (
+from admin.view.account_view import (
                             AccountSignUpView,
                             AccountLogInView,
                             SellerListView,
@@ -34,11 +34,11 @@ def create_endpoints(app, services):
     # product
     app.add_url_rule("/products",
                     view_func=ProductView.as_view('product_view', product_service), 
-                    methods=['GET','POST', 'PATCH'])
+                    methods=['GET', 'POST', 'PATCH'])
 
     app.add_url_rule("/products/<product_code>", 
                     view_func=ProductDetailView.as_view('product_detail_view', product_service), 
-                    methods=['GET'])
+                    methods=['GET', 'PATCH'])
 
     app.add_url_rule("/products/seller", 
                     view_func=ProductSellerSearchView.as_view('product_seller_search_view', product_service), 

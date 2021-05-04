@@ -45,34 +45,12 @@ def validate_datetime(value):
         return dt_obj
     
     except ValueError:
+        raise DataTypeDoesNotMatch('날짜와 시간 입력값의 형태가 올바르지 않습니다.')
+
+def validate_date(value):
+    try:
+        dt_obj = datetime.strptime(value, '%Y-%m-%d')
+        return dt_obj
+    
+    except ValueError:
         raise DataTypeDoesNotMatch('날짜 입력값의 형태가 올바르지 않습니다.')
-
-
-# from webargs import fields, validate
-
-# validate_basic_info = {
-#     "basic_info": fields.Nested(
-#         {
-#             "seller_id": fields.Int(validate=validate.Range(min=1), required=True),
-#             "is_selling": fields.Bool(required=True),
-#             "is_displayed": fields.Bool(required=True),
-#             "property_id":fields.Int(validate=validate.Range(min=1), required=True),
-#             "category_id":fields.Int(validate=validate.Range(min=1), required=True),
-#             # "product_info_notice":fields.Nested(
-#             #     {"manufacturer": fields.Str(),
-#             #     "date_of_manufacture": fields.Str(),
-#             #     "origin": fields.Str()}),
-#             "title":fields.Str(required=True),
-#             "simple_description":fields.Str(required=False),
-#             "content": fields.Str(required=True)
-#     })}
-
-# validate_selling_info = {
-#     "selling_info": fields.Nested({
-#     "price": fields.Int(validate=validate.Range(min=1)),
-#     "discount_rate": fields.Float(),
-#     "discount_start_date": fields.DateTime("%Y-%m-%d %H:%M:%S"),
-#     "discount_end_date": fields.DateTime("%Y-%m-%d %H:%M:%S"),
-#     "min_amount": fields.Int(validate=validate.Range(min=1)),
-#     "max_amount": fields.Int(validate=validate.Range(max=20))
-# })}

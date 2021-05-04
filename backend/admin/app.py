@@ -5,13 +5,14 @@ from flask import Flask
 from flask_cors import CORS
 from flask.json import JSONEncoder
 
-from service import (
+
+from admin.service import (
     ProductService,
     OrderService,
     AccountService
 )
 
-from view import create_endpoints
+from admin.view import create_endpoints
 
 from utils.error_handler import error_handle
 from utils.formatter import CustomJSONEncoder
@@ -31,7 +32,7 @@ def create_app():
     services.account_service = AccountService()
 
     app.json_encoder = CustomJSONEncoder
-    # endpoint 생성
+
     create_endpoints(app, services)
     
     app.json_encoder = CustomJSONEncoder

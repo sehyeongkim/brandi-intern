@@ -16,7 +16,7 @@ def post_response(data, status_code=200):
         dict : 프론트로 result라는 dict안에 data라는 dict을 반환
     """
     response = {
-        "result" : data
+                    "result" : data
     }    
                 
     return response
@@ -34,4 +34,11 @@ def post_response_with_return(message, fail_return, status_code=200):
                     "post_fail": fail_return,
                     "status_code": status_code
                 }
+    return response
+
+def post_response_success(message, status_code=200):
+    response = {
+                    "message": message,
+                    "status_code": status_code
+    }
     return response
