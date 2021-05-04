@@ -368,21 +368,20 @@ class ProductService:
 
         product_detail = {
             'basic_info': {
+                'seller_name' : product_result['seller_name'],
                 'product_id' : product_result['product_id'],
                 'product_code': product_result['product_code'],
-                'selling': product_result['is_selling'],
-                'displayed': product_result['is_displayed'],
-                'property': product_result['property'],
+                'is_selling': product_result['is_selling'],
+                'is_displayed' : product_result['is_displayed'],
+                'property_name': product_result['property'],
                 'property_id': product_result['property_id'],
                 'category': product_result['category'],
                 'category_id': product_result['category_id'],
                 'sub_category': product_result['sub_category'],
                 'sub_category_id': product_result['sub_category_id'],
-                'product_info_notice': {
-                    'manufacturer': product_result['manufacturer'],
-                    'date_of_manufacture': product_result['date_of_manufacture'],
-                    'origin': product_result['origin']
-                },
+                'manufacturer': product_result['manufacturer'],
+                'date_of_manufacture': product_result['date_of_manufacture'],
+                'origin': product_result['origin'],
                 'title': product_result['title'],
                 'simple_description': product_result['simple_description'],
                 'images': [
@@ -390,8 +389,9 @@ class ProductService:
                         'image_url' : image['image_url'],
                         'is_represent' : image['is_represent']
                     }
-                for image in product_image_result],
-                'detail_description': '<html>'
+                    for image in product_image_result
+                ],
+                'content': product_result['content']
             },
             'option_info': [
                 {
