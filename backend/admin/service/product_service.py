@@ -1,11 +1,28 @@
-from model import ProductDao
+import random, string, uuid
+from flask import g
+from admin.model import ProductDao
 from datetime import timedelta, datetime
 from utils.custom_exception import StartDateFail, DataNotExists
 import xlwt
 from io import BytesIO
 import copy
 
-from connection import get_s3_connection, BUCKET_NAME, REGION
+from connection import get_s3_connection
+
+from utils.validation import (
+                                validate_integer, 
+                                validate_boolean, 
+                                validate_datetime, 
+                                validate_float, 
+                                validate_string
+)
+from config import BUCKET_NAME, REGION
+from utils.constant import (
+                            START_DATE,
+                            END_DATE,
+                            PRODUCT_INFO_NOTICE
+)
+
 
 class ProductService:
     def __new__(cls, *args, **kwargs):
@@ -34,6 +51,11 @@ class ProductService:
         # HEADERS로 엑셀파일 요청
         if 'application/vnd.ms-excel' in headers.values():
             result = self.product_dao.get_products_list(conn, params, headers)
+            
+            # 할인가격 key, value 추가
+            for product in result:
+                product['discount_price'] = product['price'] - (product['price'] * product['discount_rate'])
+            
             output = BytesIO()
 
             workbook = xlwt.Workbook(encoding='utf-8')
@@ -72,6 +94,10 @@ class ProductService:
             return output
         
         product_result, total_count_result = self.product_dao.get_products_list(conn, params, headers)
+        
+        # 할인가격 key, value 추가
+        for product in product_result:
+            product['discount_price'] = product['price'] - (product['price'] * product['discount_rate'])
 
         result = {
             'total_count' : total_count_result['total_count'],
@@ -80,10 +106,145 @@ class ProductService:
         
         return result
     
-    # 상품 등록 (by seller or master)
-    def post_product_by_seller_or_master(self, conn, body):
-        return self.product_dao.post_product_by_seller_or_master(conn, body)
     
+    def create_product_info(self, conn, basic_info: dict, selling_info: dict):
+
+        # 필수 입력값 validate
+        validate_integer(basic_info['seller_id'])
+        validate_integer(basic_info['property_id'])
+        validate_integer(basic_info['category_id'])
+        validate_integer(basic_info['sub_category_id'])
+        validate_boolean(basic_info['is_selling'])
+        validate_boolean(basic_info['is_displayed'])
+        validate_string(basic_info['title'])
+        validate_string(basic_info['content'])
+        validate_integer(selling_info['price'])
+
+        # 선택 입력값 존재하는 경우 validate
+
+        # 상품 한줄 설명
+        if 'simple_description' in basic_info:
+            validate_string(basic_info['simple_description'])
+        
+        # 상품 정보 고시
+        if 'manufacturer' in basic_info:
+            validate_string(basic_info['manufacturer'])
+        
+        if 'date_of_manufacture' in basic_info:
+            validate_string(basic_info['date_of_manufacture'])
+
+        if 'origin' in basic_info:
+            validate_string(basic_info['origin'])
+        
+        # 할인율
+        if 'discount_rate' in  selling_info:
+            validate_float(selling_info['discount_rate'])
+        
+        # 할인 기간 - 시작 날짜
+        if 'discount_start_date' in selling_info:
+            validate_datetime(selling_info['discount_start_date'])
+        
+        # 할인 기간 - 종료 날짜
+        if 'discount_end_date' in selling_info:
+            validate_datetime(selling_info['discount_end_date'])
+        
+        # 최소 판매 수량
+        if 'min_amount' in selling_info:
+            validate_integer(selling_info['min_amount'])
+            
+        # 최대 판매 수량
+        if 'max_amount' in selling_info:
+            validate_integer(selling_info['max_amount'])
+            
+
+        # params 딕셔너리에 필수 데이터 할당 
+        params = dict()
+        params['seller_id'] = basic_info['seller_id']
+        params['is_selling'] = basic_info['is_selling']
+        params['is_displayed'] = basic_info['is_displayed']
+        params['property_id'] = basic_info['property_id']
+        params['category_id'] = basic_info['category_id']
+        params['sub_category_id'] = basic_info['sub_category_id']
+        params['title'] = basic_info['title']
+        params['content'] = basic_info['content']
+        params['price'] = selling_info['price']
+
+        # params 딕셔너리에 선택 데이터 할당
+        params['manufacturer'] = basic_info.get('manufacturer', PRODUCT_INFO_NOTICE)
+        params['date_of_manufacture'] = basic_info.get('date_of_manufacture', PRODUCT_INFO_NOTICE)
+        params['origin'] = basic_info.get('origin', PRODUCT_INFO_NOTICE)
+        params['discount_rate'] = basic_info.get('discount_rate', 0)
+        params['discount_start_date'] = basic_info.get('discount_start_date', START_DATE)
+        params['discount_end_date'] = basic_info.get('discount_end_date', END_DATE)
+        params['min_amount'] = basic_info.get('min_amount', 1)
+        params['max_amount'] = basic_info.get('max_amount', 20)
+
+        # 상품 코드 생성
+        product_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=20))
+        params['product_code'] = product_code
+
+        return self.product_dao.create_product_info_dao(conn, params)
+
+    def create_option_info(self, conn, product_id:int, option_info: list):
+
+        for option in option_info:
+
+            #validate
+            if 'color_id' in option:
+                validate_integer(option['color_id'])
+            
+            if 'size_id' in option:
+                validate_integer(option['size_id'])
+            
+            option['color_id'] = option.get('color_id', None)
+            option['size_id'] = option.get('size_id', None)
+            option['product_id'] = product_id
+            option_code = ''.join(random.choices(string.ascii_lowercase + string.digits, k=25))
+            option['option_code'] = option_code
+
+
+        return self.product_dao.create_option_info_dao(conn, option_info)
+    
+    def upload_file_to_s3(self, img_obj, folder: str):
+        s3_conn = get_s3_connection()
+        uploaded_at = str(datetime.now())
+        filename = img_obj.filename
+        key = folder + uploaded_at + filename
+        # 띄어쓰기, 콜론 등 필요없는 부분을 제거하기 위함
+        key = name.replace(" ", "").replace(":","")
+        s3_conn.upload_fileobj(Fileobj=img_obj,
+                                Bucket=BUCKET_NAME,
+                                Key=key)
+        url = f"https://{BUCKET_NAME}.s3.{REGION}.amazonaws.com/{key}"
+        
+        return url
+
+    
+    def insert_image_url(self, conn, product_id: int, imgs_obj: list):
+
+        img_urls = self.upload_file_to_s3(imgs_obj, product_id)
+
+        params = list()
+        result = dict()
+        result['product_id'] = product_id
+        result['is_deleted'] = 0
+        result['created_account_id'] = g.account_id
+        result['delete_account_id'] = None
+        result['deleted_at'] = None
+
+        for idx, val in enumerate(img_urls):
+    
+            result['image_url'] = val
+
+            if idx == 0:
+                result['is_represent'] = 1
+            else:
+                result['is_represent'] = 0
+            
+            params.append(result)
+            
+        return self.product_dao.insert_image_url_dao(conn, params)
+
     # 상품 리스트에서 상품의 판매여부, 진열여부 수정
     def patch_product_selling_or_display_status(self, conn, params):
         """상품 판매, 진열 수정 함수
@@ -149,6 +310,7 @@ class ProductService:
         Returns:
             [dict]]: product_detail = {
                         'basic_info': {
+                            'product_id' : 상품아이디,
                             'product_code': 상품코드,
                             'selling': 판매여부,
                             'displayed': 진열여부,
@@ -206,12 +368,16 @@ class ProductService:
 
         product_detail = {
             'basic_info': {
+                'product_id' : product_result['product_id'],
                 'product_code': product_result['product_code'],
                 'selling': product_result['is_selling'],
                 'displayed': product_result['is_displayed'],
                 'property': product_result['property'],
+                'property_id': product_result['property_id'],
                 'category': product_result['category'],
+                'category_id': product_result['category_id'],
                 'sub_category': product_result['sub_category'],
+                'sub_category_id': product_result['sub_category_id'],
                 'product_info_notice': {
                     'manufacturer': product_result['manufacturer'],
                     'date_of_manufacture': product_result['date_of_manufacture'],
@@ -231,7 +397,9 @@ class ProductService:
                 {
                     'option_id': option['id'],
                     'color': option['color'],
+                    'color_id': option['color_id'],
                     'size': option['size'],
+                    'size_id': option['size_id'],
                     'stock': option['stock']
                 }
             for option in product_option_result],
@@ -248,35 +416,31 @@ class ProductService:
 
         return product_detail
     
-    # 상품 categories list 가져오기
-    def get_categories_list(self, conn, category_id):
-        return self.product_dao.get_categories_list(conn, category_id)
+    # 상품 등록 창에서 seller 검색 master만 가능함
+    def search_seller(self, conn, keyword:str):
+        keyword = keyword + '%'
+        params = dict()
+        params['keyword'] = keyword
+        return self.product_dao.search_seller_dao(conn, params)
     
-    # sellers list 가져오기
-    def get_sellers_list(self, conn, seller_id):
-        return self.product_dao.get_seller_list(conn, seller_id)
+    # seller 선택의 Response: seller 속성, 1차 카테고리
+    def get_property_and_available_categories_list(self, conn, seller_id: int):
+        params = dict()
+        params['seller_id'] = seller_id
+        return self.product_dao.get_property_and_available_categories_list_dao(conn, params)
 
-    # 상품 등록 창에서 seller 검색
-    def search_seller(self, conn, params):
-        return self.product_dao.search_seller(conn, params)
+    # 상품 sub categories list 출력
+    def get_sub_categories_list(self, conn, category_id: int):
+        params = dict()
+        params['category_id'] = category_id
+        return self.product_dao.get_sub_categories_list_dao(conn, params)
     
-    # 상품 등록 창에서 color list 뿌려주기
+    # 상품 등록 창에서 color list 출력
     def get_products_color_list(self, conn):
-        return self.product_dao.get_products_color_list(conn)
+        return self.product_dao.get_products_color_list_dao(conn)
 
-    # 상품 등록 창에서 size list 뿌려주기
+    # 상품 등록 창에서 size list 출력
     def get_products_size_list(self, conn):
-        return self.product_dao.get_products_size_list(conn)
+        return self.product_dao.get_products_size_list_dao(conn)
 
-    def upload_file_to_s3(self, img_obj, folder: str):
-        s3_conn = get_s3_connection()
-        uploaded_at = str(datetime.now())
-        filename = img_obj.filename
-        key = folder + uploaded_at + filename
-        # 띄어쓰기, 콜론 등 필요없는 부분을 제거하기 위함
-        key = name.replace(" ", "").replace(":","")
-        s3_conn.upload_fileobj(Fileobj=img_obj,
-                                Bucket=BUCKET_NAME,
-                                Key=key)
-        url = f"https://{BUCKET_NAME}.s3.{REGION}.amazonaws.com/{key}"
-        return url
+

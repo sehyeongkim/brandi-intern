@@ -11,15 +11,14 @@ class ProductDao:
     def get_products_list(self, conn, params, headers):
         sql_select = """
             SELECT
-                p.created_at as upload_date,
+                DATE_FORMAT(p.created_at, '%%Y-%%m-%%d %%h:%%i:%%s') as upload_date,
                 pi.image_url,
                 p.title,
                 p.product_code,
                 p.id,
                 p.seller_id,
                 p.price,
-                p.discount_rate,
-                p.price - (p.price * p.discount_rate) DIV 1 as discount_price,
+                IF(p.discount_start_date <= NOW() AND p.discount_end_date <= NOW(), 0, round(p.discount_rate, 2)) as discount_rate,
                 p.is_displayed,
                 p.is_selling,
                 s.korean_brand_name,
@@ -121,16 +120,23 @@ class ProductDao:
                 AND
                     p.created_at >= %(start_date_str)s
             """
-        # # 조회 날짜 끝 선택 됐을 때 검색
+        # 조회 날짜 끝 선택 됐을 때 검색
         if 'start_date' not in params and 'end_date' in params:
             sql += """
                 AND
                     p.created_at < %(end_date_str)s
             """
+        # 선택된 상품이 있을 때 해당 상품만 검색
         if 'select_product_id' in params:
             sql += """
                 AND
                     p.id IN %(select_product_id)s
+            """
+        # 셀러계정일 때 해당 셀러상품만 검색
+        if params['account_type_id'] == 2:
+            sql += """
+                AND
+                    s.account_id = %(account_id)s
             """
 
         product_sql = sql_select + sql + sql1
@@ -148,8 +154,104 @@ class ProductDao:
 
             return product_result, total_count_result
 
-    def post_product_by_seller_or_master(self, conn, body):
-        pass
+    def create_product_info_dao(self, conn, params: dict):
+        sql = """
+            INSERT INTO
+            products (
+                seller_id,
+                property_id,
+                category_id,
+                sub_category_id,
+                is_selling,
+                is_displayed,
+                title,
+                simple_description,
+                content,
+                product_code,
+                manufacturer,
+                date_of_manufacture,
+                origin,
+                price,
+                discount_rate,
+                discount_start_date,
+                discount_end_date,
+                min_amount,
+                max_amount
+                )
+            VALUES (
+                %(seller_id)s,
+                %(property_id)s,
+                %(category_id)s,
+                %(sub_category_id)s,
+                %(is_selling)s,
+                %(is_displayed)s,
+                %(title)s,
+                %(simple_description)s,
+                %(content)s,
+                %(product_code)s,
+                %(manufacturer)s,
+                %(date_of_manufacture)s,
+                %(origin)s,
+                %(price)s,
+                %(discount_rate)s,
+                %(discount_start_date)s,
+                %(discount_end_date)s,
+                %(min_amount)s,
+                %(max_amount)s
+            )
+        """
+        with conn.cursor() as cursor:
+            cursor.execute(sql, params)
+            return cursor.lastrowid
+    
+    def create_option_info_dao(self, conn, option_info: list):
+        sql = """
+            INSERT INTO
+            options (
+                product_id,
+                color_id,
+                size_id,
+                price,
+                stock,
+                option_code
+            )
+            VALUES (
+                %(product_id)s,
+                %(color_id)s,
+                %(size_id)s,
+                %(price)s,
+                %(stock)s,
+                %(option_code)s
+            )
+        """
+        with conn.cursor() as cursor:
+            cursor.executemany(sql, option_info)
+            return cursor.lastrowid
+
+    def insert_image_url_dao(self, conn, params: list):
+        sql="""
+            INSERT INTO
+            product_images (
+                product_id,
+                image_url,
+                is_represent,
+                is_deleted,
+                created_account_id,
+                delete_account_id,
+                deleted_at
+            )
+            VALUES (
+                %(product_id)s,
+                %(image_url)s,
+                %(is_represent)s,
+                %(is_deleted)s,
+                %(created_account_id)s,
+                %(delete_account_id)s,
+                %(deleted_at)s
+            )
+        """
+        with conn.cursor() as cursor:
+            cursor.executemany(sql, params)
 
     def patch_product_selling_or_display_status(self, conn, product_check_success_result):
         """상품 판매, 진열 상태 변경 함수
@@ -163,17 +265,30 @@ class ProductDao:
         """
         sql = """
             UPDATE
-                products as p
+                products as p       
             SET
-                p.is_displayed = %(display)s,
-                p.is_selling = %(selling)s
+        """
+        comma = ''
+        
+        if 'display' in product_check_success_result[0]:
+            sql += """
+                p.is_displayed = %(display)s
+            """
+            comma = ','
+        
+        if 'selling' in product_check_success_result[0]:
+            sql += f"""
+                {comma}p.is_selling = %(selling)s
+            """
+        sql1 = """
             WHERE
                 p.id = %(product_id)s
-            
         """
+        sql += sql1
         with conn.cursor() as cursor:
             cursor.executemany(sql, product_check_success_result)
-    
+
+
     def check_product_exists(self, conn, params):
         """데이터베이스 상품 존재여부 확인
 
@@ -293,8 +408,11 @@ class ProductDao:
                 p.is_selling,
                 p.is_displayed,
                 pp.name as property,
+                pp.id as property_id,
                 c.name as category,
+                c.id as category_id,
                 sc.name as sub_category,
+                sc.id as sub_category_id,
                 p.manufacturer,
                 p.date_of_manufacture,
                 p.origin,
@@ -306,7 +424,8 @@ class ProductDao:
                 p.discount_start_date as discount_start_date,
                 p.discount_end_date as discount_end_date,
                 p.min_amount,
-                p.max_amount
+                p.max_amount,
+                p.id as product_id
             FROM 
                 products as p
             INNER JOIN
@@ -361,7 +480,9 @@ class ProductDao:
                 o.id,
                 o.stock,
                 c.name as color,
-                s.name as size
+                c.id as color_id,
+                s.name as size,
+                s.id as size_id
             FROM
                 options as o
             INNER JOIN
@@ -382,37 +503,80 @@ class ProductDao:
             cursor.execute(sql, params)
             return cursor.fetchall()
 
-    def get_categories_list(self, conn, category_id):
-        pass
+    def search_seller_dao(self, conn, params: dict):
+        sql = """
+            SELECT
+                s.id AS seller_id,
+                s.profile_image_url,
+                s.korean_brand_name
+            FROM
+                sellers AS s
+            WHERE
+                korean_brand_name
 
-    def get_sellers_list(self, conn, seller_id):
-        pass
-
-    def search_seller(self, conn, params):
-        pass
-
-    def get_products_color_list(self, conn):
+                LIKE
+                    %(keyword)s
+                
+            LIMIT 10
+        """
         with conn.cursor() as cursor:
-            sql = """
-                    SELECT 
-                    *
-                    FROM
-                    color
-                """
-            cursor.execute(sql)
-            result = cursor.fetchall()
-
-            return result
-
-    def get_products_size_list(self, conn):
+            cursor.execute(sql, params)
+            return cursor.fetchall()
+    
+    def get_property_and_available_categories_list_dao(self, conn, params: dict):
+        sql = """
+            SELECT
+                pr.id AS property_id,
+                pr.name AS property_name,
+                c.id AS category_id,
+                c.name AS category_name
+            FROM
+                sellers AS s
+            INNER JOIN
+                property as pr ON s.property_id = pr.id
+            INNER JOIN
+                category as c ON pr.id = c.property_id
+            WHERE
+                s.id = %(seller_id)s
+        """
         with conn.cursor() as cursor:
-            sql = """
-                    SELECT
-                    *
-                    FROM
-                    size
-                """
-            cursor.execute(sql)
-            result = cursor.fetchall()
+            cursor.execute(sql, params)
+            return cursor.fetchall()
+    
+    def get_sub_categories_list_dao(self, conn, params: dict):
+        sql = """
+            SELECT
+                s.id AS subcategory_id,
+                s.name AS subcategory_name
+            FROM
+                sub_category AS s
+            WHERE
+                s.category_id = %(category_id)s
+        """
+        with conn.cursor() as cursor:
+            cursor.execute(sql, params)
+            return cursor.fetchall()
 
-            return result
+    def get_products_color_list_dao(self, conn):
+        sql = """
+            SELECT 
+                c.id AS color_id,
+                c.name AS color_name
+            FROM
+                color AS c
+        """
+        with conn.cursor() as cursor:
+            cursor.execute(sql)
+            return cursor.fetchall()
+
+    def get_products_size_list_dao(self, conn):
+        sql = """
+            SELECT
+                s.id AS size_id,
+                s.name AS size_name
+            FROM
+                size AS s
+        """
+        with conn.cursor() as cursor:
+            cursor.execute(sql)
+            return cursor.fetchall()

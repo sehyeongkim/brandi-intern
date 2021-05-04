@@ -25,25 +25,25 @@
     <a-descriptions bordered size="small" class="seller-from" label-width="20%" :column="2">
       <a-descriptions-item label="상품번호">
 
-        {{ dataStore.detailData.productId }}
+        {{ dataStore.detailData.product_id }}
       </a-descriptions-item>
       <a-descriptions-item label="상품명">
-        {{ dataStore.detailData.productName }}
+        {{ dataStore.detailData.product_name }}
       </a-descriptions-item>
 
       <a-descriptions-item label="상품 판매가">
-        {{ dataStore.detailData.discountPrice | makeComma }} 원
+        {{ dataStore.detailData.discounted_price | makeComma }} 원
       </a-descriptions-item>
       <a-descriptions-item label="상품 할인율">
-        {{ dataStore.detailData.discountRate | makeComma }} %
+        {{ dataStore.detailData.discount_rate | makeComma }} %
       </a-descriptions-item>
 
       <a-descriptions-item label="브랜드명">
-        {{ dataStore.detailData.brandName }}
+        {{ dataStore.detailData.brand_name }}
       </a-descriptions-item>
       <a-descriptions-item label="옵션정보">
-        {{ dataStore.detailData.colorName }}
-        / {{ dataStore.detailData.sizeName }}
+        {{ dataStore.detailData.color }}
+        / {{ dataStore.detailData.size }}
       </a-descriptions-item>
 
       <a-descriptions-item label="구매수량">

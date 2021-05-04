@@ -1,21 +1,21 @@
 <template>
   <div class="product">
     <div class="productImage" @click="linkToDetail(product)">
-      <img :src="product.imageUrl || product.thumbnailImage" alt="thumbnail img" />
+      <img :src="product.image_url" alt="thumbnail img" />
     </div>
-    <div class="brandName">{{ product.sellerName }}</div>
-    <div class="productName">{{ product.name }}</div>
+    <div class="brandName">{{ product.seller_korean_name }}</div>
+    <div class="productName">{{ product.title }}</div>
     <div class="productPrice">
-      <span class="discountRate" v-if="product.discountRate != 0"
-        >{{ product.discountRate }}%</span
+      <span class="discountRate" v-if="product.discount_rate != 0"
+        >{{ product.discount_rate }}%</span
       >
-      <span class="discountPrice" v-if="product.discountRate != 0">
-        {{ product.discountPrice | makeComma }}
+      <span class="discountPrice" v-if="product.discount_rate != 0">
+        {{ product.discount_price | makeComma }}
       </span>
       <span
         :class="{
-          noneDisCountPrice: product.discountRate == 0,
-          price: product.discountRate != 0,
+          noneDisCountPrice: product.discount_rate == 0,
+          price: product.discount_rate != 0,
         }"
         >{{
             product.price | makeComma
@@ -33,7 +33,7 @@ export default {
   props: {
     product: {
       type: Object,
-      default () {
+      default() {
         return {
           thumbnailImage: '',
           name: '',
@@ -46,11 +46,11 @@ export default {
       }
     }
   },
-  data () {
+  data() {
     return {}
   },
   methods: {
-    linkToDetail (product) {
+    linkToDetail(product) {
       this.$emit('linkToDetail', product)
     }
   }

@@ -8,51 +8,51 @@
 <script>
 export default {
   name: 'multi-select-buttons',
-  data () {
+  data() {
     return {
       allChecked: true
     }
   },
   props: {
     items: {
-      default () {
+      default() {
         return []
       }
     },
     value: {
-      default () {
+      default() {
         return []
       }
     },
     disabled: {
-      default () {
+      default() {
         return false
       }
     },
     // 복수 선택 가능 여부
     multipleSelect: {
-      default () {
+      default() {
         return true
       }
     }
   },
   computed: {
-    allCheckedComputed () {
+    allCheckedComputed() {
       return this.items.length === this.value.length
     }
   },
-  mounted () {
+  mounted() {
     // 전체 선택이 아닌 경우 발라냄 (한건도 선택된게 아닌데, 모든 버튼을 선택한것도 아니면)
     if (this.value.length !== 0 && this.items.length !== this.value.length) {
       this.allChecked = false
     }
   },
   methods: {
-    checkAll () {
+    checkAll() {
       this.allChecked = true
       this.$emit('input', [])
     },
-    toggle (item) {
+    toggle(item) {
       if (this.multipleSelect) {
         const newValue = [...this.value]
         const index = newValue.indexOf(item.value)
@@ -71,12 +71,12 @@ export default {
     }
   },
   watch: {
-    allCheckedComputed (v) {
+    allCheckedComputed(v) {
       if (v) {
         this.checkAll()
       }
     },
-    value (v) {
+    value(v) {
       if (v.length === 0) {
         this.allChecked = true
       } else {

@@ -3,7 +3,7 @@
     <a-descriptions bordered size="small" class="seller-from" label-width="20%">
       <a-descriptions-item :span="3">
         <template slot="label">판매가 <span class="required">*</span></template>
-        <a-input placeholder="판매가" class="normal-size" suffix="원" v-model="dataStore.detailData.price" v-currency /><br/>
+        <a-input placeholder="판매가" class="normal-size" suffix="원" v-model="dataStore.detailData.selling_info.price" v-currency /><br/>
         <info-text label=" 판매가는 원화기준 10원 이상이며 가격 입력 시 10원 단위로 입력해 주세요."/>
       </a-descriptions-item>
       <a-descriptions-item label="할인정보" :span="3">
@@ -16,7 +16,7 @@
           </thead>
           <tbody>
           <tr>
-            <td><a-input suffix="%" v-mask="'###'" :min="0" :max="99" v-model.number="dataStore.detailData.discountRate" class="small-size" @blur="() => { if (num > 99) num = 99 } " /></td>
+            <td><a-input suffix="%" v-mask="'###'" :min="0" :max="99" v-model.number="discountRate" class="small-size" @blur="() => { if (num > 99) num = 99 } " /></td>
             <td>0 원 <a-button type="primary">할인판매가적용</a-button></td>
           </tr>
           <tr>
@@ -62,12 +62,12 @@ export default {
   },
   props: {
     dataStore: {
-      default () {
+      default() {
         return {}
       }
     }
   },
-  data () {
+  data() {
     return {
       num: 0,
       value: 1000,
@@ -91,8 +91,18 @@ export default {
       }
     }
   },
+  computed: {
+    discountRate: {
+      get() {
+        return this.dataStore.detailData.selling_info.discount_rate * 100
+      },
+      set(v) {
+        this.dataStore.detailData.selling_info.discount_rate = v / 100
+      }
+    }
+  },
   methods: {
-    addManager () {
+    addManager() {
       if (this.managers.length < 3) {
         this.managers.push({
           name: '',
@@ -101,20 +111,20 @@ export default {
         })
       }
     },
-    popManager () {
+    popManager() {
       if (this.managers.length > 1) this.managers.pop()
     },
-    minMaxChange (val) {
+    minMaxChange(val) {
       // 최대 최소 수량 변경
-      this.dataStore.detailData.minimum = val[0]
-      this.dataStore.detailData.maximum = val[1]
+      this.dataStore.detailData.selling_info.min_amount = val[0]
+      this.dataStore.detailData.selling_info.max_amount = val[1]
     },
-    changeDate (val) {
+    changeDate(val) {
       console.log(val)
       this.dataStore.detailData.discountStart = val[0].format('YYYY-MM-DD')
       this.dataStore.detailData.discountEnd = val[1].format('YYYY-MM-DD')
     },
-    getData () {
+    getData() {
       return JSON.parse(JSON.stringify(this.data))
     }
   }

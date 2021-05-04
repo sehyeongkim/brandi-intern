@@ -1,98 +1,54 @@
 {
   "result": {
-    "product": [
+    "basic_info": {
+      "category": "아우터 ",
+      "detail_description": "<html>",
+      "displayed": 1,
+      "images": [
+        {
+          "image_url": "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__340.jpg",
+          "is_represent": 0
+        },
+        {
+          "image_url": "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__340.jpg",
+          "is_represent": 1
+        }
+      ],
+      "product_code": "111",
+      "product_info_notice": {
+        "date_of_manufacture": "상품상세 참조",
+        "manufacturer": "상품상세 참조",
+        "origin": "상품상세 참조"
+      },
+      "property": "트랜드 ",
+      "selling": 0,
+      "simple_description": "",
+      "sub_category": "자켓 ",
+      "title": "가옷"
+    },
+    "option_info": [
       {
-        "discount_price": 8500,
-        "discount_rate": 0.15,
-        "id": 1,
-        "image_url": "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__340.jpg",
-        "is_displayed": 1,
-        "is_selling": 1,
-        "korean_brand_name": "가가",
-        "price": 10000,
-        "product_code": "111",
-        "seller_id": 1,
-        "sub_property": "쇼핑몰 ",
-        "title": "멋진 아우터",
-        "upload_date": "2021-04-20 "
+        "color": "블랙",
+        "option_id": 1,
+        "size": "Free",
+        "stock": 200
       },
       {
-        "discount_price": 12000,
-        "discount_rate": 0.2,
-        "id": 5,
-        "image_url": "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__340.jpg",
-        "is_displayed": 1,
-        "is_selling": 1,
-        "korean_brand_name": "마마",
-        "price": 15000,
-        "product_code": "555",
-        "seller_id": 5,
-        "sub_property": "제너럴브랜드",
-        "title": "믓진 아우터 ",
-        "upload_date": "2021-04-20 "
-      },
-      {
-        "discount_price": 12000,
-        "discount_rate": 0.2,
-        "id": 4,
-        "image_url": "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__340.jpg",
-        "is_displayed": 1,
-        "is_selling": 1,
-        "korean_brand_name": "라라",
-        "price": 15000,
-        "product_code": "444",
-        "seller_id": 4,
-        "sub_property": "디자이너브랜드",
-        "title": "믓진 아우터 ",
-        "upload_date": "2021-04-20 "
-      },
-      {
-        "discount_price": 12000,
-        "discount_rate": 0.2,
-        "id": 3,
-        "image_url": "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__340.jpg",
-        "is_displayed": 1,
-        "is_selling": 1,
-        "korean_brand_name": "다다",
-        "price": 15000,
-        "product_code": "333",
-        "seller_id": 3,
-        "sub_property": "로드샵",
-        "title": "믓진 아우터 ",
-        "upload_date": "2021-04-20 "
-      },
-      {
-        "discount_price": 12000,
-        "discount_rate": 0.2,
-        "id": 2,
-        "image_url": "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__340.jpg",
-        "is_displayed": 1,
-        "is_selling": 1,
-        "korean_brand_name": "나나",
-        "price": 15000,
-        "product_code": "222",
-        "seller_id": 2,
-        "sub_property": "마켓 ",
-        "title": "상의",
-        "upload_date": "2021-04-20 "
-      },
-      {
-        "discount_price": 12000,
-        "discount_rate": 0.2,
-        "id": 6,
-        "image_url": "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__340.jpg",
-        "is_displayed": 1,
-        "is_selling": 1,
-        "korean_brand_name": "바바",
-        "price": 15000,
-        "product_code": "666",
-        "seller_id": 6,
-        "sub_property": "내셔널브랜드",
-        "title": "믓진 아우터 ",
-        "upload_date": "2021-04-20 "
+        "color": "레드",
+        "option_id": 2,
+        "size": "28",
+        "stock": 200
       }
     ],
-    "total_count": 6
+    "selling_info": {
+      "discount_end_date": "9999-12-31 11:59:00",
+      "discount_price": 8500,
+      "discount_rate": 0.15,
+      "discount_start_date": "1111-01-01 12:00:00",
+      "max_amount": 20,
+      "min_amount": 1,
+      "price": 10000
+    }
   },
   "status_code": 200
 }

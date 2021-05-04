@@ -3,9 +3,9 @@ from flask import jsonify
 from flask_request_validator import *
 from flask_request_validator.error_formatter import demo_error_formatter
 from flask_request_validator.exceptions import InvalidRequestError, InvalidHeadersError, RuleError
+
 from utils.custom_exception import CustomUserError
 from utils.response import error_response
-
 
 
 def error_handle(app):
@@ -27,7 +27,6 @@ def error_handle(app):
         traceback.print_exc()
         return error_response("서버 상에서 오류가 발생했습니다.", "Exception", 500)
 
-
     @app.errorhandler(AttributeError)
     def handle_error(e):
         traceback.print_exc()
@@ -42,7 +41,7 @@ def error_handle(app):
     def handle_type_error(e):
         traceback.print_exc()
         return error_response("데이터의 값이 잘못 입력되었습니다", "Data Type Error", 500)
- 
+
     @app.errorhandler(ValueError)
     def handle_value_error(e):
         traceback.print_exc()
@@ -62,7 +61,7 @@ def error_handle(app):
         dev_error_message = demo_error_formatter(
             e)[0]['errors'], demo_error_formatter(e)[0]['message']
         return error_response("형식에 맞는 값을 입력해주세요", dev_error_message, 400)
-
+    
     @app.errorhandler(CustomUserError)
     def handle_error(e):
         traceback.print_exc()

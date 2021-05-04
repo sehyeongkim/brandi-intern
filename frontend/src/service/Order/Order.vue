@@ -201,18 +201,18 @@
 </template>
 
 <script>
-import SERVER from "@/config.js";
-import API from "@/service/util/service-api";
-import DropDown from "@/service/Components/DropDown";
-import Modal from "./Modal";
+import SERVER from '@/config.js'
+import API from '@/service/util/service-api'
+import DropDown from '@/service/Components/DropDown'
+import Modal from './Modal'
 
 export default {
   created() {
     // const cartItem = JSON.parse(localStorage.getItem('cart'))
     // this.totalPrice = cartItem.totalPrice
     // this.cartList = cartItem.items
-    this.getDeliveryMessage();
-    this.purchaseItems = JSON.parse(localStorage.getItem("purchaseItems"));
+    this.getDeliveryMessage()
+    this.purchaseItems = JSON.parse(localStorage.getItem('purchaseItems'))
   },
   data() {
     return {
@@ -225,104 +225,104 @@ export default {
       //   key: '1',
       //   label: '빨리 배달해주세요'
       // }],
-      phone: ["", "", ""],
-      email: ["", ""],
+      phone: ['', '', ''],
+      email: ['', ''],
       data: {
-        orderId: "",
-        orderName: "",
-        orderPhone: "",
-        orderEmail: "",
-        shippingMemoTypeId: "",
-        shippingInfoId: "",
-        items: "",
-        totalPrice: "",
+        orderId: '',
+        orderName: '',
+        orderPhone: '',
+        orderEmail: '',
+        shippingMemoTypeId: '',
+        shippingInfoId: '',
+        items: '',
+        totalPrice: ''
       },
       purchaseItems: {},
       shipingInfo: {},
       modal: false,
-      cartList: [],
-    };
+      cartList: []
+    }
   },
   components: {
     DropDown,
-    Modal,
+    Modal
   },
   computed: {
     shipongPhone() {
       const phones = this.shipingInfo.phone
-        ? this.shipingInfo.phone.split("-")
-        : [];
-      const arr = ["", "", ""];
+        ? this.shipingInfo.phone.split('-')
+        : []
+      const arr = ['', '', '']
       for (let i = 0, len = phones.length; i < len; i++) {
-        arr[i] = phones[i];
+        arr[i] = phones[i]
       }
-      return arr;
+      return arr
     },
     totalPrice() {
-      let total = 0;
+      let total = 0
       for (
         let i = 0, len = this.purchaseItems.optionQuantity.length;
         i < len;
         i++
       ) {
-        const item = this.purchaseItems.optionQuantity[i];
-        total += item.quantity * item.price;
+        const item = this.purchaseItems.optionQuantity[i]
+        total += item.quantity * item.price
       }
-      return total;
-    },
+      return total
+    }
   },
   methods: {
     openModal() {
-      this.modal = true;
+      this.modal = true
     },
     closeModal() {
-      this.modal = false;
+      this.modal = false
     },
     chooseAddress(address) {
-      console.log(address);
-      this.shipingInfo = address;
-      this.modal = false;
+      console.log(address)
+      this.shipingInfo = address
+      this.modal = false
     },
     getDeliveryMessage() {
       API.methods
         .get(`${SERVER.IP}/shipping-memo`)
         .then((res) => {
           this.deliveryMessage = res.data.result.data.map((d) => {
-            return { label: d.contents, key: d.id };
-          });
-          console.log(res);
+            return { label: d.contents, key: d.id }
+          })
+          console.log(res)
         })
         .catch((e) => {
           // this.$router.push('/main')
-          alert(e.data.message);
-        });
+          alert(e.data.message)
+        })
     },
     makePayload() {
-      const payload = JSON.parse(JSON.stringify(this.data));
-      payload.orderId = this.purchaseItems.orderId;
-      payload.items = this.purchaseItems.items;
-      payload.orderPhone = this.phone.join("-");
-      payload.orderEmail = this.email.join("@");
-      payload.shippingInfoId = this.shipingInfo.id;
-      payload.totalPrice = this.totalPrice;
-      return payload;
+      const payload = JSON.parse(JSON.stringify(this.data))
+      payload.orderId = this.purchaseItems.orderId
+      payload.items = this.purchaseItems.items
+      payload.orderPhone = this.phone.join('-')
+      payload.orderEmail = this.email.join('@')
+      payload.shippingInfoId = this.shipingInfo.id
+      payload.totalPrice = this.totalPrice
+      return payload
     },
     payment() {
-      const payload = this.makePayload();
+      const payload = this.makePayload()
       API.methods
         .patch(`${SERVER.IP}/confirmation`, payload)
         .then((res) => {
-          alert("주문이 성공하였습니다.");
-          const detailId = res.data.result.data;
-          this.$router.push("/order/detail/" + detailId);
+          alert('주문이 성공하였습니다.')
+          const detailId = res.data.result.data
+          this.$router.push('/order/detail/' + detailId)
         })
         .catch((e) => {
           // this.$router.push('/main')
-          alert(e.data.message);
-        });
-    },
-  },
-};
+          alert(e.data.message)
+        })
+    }
+  }
+}
 </script>
 
 <style lang="scss" scoped>

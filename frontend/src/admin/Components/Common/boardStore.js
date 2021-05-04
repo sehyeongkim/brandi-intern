@@ -1,5 +1,5 @@
 export default {
-  data () {
+  data() {
     return {
       list: [],
       page: 1,
@@ -9,16 +9,16 @@ export default {
       loadUri: 'http:/aaaa.com/notice/list'
     }
   },
-  created () {
+  created() {
     this.load()
   },
   computed: {
-    maxPage () {
+    maxPage() {
       return Math.ceil(this.total / this.pageLen)
     }
   },
   methods: {
-    load () {
+    load() {
       this.loading = true
       setTimeout(() => {
         const newList = []
@@ -56,14 +56,14 @@ export default {
       //         this.total = res.data.total;
       // })
     },
-    changePage (page) {
+    changePage(page) {
       console.log(page)
       this.page = page
       this.load()
     }
   },
   watch: {
-    pageLen (v) {
+    pageLen(v) {
       this.changePage(1)
     }
   }
