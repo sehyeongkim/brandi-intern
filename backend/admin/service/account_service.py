@@ -277,7 +277,7 @@ class AccountService:
             output.seek(0)
             return output
 
-        seller_list, seller_count = self.account_dao.get_seller_list(conn, params)
+        seller_list, seller_count = self.account_dao.get_seller_list(conn, params, headers)
 
         seller_list_info = {
             "seller_list": [
