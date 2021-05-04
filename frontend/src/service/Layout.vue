@@ -14,12 +14,12 @@ export default {
     Header,
     Footer
   },
-  created () {
+  created() {
   },
-  updated () {
+  updated() {
     window.scrollTo(0, 0)
   },
-  data () {
+  data() {
     return {
     }
   }

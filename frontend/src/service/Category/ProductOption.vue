@@ -19,7 +19,7 @@ export default {
   components: {
     CheckBox
   },
-  data () {
+  data() {
     return {
       testCheck: false
     }

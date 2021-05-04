@@ -47,7 +47,7 @@
 <script>
 import menus from '@/assets/data/aside'
 export default {
-  data () {
+  data() {
     return {
       menus,
       checkedMenu: this.$route.params.mainMenu
@@ -57,32 +57,32 @@ export default {
     }
   },
   computed: {
-    mainMenu () {
+    mainMenu() {
       return this.$route.params.mainMenu ? this.$route.params.mainMenu : ''
     }
   },
   methods: {
-    wClick (url) {
+    wClick(url) {
       if (this.$router.history.current.path !== `/${url}`) {
         this.$router.push(`/${url}`)
       }
     },
-    changeCurrMain (main) {
+    changeCurrMain(main) {
       this.checkedMenu = this.checkedMenu === main ? '' : main
       // if (this.checkedMenu === "home") {
       //   this.checkedMenu = "";
       //   window.location.reload();
       // }
     },
-    changeCurrSub (sub) {
+    changeCurrSub(sub) {
       this.subMenu = sub
       this.changeCurrMain(this.mainMenu)
     },
-    toggleFold () {
+    toggleFold() {
       this.fold = !this.fold
     }
   },
-  mounted () {
+  mounted() {
     this.checkedMenu = this.$route.params.mainMenu
       ? this.$route.params.mainMenu
       : ''

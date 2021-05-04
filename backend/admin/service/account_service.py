@@ -1,12 +1,18 @@
-import bcrypt, jwt
+import bcrypt, jwt, xlwt, copy
 
+from flask import g
 from cachetools import TTLCache, cached
 import time
 from config import SECRET_KEY
 from admin.model import AccountDao
-from utils.custom_exception import SignUpFail, SignInError, TokenCreateError
-
+from utils.custom_exception import SignUpFail, SignInError, TokenCreateError, MasterLoginRequired
+from utils.constant import MASTER, SELLER, USER, STORE_OUT, STORE_REJECTED
 from utils.formatter import CustomJSONEncoder
+
+# 이미지 업로드 재사용을 위함
+from service.product_service import ProductService
+
+from io import BytesIO
 
 class AccountService:
     def __new__(cls, *args, **kwargs):
@@ -136,7 +142,27 @@ class AccountService:
 
     @cached(cache = TTLCache(12, 10))
     def get_status_type(self, conn, seller_status_type):
+        """셀러 상태를 가져오는 함수
 
+        DB로부터 입점, 휴점, 퇴점 등 셀러의 상태 관련 데이터를 가져오는 함수
+
+        Args:
+            conn (Connection): DB커넥션 객체
+            seller_status_type (str): 현재 셀러의 입점 상태
+
+        Returns:
+            results (list): 
+                [
+                    {
+                        'button_name': 버튼 이름, 
+                        'to_status_type_id': 버튼을 클릭하면 이동하는 상태 id
+                    }, 
+                    {
+                        'button_name': 버튼 이름, 
+                        'to_status_type_id': 버튼을 클릭하면 이동하는 상태 id
+                    }
+                ]
+        """
         # status_name, seller_status_type_id, button_id, button_name, to_status_type_id가 포함된 리스트        
         seller_status_type_button_lists = self.account_dao.get_seller_status(conn, seller_status_type)
 
@@ -150,15 +176,60 @@ class AccountService:
                 results.append(seller_button_info)
             elif seller_status_type in ["입점거절", "퇴점"]:
                 continue
-
-        # 캐시를 이용했을 때 시간을 측정
-        # s = time.time()
-        # print("status_type: ", time.time() -s)    
+        
         return results
 
-    def get_seller_list(self, conn, params):
+    def get_seller_list(self, conn, params, headers):
+        """셀러 계정 리스트
 
-        params['page'] = (params['page'] - 1) * params['limit']
+        특정 조건(params)에 따라서 표출되는 셀러 계정 리스트
+
+        Args:
+            conn (Connection): DB커넥션 객체
+            params (dict): 
+                {
+                    'page': 페이지,
+                    'limit': 노출 개수,
+                    'seller_id': 셀러 pk 번호,
+                    'seller_identification': 셀러 아이디,
+                    'english_brand_name': 셀러 영문 브랜드명,
+                    'korean_brand_name': 셀러 한글 브랜드명,
+                    'manager_name': 담당자 이름,
+                    'seller_status_type': 셀러 현재 입점 상태,
+                    'manager_phone': 담당자 전화번호,
+                    'manager_email': 담당자 이메일,
+                    'sub_property': 셀러 2차속성,
+                    'seller_created_date': 셀러 생성일
+                }
+            headers (dict): 
+                {
+                    'Content-Type': 'application/vnd.ms-excel'
+                }
+
+        Raises:
+            StartDateFail: 조회 시작 날짜가 끝 날짜보다 클 경우 발생하는 에러
+
+        Returns:
+           seller_list_info (list) : 
+                [
+                    {
+                        "seller_id": 셀러 pk번호,
+                        "seller_identification": 셀러 아이디,
+                        "english_brand_name": 셀러 한글 브랜드명,
+                        "korean_brand_name": 셀러 영어 브랜드명,
+                        "manager_name": 담당자 이름,
+                        "seller_status_type": 셀러 입점 상태,
+                        "seller_status_type_button": 셀러 입점 상태 변경 버튼,
+                        "manager_phone": 담당자 전화번호,
+                        "manager_email": 담당자 이메일,
+                        "sub_property": 셀러 2차 속성,
+                        "seller_created_date": 셀러 생성 날짜
+                    } for seller in seller_list
+                ],
+                "total_count": seller_count["count"]
+        """
+
+        params['offset'] = (params['page'] - 1) * params['limit']
 
         if 'end_date' in params:
             params['end_date'] +=  timedelta(days=1)
@@ -170,12 +241,48 @@ class AccountService:
         if 'start_date' in params and 'end_date' in params and params['start_date'] > params['end_date']:
             raise  StartDateFail('조회 시작 날짜가 끝 날짜보다 큽니다.')
 
-        seller_list, seller_count = self.account_dao.get_seller_list(conn, params)
+        # HEADERS로 엑셀파일 요청
+        if 'application/vnd.ms-excel' in headers.values():
+            seller_info_list = self.account_dao.get_seller_list(conn, params, headers)
+            output = BytesIO()
+
+            workbook = xlwt.Workbook(encoding='utf-8')
+            worksheet = workbook.add_sheet(u'시트1')
+            worksheet.write(0, 0, u'번호')
+            worksheet.write(0, 1, u'셀러아이디')
+            worksheet.write(0, 2, u'영문이름')
+            worksheet.write(0, 3, u'한글이름')
+            worksheet.write(0, 4, u'담당자이름')
+            worksheet.write(0, 5, u'셀러상태')
+            worksheet.write(0, 6, u'담당자연락처')
+            worksheet.write(0, 7, u'담당자이메일')
+            worksheet.write(0, 8, u'셀러속성')
+            worksheet.write(0, 9, u'등록일시')
+
+            idx = 1
+            for row in seller_info_list:
+                worksheet.write(idx, 0, row['seller_id'])
+                worksheet.write(idx, 1, row['seller_identification'])
+                worksheet.write(idx, 2, row['english_brand_name'])
+                worksheet.write(idx, 3, row['korean_brand_name'])
+                worksheet.write(idx, 4, row['manager_name'])
+                worksheet.write(idx, 5, row['seller_status_type'])
+                worksheet.write(idx, 6, row['manager_phone'])
+                worksheet.write(idx, 7, row['manager_email'])
+                worksheet.write(idx, 8, row['sub_property'])
+                worksheet.write(idx, 9, str(row['seller_created_date']))
+                idx += 1
+            
+            workbook.save(output)
+            output.seek(0)
+            return output
+
+        seller_list, seller_count = self.account_dao.get_seller_list(conn, params, headers)
 
         seller_list_info = {
             "seller_list": [
                 {
-                    "id": seller["seller_id"],
+                    "seller_id": seller["seller_id"],
                     "seller_identification": seller["seller_identification"],
                     "english_brand_name": seller["english_brand_name"],
                     "korean_brand_name": seller["korean_brand_name"],
@@ -193,8 +300,30 @@ class AccountService:
         return seller_list_info
     
     def change_seller_status_type(self, conn, params):
+        """셀러 상태 변경 함수
+
+        셀러의 상태 변경 버튼을 누를 시, 셀러의 입점상태가 변경되는 함수
+
+        Args:
+            conn (Connection): DB커넥션 객체
+            params (dict): 
+                {
+                    'to_status_type_id': 변경될 셀러 상태 번호, 
+                    'account_id': 회원 pk 번호, 
+                    'seller_id': 셀러 pk 번호
+                }
+        """
+        # 셀러 상태를 변경
         self.account_dao.change_seller_status_type(conn, params)
+        
+        # 셀러 상태 변경 후, is_deleted 여부 결정
+        # STORE_REJECTED: 입점 거절, STORE_OUT: 퇴점
+        if self.account_dao.check_if_store_out(conn, params)["seller_status_type_id"] in [STORE_REJECTED, STORE_OUT]:
+            self.account_dao.change_seller_is_deleted(conn, params)
+        
+        # history 추가
         self.account_dao.change_seller_history(conn, params)
+
 
     def get_seller_info(self, conn, params):
         """셀러 상세 정보 formatting
@@ -202,8 +331,8 @@ class AccountService:
         데이터베이스에서 가져온 셀러 정보를 dictionary 형태로 formatting하는 함수
 
         Args:
-            conn (Connection): 데이터베이스 커넥션 객체
-            params (dict): {"seller_identification" : 셀러 아이디
+            conn (Connection): DB커넥션 객체
+            params (dict): {"seller_identification" : 셀러 아이디}
 
         Returns:
             seller_result (dict): 셀러 정보가 formatting된 결과
@@ -227,6 +356,7 @@ class AccountService:
                     "exchange_refund_info": 교환/환불 정보,
                     "manager_info_list": [
                         {
+                            "manager_id": 담당자 id,
                             "manager_name": 담당자 이름,
                             "manager_phone": 담당자 전화번호,
                             "manager_email": 담당자 이메일
@@ -235,12 +365,14 @@ class AccountService:
                     ]
                 }
         """
+        # 셀러 정보와 담당자 정보를 둘 다 가져옴
         seller_info, manager_info = self.account_dao.get_seller_info(conn, params)
 
         seller_result = {
             "profile_image_url": seller_info["profile_image_url"],
             "seller_status_type": seller_info["seller_status_type"],
             "korean_brand_name": seller_info["korean_brand_name"],
+            "seller_status_type_id": seller_info["seller_status_type_id"],
             "english_brand_name": seller_info["english_brand_name"],
             "seller_identification": seller_info["seller_identification"],
             "background_image_url": seller_info["background_image_url"],
@@ -256,7 +388,8 @@ class AccountService:
             "delivery_info": seller_info["delivery_info"],
             "exchange_refund_info": seller_info["exchange_refund_info"],
             "manager_info_list": [
-                {
+                {   
+                    "manager_id":manager["manager_id"],
                     "manager_name": manager["manager_name"],
                     "manager_phone": manager["manager_phone"],
                     "manager_email": manager["manager_email"]
@@ -266,3 +399,117 @@ class AccountService:
         }
 
         return seller_result
+
+
+    def update_seller_info(self, conn, params, manager_params):
+        """셀러 수정 
+
+        셀러의 정보를 수정하는 함수
+
+        Args:
+            conn (Connection): DB커넥션 객체
+            params (dict): 
+                {
+                    'profile_image_url': 셀러 프로필 이미지, 
+                    'background_image_url': 배경 이미지, 
+                    'seller_sub_property': 셀러 2차 속성, 
+                    'seller_sub_property_id': 2차 속성 id, 
+                    'korean_brand_name': 셀러 한글 브랜드명, 
+                    'english_brand_name': 셀러 영어 브랜드명, 
+                    'description': 한 줄 소개, 
+                    'detail_description': 상세 소개, 
+                    'zip_code': 우편번호, 
+                    'address': 주소, 
+                    'detail_address': 상세주소, 
+                    'customer_center': 고객센터, 
+                    'customer_center_phone': 고객센터 전화번호, 
+                    'customer_open_time': 고객센터 시작 시간, 
+                    'customer_close_time': 고객센터 마감 시간, 
+                    'delivery_info': 배송 정보, 
+                    'exchange_refund_info': 교환/환불 정보, 
+                    'account_id': 계정 id, 
+                    'account_type_id': 계정 type id, 
+                    'seller_id': 셀러 id
+                }
+            manager_params (list):     
+                "manager_info_list": 
+                [
+                    {
+                        "manager_id": 매니저 id,
+                        "manager_name": 매니저,
+                        "manager_email": 매니저 이메일,
+                        "manager_phone": 매니저 전화번호
+                    },
+                    {
+                        "manager_name": 매니저2,
+                        "manager_email": 매니저2 이메일,
+                        "manager_phone": 매니저2 전화번호
+                    }
+                ],
+
+        Raises:
+            MasterLoginRequired: 셀러로 로그인시 변경 권한이 없는 정보를 수정하려 했을 때
+        """
+
+        # 마스터인지 셀러인지 확인
+        # 셀러인 경우 들어오면 안되는 정보들은 막아줌
+        if params.get("account_type_id") == SELLER:
+            if params.get("seller_sub_property") or params.get("seller_sub_property_id") or params.get("korean_brand_name") or params.get("english_brand_name"):
+                raise MasterLoginRequired("수정 권한이 없습니다.")
+
+        manager_info_list_in_db = self.account_dao.get_managers_info(conn, params)
+        
+        # 이후에 기존 정보가 필요할 때를 대비해서 deepcopy
+        cp_manager_info_list_in_db = copy.deepcopy(manager_info_list_in_db)
+        cp_manager_params = copy.deepcopy(manager_params)
+
+        to_update_managers = list()
+        # get으로 가져왔을 때 manager_id를 가져오기 때문에, manager_id가 있으면 수정
+        for manager_in_db in cp_manager_info_list_in_db:
+            for manager_in_rq in cp_manager_params:
+                if manager_in_db.get("manager_id") == manager_in_rq.get("manager_id"):
+                    to_update_managers.append(manager_in_rq)
+                    # delete와 insert를 할 부분만 남겨놓기 위해서 remove로 삭제
+                    cp_manager_info_list_in_db.remove(manager_in_db)
+                    cp_manager_params.remove(manager_in_rq)
+                    break
+        
+        # 삭제할 매니저 정보와 삽입할 매니저 정보 리스트 (이름 바꾸기)
+        to_delete_managers = cp_manager_info_list_in_db
+        to_insert_managers = cp_manager_params
+
+        # manager 수정
+        self.account_dao.update_managers_info(conn, to_update_managers)
+        
+        # manager 삭제
+        self.account_dao.delete_managers_info(conn, to_delete_managers)
+        
+        # manager_id가 함께 있는 리스트 (INSERT와 SELECT를 동시에 하는 함수)
+        to_insert_managers_with_id = self.account_dao.insert_managers_info(conn, to_insert_managers)
+
+        # modify_account_id를 추가하기 위해서 account_id 추가
+        for manager in to_insert_managers_with_id + to_delete_managers:        
+            manager["account_id"] = g.account_id
+
+        # history에 변경된 내역을 모두 적용하기 위해서 + 연산 실행
+        to_insert_history = to_update_managers + to_delete_managers + to_insert_managers_with_id
+        self.account_dao.insert_managers_history(conn, to_insert_history)
+
+        # 셀러 정보 수정 & 셀러 history 추가
+        self.account_dao.update_seller_info(conn, params)
+        self.account_dao.insert_seller_history(conn, params)
+    
+
+    def create_image_url(self, img_obj, image_type):
+        # url에는 string 필요
+        str_account_id = str(g.account_id)     
+        # 프로필 이미지가 들어왔을 때 folder 경로
+        if image_type == 'profile':
+            folder = f'seller-profile-image/{str_account_id}/'
+        # 배경 이미지가 들어왔을 때 folder 경로
+        else:
+            folder = f'seller-background-image/{str_account_id}/'
+
+        # ProductService()의 upload_file_to_s3 활용 
+        url = ProductService().upload_file_to_s3(img_obj, folder)
+        return url

@@ -32,19 +32,19 @@ export default {
   name: 'product-history-modal',
   props: {
     dataStore: {
-      default () {
+      default() {
         return {}
       }
     }
   },
-  data () {
+  data() {
     return {
       visible: false,
       mockup: [
       ]
     }
   },
-  created () {
+  created() {
     for (let i = 0; i < 10; i++) {
       this.mockup.push({
         no: i,
@@ -59,13 +59,13 @@ export default {
     }
   },
   methods: {
-    handleOk () {
+    handleOk() {
       this.hide()
     },
-    show () {
+    show() {
       this.visible = true
     },
-    hide () {
+    hide() {
       this.visible = false
     }
   }

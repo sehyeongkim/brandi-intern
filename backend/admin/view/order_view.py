@@ -49,12 +49,14 @@ class OrderListView(MethodView):
             conn = get_connection()   
             
             order_list_result = self.service.get_order_list(conn, params)
+         
             return get_response(order_list_result), 200
         
         finally:
             conn.close()
     
     # order_status_type 변경
+    # LoginRequired의 경우 user가 아닌 경우를 구별하기 위함이므로 master도 포함일 때는 seller로 작성해도 무관
     @LoginRequired("seller")
     def patch(self):
         """주문 및 배송처리 
@@ -70,12 +72,14 @@ class OrderListView(MethodView):
             params = request.get_json()
             conn = get_connection()
             
+            # 주문 상태 변경 요청 중 바꿀 수 없는 값을 반환 (구매확정, 환불완료 등은 수정할 수 없다.)
             not_possible_change_values = self.service.patch_order_status_type(conn, params)
             conn.commit()
               
             return post_response_with_return("SUCCESS", not_possible_change_values), 200
         except Exception as e:
             if conn:
+                # 수정 중 문제가 발생할 경우 transaction을 적용
                 conn.rollback()
             raise e
         finally:
@@ -105,9 +109,8 @@ class OrderView(MethodView):
         """
         conn = None
         try:
-            path_param = request.view_args["order_detail_number"]
             params = dict()
-            params["detail_order_number"] = path_param
+            params["detail_order_number"] = order_detail_number
             conn = get_connection()
 
             order_detail = self.service.get_order(conn, params)

@@ -7,7 +7,7 @@
 
 export default {
   name: 'CategoryBreadCrumb',
-  data () {
+  data() {
     return {
     }
   },
