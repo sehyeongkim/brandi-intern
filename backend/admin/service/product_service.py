@@ -205,41 +205,20 @@ class ProductService:
 
         return self.product_dao.create_option_info_dao(conn, option_info)
     
-    def upload_file_to_s3(self, imgs_obj: list, product_id=None):
-            
+    def upload_file_to_s3(self, img_obj, folder: str):
         s3_conn = get_s3_connection()
-        img_urls = list()
+        uploaded_at = str(datetime.now())
+        filename = img_obj.filename
+        key = folder + uploaded_at + filename
+        # 띄어쓰기, 콜론 등 필요없는 부분을 제거하기 위함
+        key = name.replace(" ", "").replace(":","")
+        s3_conn.upload_fileobj(Fileobj=img_obj,
+                                Bucket=BUCKET_NAME,
+                                Key=key)
+        url = f"https://{BUCKET_NAME}.s3.{REGION}.amazonaws.com/{key}"
+        
+        return url
 
-        account_id = g.account_id
-
-        if product_id is None:
-            folder = 'product-images-in-html/'+'{account_id}'+'/'
-        else:
-            folder = 'product-images/'+'{account_id}'+'{product_id}'
-
-        # url = s3_conn.generate_presigned_url('get_object',
-        #                                         Params={
-        #                                             'Bucket': 'brandi-wecode-project',
-        #                                             'Key': '상세 상품 정보 속 이미지/_2020-12-13__5.18.56.png'
-        #                                         })
-        for image in imgs_obj:
-
-            dt_path = str(datetime.now())
-
-            s3_conn.upload_fileobj(Fileobj=image, 
-                                    Bucket=BUCKET_NAME,
-                                    Key=folder+dt_path+image.filename)
-            
-            url = s3_conn.generate_presigned_url('get_object', 
-                                                Params={
-                                                    'Bucket': BUCKET_NAME, 
-                                                    'Key': folder+dt_path+image.filename
-                                                    })
-            
-            if url is not None:
-                img_urls.append(url)
-
-        return img_urls
     
     def insert_image_url(self, conn, product_id: int, imgs_obj: list):
 
@@ -463,3 +442,5 @@ class ProductService:
     # 상품 등록 창에서 size list 출력
     def get_products_size_list(self, conn):
         return self.product_dao.get_products_size_list_dao(conn)
+
+

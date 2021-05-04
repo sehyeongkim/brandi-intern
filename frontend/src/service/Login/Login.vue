@@ -40,7 +40,7 @@ export default {
     GoogleLogin
     // Footer
   },
-  data () {
+  data() {
     return {
       // 구글 로그인 하기
       params: {
@@ -58,7 +58,7 @@ export default {
   methods: {
     ...mapMutations(serviceStore, ['getStorageToken']),
 
-    onSuccess (googleUser) {
+    onSuccess(googleUser) {
       localStorage.setItem('user_id', googleUser.tt.Ad)
       localStorage.setItem('user_email', googleUser.tt.bu)
 
@@ -83,7 +83,7 @@ export default {
           }
         })
     },
-    linkToSignUp () {
+    linkToSignUp() {
       if (this.getToken) {
         localStorage.removeItem('access_token')
         this.getStorageToken()
@@ -92,7 +92,7 @@ export default {
         this.$route.path !== '/signup' && this.$router.push('/signup')
       }
     },
-    login () {
+    login() {
       const data = {
         username: this.username,
         password: this.password

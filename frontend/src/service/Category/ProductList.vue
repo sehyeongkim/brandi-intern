@@ -23,7 +23,7 @@ import { EventBus } from '@/service/util/event-bus'
 
 export default {
   name: 'ProductList',
-  created () {
+  created() {
     // const url = `${SERVER.SERVER}/products/list`
     // API.methods
     //   .get(this.subId === 0 ? url : url + '?category=' + this.subId)
@@ -52,14 +52,14 @@ export default {
       .catch(() => {
         // console.log(error)
         this.$router.push('/main')
-        alert('존재하지 않는 서비스 상품입니다.')
+        alert('존재하지 않는 서비스 상품입니다.!!')
       })
   },
   components: {
     ProductBox,
     DropDown
   },
-  data () {
+  data() {
     return {
       productList: [],
       // productList: [],
@@ -74,10 +74,10 @@ export default {
     }
   },
   methods: {
-    linkToDetail (product) {
-      this.$router.push(`/detail/${product.productId}`)
+    linkToDetail(product) {
+      this.$router.push(`/detail/${product.product_id}`)
     },
-    moreItemBtn () {
+    moreItemBtn() {
       this.offset++
       API.methods
         .get(`${SERVER.IP}/products/list?offset=${this.offset}`)

@@ -34,7 +34,7 @@ import CheckBox from '@/service/Components/CheckBox'
 import { EventBus } from '@/service/util/event-bus'
 
 export default {
-  data () {
+  data() {
     return {
       isChecked: false
     }
@@ -42,7 +42,7 @@ export default {
   props: {
     list: {
       type: Object,
-      default () {
+      default() {
         return {
           id: Number,
           name: String,
@@ -61,7 +61,7 @@ export default {
     CheckBox
   },
   methods: {
-    subItem () {
+    subItem() {
       if (this.list.quantity <= 1) return
       this.list.quantity = this.list.quantity - 1
       if (this.isChecked) {
@@ -69,14 +69,14 @@ export default {
         EventBus.$emit('cal-price', totalPrice)
       }
     },
-    addItem () {
+    addItem() {
       this.list.quantity = this.list.quantity + 1
       if (this.isChecked) {
         const totalPrice = +this.list.price
         EventBus.$emit('cal-price', totalPrice)
       }
     },
-    checkItem () {
+    checkItem() {
       if (this.isChecked) {
         const data = {
           id: this.list.id,
@@ -94,7 +94,7 @@ export default {
         })
       }
     },
-    nowBuyItem () {
+    nowBuyItem() {
       const nowData = {
         userId: localStorage.getItem('userId'),
         totalPrice: this.list.price * this.list.quantity,

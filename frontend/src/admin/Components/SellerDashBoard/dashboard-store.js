@@ -6,26 +6,26 @@ import { Modal } from 'ant-design-vue'
 export default {
   store: store,
   mixins: [AdminApiMixin],
-  data () {
+  data() {
     return {
       dashboardData: {},
       loading: false
     }
   },
-  created () {
+  created() {
     this.load()
   },
   computed: {
-    constants () {
+    constants() {
       return this.$store.state.const
     },
     // 셀러 대시보드 경로
-    dashBoardUrl () {
+    dashBoardUrl() {
       return this.constants.apiDomain + '/home'
     }
   },
   methods: {
-    load () {
+    load() {
       this.loading = true
       const params = {}
       this.get(this.dashBoardUrl, {

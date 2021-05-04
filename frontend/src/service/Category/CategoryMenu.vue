@@ -19,7 +19,7 @@ import { EventBus } from '@/service/util/event-bus'
 
 export default {
   name: 'CategoryMenu',
-  created () {
+  created() {
     // API.methods
     //   .get(`${SERVER.SERVER}/products/category`)
     //   .then(res => {
@@ -39,7 +39,7 @@ export default {
   },
   components: {
   },
-  data () {
+  data() {
     return {
       menu: [
         {
@@ -80,10 +80,10 @@ export default {
     }
   },
   methods: {
-    toggleOpen (item) {
+    toggleOpen(item) {
       item.open = !item.open
     },
-    selectSub (e) {
+    selectSub(e) {
       // console.log(e.target.value)
       EventBus.$emit('select-sub', e.target.value)
     }

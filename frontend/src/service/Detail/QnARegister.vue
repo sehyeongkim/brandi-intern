@@ -34,14 +34,14 @@ import SERVER from '@/config'
 import API from '@/service/util/service-api'
 
 export default {
-  created () {
+  created() {
     API.methods
       .get(`${SERVER.IP}/products/qna/type`)
       .then(res => {
         this.typeList = res.data
       })
   },
-  data () {
+  data() {
     return {
       deliveryType: '',
       contents: '',
@@ -61,7 +61,7 @@ export default {
   },
   components: { CheckBox, DropDown },
   methods: {
-    sendData () {
+    sendData() {
       API.methods
         .post(`${SERVER.IP}/products/question`, {
           question_type_id: this.deliveryType,
@@ -75,7 +75,7 @@ export default {
         .catch(() => {
           // console.log(error)
           this.$router.push('/main')
-          alert('존재하지 않는 서비스 상품입니다.')
+          alert('존재하지 않는 서비스 상품입니다.!!!')
         })
     }
   }

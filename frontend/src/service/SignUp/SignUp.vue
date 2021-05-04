@@ -73,7 +73,7 @@ export default {
   components: {
     CheckBox
   },
-  data () {
+  data() {
     return {
       username: '',
       password: '',
@@ -92,7 +92,7 @@ export default {
   methods: {
     ...mapMutations(serviceStore, ['getStorageToken']),
 
-    onSuccess () {
+    onSuccess() {
       const data = {
         username: this.username,
         password: this.password,
@@ -113,23 +113,23 @@ export default {
         })
     }
   },
-  mounted () {
+  mounted() {
   },
   computed: {
-    checkPassword () {
+    checkPassword() {
       return this.password === this.rePassword
     },
-    canRegister () {
+    canRegister() {
       return this.marks.mark1 && this.marks.mark2 && this.marks.mark3
     },
     allMark: {
-      get () {
+      get() {
         for (const key in this.marks) {
           if (!this.marks[key]) return false
         }
         return true
       },
-      set (v) {
+      set(v) {
         for (const key in this.marks) {
           this.marks[key] = v
         }

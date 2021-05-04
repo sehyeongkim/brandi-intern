@@ -47,13 +47,13 @@ export default {
   name: 'seller-filter-box',
   props: {
     dataStore: {
-      default () {
+      default() {
         return {}
       }
     }
   },
   components: { MultiSelectButtons },
-  data () {
+  data() {
     /*
       number  : 번호(id)
       account  : 계정
@@ -87,33 +87,33 @@ export default {
     }
   },
   computed: {
-    constants () {
+    constants() {
       return this.$store.state.const
     },
-    sellerAttribute () {
+    sellerAttribute() {
       return this.dataStore.sellerAttribute.map(d => { return { value: d.id, label: d.name } })
     },
-    sellerStatus () {
+    sellerStatus() {
       return this.dataStore.sellerStatus.map(d => { return { value: d.id, label: d.name } })
     },
-    sellerType () {
+    sellerType() {
       return this.dataStore.sellerType.map(d => { return { value: d.id, label: d.name } })
     }
   },
-  created () {
+  created() {
     // 리셋 기능을 위해 clone 데이터 생성
     this.backupFilter = JSON.parse(JSON.stringify(this.filter))
   },
-  mounted () {
+  mounted() {
   },
   methods: {
-    search () {
+    search() {
       const filter = this.getFilter()
       this.$emit('search', filter)
     },
-    changeDatePicker (v) {
+    changeDatePicker(v) {
     },
-    getFilter () {
+    getFilter() {
       const filter = JSON.parse(JSON.stringify(this.filter))
       if (filter.keywordType && filter.keywordValue) {
         filter[filter.keywordType] = filter.keywordValue
@@ -133,7 +133,7 @@ export default {
       delete filter.rangeDate
       return filter
     },
-    resetFilter () {
+    resetFilter() {
       this.filter = JSON.parse(JSON.stringify(this.backupFilter))
       this.search()
     }

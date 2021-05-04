@@ -48,7 +48,7 @@ import store from '../seller-store'
 
 export default {
   name: 'register-seller',
-  data () {
+  data() {
     return {
       dataStore: new Vue(store),
       tabNo: 0,
@@ -57,7 +57,7 @@ export default {
   },
   props: {
     sellerNo: {
-      default () {
+      default() {
         return 0
       }
     }
@@ -67,7 +67,7 @@ export default {
     SellerDetailInfoForm,
     SellerDeliveryInfoForm
   },
-  mounted () {
+  mounted() {
     // 최상 단으로
     document.body.scrollTop = 0
     // 수정일땐 셀러 번호가 있고, 0 이면 등록
@@ -77,18 +77,18 @@ export default {
     document.addEventListener('scroll', this.scrollEvent)
   },
   computed: {
-    isModify () {
+    isModify() {
       return this.sellerNo !== 0
     },
-    modName () {
+    modName() {
       return this.isModify ? '수정' : '등록'
     }
   },
-  destroyed () {
+  destroyed() {
     document.removeEventListener('scroll', this.scrollEvent)
   },
   methods: {
-    save () {
+    save() {
       const detailData = JSON.parse(JSON.stringify(this.dataStore.detailData))
       delete detailData.account
       delete detailData.status_histories
@@ -98,10 +98,10 @@ export default {
       console.log('save', detailData)
       // this.putDetail
     },
-    cancel () {
+    cancel() {
       this.$router.go(-1)
     },
-    scrollEvent (event) {
+    scrollEvent(event) {
       const pageContents = this.$refs.pageContent
       const len = pageContents.length
       // 마지막은 끝으로 인식
@@ -116,12 +116,12 @@ export default {
         }
       }
     },
-    scrollTab (tabNo) {
+    scrollTab(tabNo) {
       const pageContents = this.$refs.pageContent
       const elTop = this.getOffset2(this.$refs.pageContent[0].$el).top
       window.scrollTo({ top: this.getOffset2(pageContents[tabNo].$el).top - elTop, behavior: 'smooth' })
     },
-    getOffset (el) {
+    getOffset(el) {
       let _x = 0
       let _y = 0
       while (el && !isNaN(el.offsetLeft) && !isNaN(el.offsetTop)) {
@@ -131,7 +131,7 @@ export default {
       }
       return { top: _y, left: _x }
     },
-    getOffset2 (el) {
+    getOffset2(el) {
       let _x = 0
       let _y = 0
       while (el && !isNaN(el.offsetLeft) && !isNaN(el.offsetTop)) {
@@ -144,7 +144,7 @@ export default {
     }
   },
   watch: {
-    tabNo (v) {
+    tabNo(v) {
       // console.log('changeV', v)
     }
   }
