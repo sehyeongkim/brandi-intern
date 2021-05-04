@@ -481,7 +481,7 @@ class OrderDao:
         sql3 = """
                 SELECT 
                     COUNT(*) AS order_month,
-                    SUM(od.price*od.quantity) AS sales_month
+                    SUM(od.price * od.quantity) AS sales_month
                 FROM account AS ac
                 INNER JOIN sellers AS se
                     ON ac.id = se.account_id

@@ -232,4 +232,22 @@ class OrderService:
         return order_detail_info
 
     def get_dashboard_seller(self, conn, account_id):
+        """ 
+            seller의 dashboard data
+
+        Args:
+         conn (Connection): DB 커넥션 객체            
+         account_id ([int]): 로그인 계정 id
+
+        Returns:
+            "result": {
+                "before_delivery": 준비중인 상품 수,
+                "complete_delivery": 배송된 상품 수,
+                "order_month": 30일간 주문 횟수,
+                "product_all": 업로드 된 상품 수,
+                "product_selling": 현재 판매중인 상품 수,
+                "sales_month": 30일 간 결제금액
+            },
+            "status_code": status code
+        """
         return self.order_dao.get_dashboard_seller(conn, account_id)
