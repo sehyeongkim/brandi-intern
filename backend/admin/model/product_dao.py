@@ -425,7 +425,8 @@ class ProductDao:
                 p.discount_end_date as discount_end_date,
                 p.min_amount,
                 p.max_amount,
-                p.id as product_id
+                p.id as product_id,
+                s.korean_brand_name as seller_name
             FROM 
                 products as p
             INNER JOIN
