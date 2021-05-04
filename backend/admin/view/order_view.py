@@ -120,7 +120,7 @@ class DashboardSellerView(MethodView):
     def __init__(self, service):
         self.service = service
     
-    # @login_required
+    @LoginRequired('seller')
     def get(self):
         """Seller Dashboard Page
      
@@ -138,4 +138,7 @@ class DashboardSellerView(MethodView):
             result = self.service.get_dashboard_seller(conn, account_id)
             return get_response(result, 200)        
         finally:
-            conn.close()
+            try:
+                conn.close()
+            except Exception as e:
+                raise DatabaseCloseFail('서버에 알 수 없는 오류가 발생했습니다.')
