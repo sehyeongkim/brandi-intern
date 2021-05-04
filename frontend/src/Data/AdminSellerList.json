@@ -1,0 +1,214 @@
+{
+  "result": {
+    "seller_list": [
+      {
+        "english_brand_name": "aaaa",
+        "id": 1,
+        "korean_brand_name": "가가",
+        "manager_email": "aaa@ana.com",
+        "manager_name": "gg",
+        "manager_phone": "01012314123",
+        "seller_created_date": "2021-04-20 09:00:00",
+        "seller_identification": "aaaaa",
+        "seller_status_type": "입점",
+        "seller_status_type_button": [
+          {
+            "button_name": "휴점신청",
+            "to_status_type_id": 4
+          },
+          {
+            "button_name": "퇴점신청 처리",
+            "to_status_type_id": 5
+          }
+        ],
+        "sub_property": "쇼핑몰 "
+      },
+      {
+        "english_brand_name": "bbbb",
+        "id": 2,
+        "korean_brand_name": "나나",
+        "manager_email": "abc12344@naver.com",
+        "manager_name": "bbb",
+        "manager_phone": "456543",
+        "seller_created_date": "0000-00-00 12:00:00",
+        "seller_identification": "sssss",
+        "seller_status_type": "입점거절",
+        "seller_status_type_button": [],
+        "sub_property": "마켓 "
+      },
+      {
+        "english_brand_name": "cccc",
+        "id": 3,
+        "korean_brand_name": "다다",
+        "manager_email": "12341234@naver.com",
+        "manager_name": "ccc",
+        "manager_phone": "2345678765",
+        "seller_created_date": "2021-04-20 08:11:12",
+        "seller_identification": "ddddd",
+        "seller_status_type": "휴점",
+        "seller_status_type_button": [
+          {
+            "button_name": "휴점해제",
+            "to_status_type_id": 2
+          },
+          {
+            "button_name": "퇴점신청 처리",
+            "to_status_type_id": 5
+          }
+        ],
+        "sub_property": "로드샵"
+      },
+      {
+        "english_brand_name": "dddd",
+        "id": 4,
+        "korean_brand_name": "라라",
+        "manager_email": "1231t1324@naver.com",
+        "manager_name": "ddd",
+        "manager_phone": "436345",
+        "seller_created_date": "2021-04-20 08:18:32",
+        "seller_identification": "fffff",
+        "seller_status_type": "퇴점대기",
+        "seller_status_type_button": [
+          {
+            "button_name": "휴점신청",
+            "to_status_type_id": 4
+          },
+          {
+            "button_name": "퇴점확정 처리",
+            "to_status_type_id": 6
+          },
+          {
+            "button_name": "퇴점철회 처리",
+            "to_status_type_id": 2
+          }
+        ],
+        "sub_property": "디자이너브랜드"
+      },
+      {
+        "english_brand_name": "eeee",
+        "id": 5,
+        "korean_brand_name": "마마",
+        "manager_email": "123412234@naver.com",
+        "manager_name": "eee",
+        "manager_phone": "433564",
+        "seller_created_date": "2021-04-20 08:19:12",
+        "seller_identification": "ggggg",
+        "seller_status_type": "퇴점",
+        "seller_status_type_button": [],
+        "sub_property": "제너럴브랜드"
+      },
+      {
+        "english_brand_name": "ffff",
+        "id": 6,
+        "korean_brand_name": "바바",
+        "manager_email": "4375646@naver.com",
+        "manager_name": "fff",
+        "manager_phone": "234542345564",
+        "seller_created_date": "2021-04-20 08:18:32",
+        "seller_identification": "hhhhh",
+        "seller_status_type": "입점",
+        "seller_status_type_button": [
+          {
+            "button_name": "휴점신청",
+            "to_status_type_id": 4
+          },
+          {
+            "button_name": "퇴점신청 처리",
+            "to_status_type_id": 5
+          }
+        ],
+        "sub_property": "내셔널브랜드"
+      },
+      {
+        "english_brand_name": "gggg",
+        "id": 7,
+        "korean_brand_name": "사사",
+        "manager_email": "347567455@naver.com",
+        "manager_name": "ggg",
+        "manager_phone": "234523452",
+        "seller_created_date": "2021-04-20 08:19:12",
+        "seller_identification": "jjjjj",
+        "seller_status_type": "입점",
+        "seller_status_type_button": [
+          {
+            "button_name": "휴점신청",
+            "to_status_type_id": 4
+          },
+          {
+            "button_name": "퇴점신청 처리",
+            "to_status_type_id": 5
+          }
+        ],
+        "sub_property": "뷰티"
+      },
+      {
+        "english_brand_name": "hhhh",
+        "id": 8,
+        "korean_brand_name": "아아",
+        "manager_email": "234345@naver.com",
+        "manager_name": "hhh",
+        "manager_phone": "234622352",
+        "seller_created_date": "2021-04-20 08:19:12",
+        "seller_identification": "kkkkk",
+        "seller_status_type": "입점",
+        "seller_status_type_button": [
+          {
+            "button_name": "휴점신청",
+            "to_status_type_id": 4
+          },
+          {
+            "button_name": "퇴점신청 처리",
+            "to_status_type_id": 5
+          }
+        ],
+        "sub_property": "홈데코"
+      },
+      {
+        "english_brand_name": "iiii",
+        "id": 9,
+        "korean_brand_name": "자자",
+        "manager_email": "2345262@naver.com",
+        "manager_name": "iii",
+        "manager_phone": "234534",
+        "seller_created_date": "2021-04-20 08:19:12",
+        "seller_identification": "ttttt",
+        "seller_status_type": "입점",
+        "seller_status_type_button": [
+          {
+            "button_name": "휴점신청",
+            "to_status_type_id": 4
+          },
+          {
+            "button_name": "퇴점신청 처리",
+            "to_status_type_id": 5
+          }
+        ],
+        "sub_property": "핸드메이드"
+      },
+      {
+        "english_brand_name": "jjjj",
+        "id": 10,
+        "korean_brand_name": "차차",
+        "manager_email": "123412356@naver.com",
+        "manager_name": "bbbbb",
+        "manager_phone": "34267",
+        "seller_created_date": "2021-04-20 08:18:32",
+        "seller_identification": "ppppp",
+        "seller_status_type": "입점",
+        "seller_status_type_button": [
+          {
+            "button_name": "휴점신청",
+            "to_status_type_id": 4
+          },
+          {
+            "button_name": "퇴점신청 처리",
+            "to_status_type_id": 5
+          }
+        ],
+        "sub_property": "팬시"
+      }
+    ],
+    "total_count": 34
+  },
+  "status_code": 200
+}

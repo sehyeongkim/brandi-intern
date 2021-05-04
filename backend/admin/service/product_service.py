@@ -49,8 +49,13 @@ class ProductService:
             raise  StartDateFail('조회 시작 날짜가 끝 날짜보다 큽니다.')
         
         # HEADERS로 엑셀파일 요청
-        if 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' in headers.values():
+        if 'application/vnd.ms-excel' in headers.values():
             result = self.product_dao.get_products_list(conn, params, headers)
+            
+            # 할인가격 key, value 추가
+            for product in result:
+                product['discount_price'] = product['price'] - (product['price'] * product['discount_rate'])
+            
             output = BytesIO()
 
             workbook = xlwt.Workbook(encoding='utf-8')
@@ -89,6 +94,10 @@ class ProductService:
             return output
         
         product_result, total_count_result = self.product_dao.get_products_list(conn, params, headers)
+        
+        # 할인가격 key, value 추가
+        for product in product_result:
+            product['discount_price'] = product['price'] - (product['price'] * product['discount_rate'])
 
         result = {
             'total_count' : total_count_result['total_count'],
@@ -259,18 +268,16 @@ class ProductService:
     
     def upload_file_to_s3(self, img_obj, folder: str):
         s3_conn = get_s3_connection()
-
         uploaded_at = str(datetime.now())
         filename = img_obj.filename
-
         name = folder + uploaded_at + filename
+        # 띄어쓰기, 콜론 등 필요없는 부분을 제거하기 위함
         key = name.replace(" ", "").replace(":","")
-
         s3_conn.upload_fileobj(Fileobj=img_obj,
                                 Bucket=BUCKET_NAME,
                                 Key=key)
-        
         url = f"https://{BUCKET_NAME}.s3.{REGION}.amazonaws.com/{key}"
+        
         return url
     
     def insert_image_url(self, conn, product_id: int, imgs_obj: list):
@@ -376,6 +383,7 @@ class ProductService:
         Returns:
             [dict]]: product_detail = {
                         'basic_info': {
+                            'product_id' : 상품아이디,
                             'product_code': 상품코드,
                             'selling': 판매여부,
                             'displayed': 진열여부,
@@ -433,20 +441,20 @@ class ProductService:
 
         product_detail = {
             'basic_info': {
+                'seller_name' : product_result['seller_name'],
+                'product_id' : product_result['product_id'],
                 'product_code': product_result['product_code'],
-                'selling': product_result['is_selling'],
-                'displayed': product_result['is_displayed'],
-                'property': product_result['property'],
+                'is_selling': product_result['is_selling'],
+                'is_displayed' : product_result['is_displayed'],
+                'property_name': product_result['property'],
                 'property_id': product_result['property_id'],
                 'category': product_result['category'],
                 'category_id': product_result['category_id'],
                 'sub_category': product_result['sub_category'],
                 'sub_category_id': product_result['sub_category_id'],
-                'product_info_notice': {
-                    'manufacturer': product_result['manufacturer'],
-                    'date_of_manufacture': product_result['date_of_manufacture'],
-                    'origin': product_result['origin']
-                },
+                'manufacturer': product_result['manufacturer'],
+                'date_of_manufacture': product_result['date_of_manufacture'],
+                'origin': product_result['origin'],
                 'title': product_result['title'],
                 'simple_description': product_result['simple_description'],
                 'images': [
@@ -454,8 +462,9 @@ class ProductService:
                         'image_url' : image['image_url'],
                         'is_represent' : image['is_represent']
                     }
-                for image in product_image_result],
-                'detail_description': '<html>'
+                    for image in product_image_result
+                ],
+                'content': product_result['content']
             },
             'option_info': [
                 {

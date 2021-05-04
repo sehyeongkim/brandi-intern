@@ -307,24 +307,24 @@ class AccountDao:
                     ],
 
         """
+
         sql = """
-            SELECT
-                st.name AS status_name,
-                stb.seller_status_type_id,
-                stb.seller_status_button_id,
-                sb.name as button_name,
-                sb.to_status_type_id AS to_status_type_id
-            FROM
-                seller_status_type_button AS stb
-            right outer JOIN
-                seller_status_type AS st 
-                on st.id = stb.seller_status_type_id
-            left outer JOIN
-                seller_status_button As sb
-                on sb.id = stb.seller_status_button_id
+            SELECT 
+                sst.name AS status_name,
+                sstb.seller_status_type_id,
+                sstb.seller_status_button_id,
+                ssb.name AS button_name,
+                ssb.to_status_type_id
+            FROM 
+                seller_status_type AS sst
+            INNER JOIN 
+                seller_status_type_button AS sstb ON sstb.seller_status_type_id = sst.id
+            LEFT OUTER JOIN
+                seller_status_button AS ssb
+                ON ssb.id = sstb.seller_status_button_id
             WHERE
-                st.name = %(seller_status_type)s
-            ORDER BY st.id ASC;
+                sst.name = %(seller_status_type)s
+            ORDER BY sst.id ASC;
         """
 
         with conn.cursor() as cursor:
@@ -332,7 +332,7 @@ class AccountDao:
             return cursor.fetchall()
             
 
-    def get_seller_list(self, conn, params):
+    def get_seller_list(self, conn, params, headers):
         """ 셀러 계정 리스트
 
         셀러 계정 관리에서 셀러 리스트를 가져오는 함수
@@ -368,21 +368,26 @@ class AccountDao:
                 m.phone as manager_phone, 
                 m.email as manager_email, 
                 sb.name as sub_property, 
-                DATE_FORMAT(s.created_at, '%%Y-%%m-%%d %%h:%%i:%%s') as seller_created_date
+                s.created_at as seller_created_date
         """
 
         condition = """
             FROM 
                 sellers as s
             INNER JOIN
-                managers as m ON s.id = m.seller_id
+                managers as m ON m.id = (
+                    SELECT MIN(id) FROM managers WHERE seller_id = s.id
+                )
             INNER JOIN
                 sub_property as sb ON s.sub_property_id = sb.id
             INNER JOIN
                 seller_status_type as sst ON sst.id = s.seller_status_type_id
             WHERE
                     s.created_at BETWEEN '0000-00-00 00:00:00' AND '9999-12-30 00:00:00'
+                AND 
+                    s.is_deleted = 0 
         """
+        # is_deleted가 1인 것은 표출 안되도록 추가
 
         sql_1 = select + seller_info + condition
 
@@ -445,7 +450,7 @@ class AccountDao:
                 LIMIT
                     %(limit)s
                 OFFSET
-                    %(page)s
+                    %(offset)s
         """
 
         count = """
@@ -458,27 +463,117 @@ class AccountDao:
             cursor.execute(sql_select_seller_info, params)
             seller_info_list = cursor.fetchall()
 
+            if 'application/vnd.ms-excel' in headers.values():
+                return seller_info_list
+
             cursor.execute(sql_select_seller_count, params)
             seller_counts = cursor.fetchone()
 
             return seller_info_list, seller_counts
     
     def change_seller_status_type(self, conn, params):
+        """ 셀러 상태 변경 
+
+        셀러의 입점 상태를 변경하는 함수
+
+        Args:
+            conn (Connection): DB커넥션 객체,
+            params (dict): 
+                {
+                    'to_status_type_id': 변경될 셀러 상태 번호, 
+                    'account_id': 회원 pk 번호, 
+                    'seller_id': 셀러 pk 번호
+                }
+        """
         sql = """
             UPDATE 
                 sellers 
             SET
                 seller_status_type_id = %(to_status_type_id)s
+            WHERE   
+                id = %(seller_id)s
+        """
+
+        with conn.cursor() as cursor:
+            cursor.execute(sql, params)
+
+    def check_if_store_out(self, conn, params):
+        """ 현재 스토어 퇴점 확인
+
+        현재 스토어가 퇴점했는지 아닌지 확인하는 함수
+
+        Args:
+            conn (Connection): DB커넥션 객체
+            params (dict): 
+                {
+                    'to_status_type_id': 변경될 셀러 상태 번호, 
+                    'account_id': 회원 pk 번호, 
+                    'seller_id': 셀러 pk 번호
+                }
+        
+        Returns:
+            cursor.fetchone() (dict): 
+                {
+                    'seller_status_type_id': 현재 셀러 상태 아이디
+                }
+        """
+
+        sql = """
+            SELECT
+                seller_status_type_id
+            FROM
+                sellers
+            WHERE
+                id = %(seller_id)s
+        """
+        
+        with conn.cursor() as cursor:
+            cursor.execute(sql, params)
+            return cursor.fetchone()
+
+    def change_seller_is_deleted(self, conn, params):
+        """ 셀러 삭제
+
+        셀러를 삭제하는 함수
+
+        Args:
+            conn (Connection): DB커넥션 객체
+            params (dict): 
+                {
+                    'to_status_type_id': 변경될 셀러 상태 번호, 
+                    'account_id': 회원 pk 번호, 
+                    'seller_id': 셀러 pk 번호
+                }
+        """
+
+        sql = """
+            UPDATE 
+                sellers
+            SET 
+                is_deleted = 1
             WHERE
                 id = %(seller_id)s
         """
 
         with conn.cursor() as cursor:
             cursor.execute(sql, params)
-            
 
 
     def change_seller_history(self, conn, params):
+        """셀러 히스토리 변경
+
+        셀러의 히스토리를 변경하는 함수
+
+        Args:
+            conn (Connection): DB커넥션 객체
+            params (dict): 
+                {
+                    'to_status_type_id': 변경될 셀러 상태 번호, 
+                    'account_id': 회원 pk 번호, 
+                    'seller_id': 셀러 pk 번호
+                }
+        """
+
         sql = """
             INSERT INTO sellers_history(
                 seller_id,
@@ -526,14 +621,58 @@ class AccountDao:
 
         with conn.cursor() as cursor:
             cursor.execute(sql, params)
-            conn.commit()
     
     def get_seller_info(self, conn, params):
+        """ 셀러 상세 정보
+
+        셀러 수정 페이지에서 셀러의 상세 정보를 가져오는 함수
+
+        Args:
+            conn (Connection): DB커넥션 객체
+            params (dict): {"seller_identification" : 셀러 아이디}
+
+        Returns:
+            seller_info (dict) : 
+                {
+                    'seller_id': 셀러 id, 
+                    'seller_identification': 셀러 아이디, 
+                    'profile_image_url': 프로필 이미지 url,
+                    'seller_status_type': 셀러 상태, 
+                    'seller_status_type_id': 셀러 상태 id, 
+                    'korean_brand_name': 한글 브랜드명, 
+                    'english_brand_name': 영어 브랜드명, 
+                    's.seller_identification': 셀러 아이디, 
+                    'background_image_url': 배경이미지 url, 
+                    'description': 셀러 설명, 
+                    'detail_description': 셀러 상세 설명, 
+                    'customer_center': 고객센터, 
+                    'customer_center_number': 고객센터 번호, 
+                    'zip_code': 우편번호, 
+                    'address': 주소, 
+                    'detail_address': 상세 주소, 
+                    'open_at': 고객센터 시작 시간, 
+                    'close_at': 고객센터 마감 시간, 
+                    'delivery_info': 배송 정보, 
+                    'exchange_refund_info': 교환, 환불 정보
+                }
+            manager_info (list):
+                [
+                    {
+                        'seller_id': 셀러 id, 
+                        'manager_name': 매니저 이름, 
+                        'manager_phone': 매니저 전화번호, 
+                        'manager_email': 매니저 이메일
+                    }
+                ]
+        """
+
         sql_select_seller = """
             SELECT
                 s.id AS seller_id,
+                s.seller_identification,
                 s.profile_image_url,
                 sst.name AS seller_status_type,
+                s.seller_status_type_id,
                 s.korean_brand_name,
                 s.english_brand_name,
                 s.seller_identification,
@@ -554,12 +693,13 @@ class AccountDao:
             INNER JOIN
                 seller_status_type AS sst ON s.seller_status_type_id = sst.id
             WHERE
-                seller_identification = %(seller_identification)s
+                s.id = %(seller_id)s
         """
 
         sql_select_manager = """
             SELECT
                 s.id AS seller_id,
+                m.id AS manager_id,
                 m.name AS manager_name,
                 m.phone AS manager_phone,
                 m.email AS manager_email
@@ -567,10 +707,12 @@ class AccountDao:
                 sellers AS s
             INNER JOIN
                 managers AS m ON s.id = m.seller_id
-            WHERE
-                s.seller_identification = %(seller_identification)s;
-            ;
+            WHERE 
+                    s.id = %(seller_id)s
+                AND
+                    m.is_deleted = 0;
         """
+        
         with conn.cursor() as cursor:
             cursor.execute(sql_select_seller, params)
             seller_info = cursor.fetchone()
@@ -582,3 +724,391 @@ class AccountDao:
 
             return seller_info, manager_info
 
+
+    def get_managers_info(self, conn, params):
+        """ 현재 셀러의 담당자 정보
+
+        현재 셀러의 담당자의 정보들을 가져오는 함수
+
+        Args:
+            conn (Connection): DB커넥션 객체
+            params (dict): 
+                {
+                    'profile_image_url': 셀러 프로필 이미지, 
+                    'background_image_url': 배경 이미지, 
+                    'seller_sub_property': 셀러 2차 속성, 
+                    'seller_sub_property_id': 2차 속성 id, 
+                    'korean_brand_name': 셀러 한글 브랜드명, 
+                    'english_brand_name': 셀러 영어 브랜드명, 
+                    'description': 한 줄 소개, 
+                    'detail_description': 상세 소개, 
+                    'zip_code': 우편번호, 
+                    'address': 주소, 
+                    'detail_address': 상세주소, 
+                    'customer_center': 고객센터, 
+                    'customer_center_phone': 고객센터 전화번호, 
+                    'customer_open_time': 고객센터 시작 시간, 
+                    'customer_close_time': 고객센터 마감 시간, 
+                    'delivery_info': 배송 정보, 
+                    'exchange_refund_info': 교환/환불 정보, 
+                    'account_id': 계정 id, 
+                    'account_type_id': 계정 type id, 
+                    'seller_id': 셀러 id
+                }
+        Returns: 
+            cursor.fetchall() (list):
+                [
+                    {
+                        'manager_id': 담당자 id, 
+                        'seller_id': 셀러 id, 
+                        "manager_name": 매니저,
+                        "manager_email": 매니저 이메일,
+                        "manager_phone": 매니저 전화번호
+                    }, 
+                    {
+                        'manager_id': 담당자 id, 
+                        'seller_id': 셀러 id, 
+                        "manager_name": 매니저,
+                        "manager_email": 매니저 이메일,
+                        "manager_phone": 매니저 전화번호
+                    }
+                ]
+        """
+
+        sql = """
+            SELECT
+                id AS manager_id,
+                seller_id,
+                name AS manager_name,
+                phone AS manager_phone,
+                email AS manager_email
+            FROM
+                managers
+            WHERE
+                    seller_id = %(seller_id)s
+                AND
+                    is_deleted = 0
+        """
+
+        with conn.cursor() as cursor:
+            cursor.execute(sql, params)
+            return cursor.fetchall()
+            
+
+    def update_managers_info(self, conn, manager_params):
+        """ 담당자 정보를 수정
+
+        담당자 정보를 수정하고 history를 추가하는 함수
+
+        Args:
+            conn (Connection): DB커넥션 객체
+            manager_params (list):
+                [
+                    {
+                        "manager_name": 매니저,
+                        "manager_email": 매니저 이메일,
+                        "manager_phone": 매니저 전화번호
+                        'account_id': 계정 id, 
+                        'manager_id': 담당자 id, 
+                        'seller_id': 셀러 id, 
+                    }, 
+                    {
+                        "manager_name": 매니저,
+                        "manager_email": 매니저 이메일,
+                        "manager_phone": 매니저 전화번호
+                        'account_id': 계정 id, 
+                        'manager_id': 담당자 id, 
+                        'seller_id': 셀러 id, 
+                    }
+                ]
+        """
+
+        sql = """
+            UPDATE
+                managers
+            SET
+                name = %(manager_name)s,
+                email = %(manager_email)s,
+                phone = %(manager_phone)s
+            WHERE
+                id = %(manager_id)s
+            """
+
+        with conn.cursor() as cursor:
+            cursor.executemany(sql, manager_params)
+
+    def delete_managers_info(self, conn, current_managers_in_db):
+        """ 담당자 정보 삭제
+
+        담당자 정보를 삭제하는 함수 (논리 삭제)
+
+        Args:
+            conn (Connection): DB커넥션 객체
+            current_managers_in_db (list):
+                [
+                    {
+                        "manager_name": 매니저,
+                        "manager_email": 매니저 이메일,
+                        "manager_phone": 매니저 전화번호
+                        'account_id': 계정 id, 
+                        'manager_id': 담당자 id, 
+                        'seller_id': 셀러 id, 
+                    }
+                ]
+        """
+
+        sql = """
+            UPDATE
+                managers
+            SET
+                is_deleted = 1
+            WHERE
+                id = %(manager_id)s
+        """
+        
+        with conn.cursor() as cursor:
+            cursor.executemany(sql, current_managers_in_db)
+
+    def insert_managers_info(self, conn, manager_params):
+        """ 담당자 정보 추가 
+
+        담당자 정보를 추가하는 함수
+
+        Args:
+            conn (Connection): DB커넥션 객체
+            manager_params (list):
+                [
+                    {
+                        "manager_name": 매니저,
+                        "manager_email": 매니저 이메일,
+                        "manager_phone": 매니저 전화번호
+                        'account_id': 계정 id, 
+                        'seller_id': 셀러 id, 
+                    }
+                ]
+        """
+        
+        manager_list = list()
+        for manager in manager_params:
+            sql_insert = """
+                INSERT INTO managers (
+                    seller_id,
+                    name,
+                    phone,
+                    email
+                ) VALUES (
+                    %(seller_id)s,
+                    %(manager_name)s,
+                    %(manager_phone)s,
+                    %(manager_email)s
+                )
+            """
+
+            sql_select = """
+                SELECT
+                    id AS manager_id,
+                    seller_id,
+                    name AS manager_name,
+                    phone AS manager_phone,
+                    email AS manager_email
+                FROM
+                    managers
+                WHERE
+                    id = (SELECT last_insert_id())
+            """
+
+            with conn.cursor() as cursor:
+                cursor.execute(sql_insert, manager)
+            
+            with conn.cursor() as cursor:
+                cursor.execute(sql_select)
+                manager_list.append(cursor.fetchone())
+        
+        return manager_list
+
+    def insert_managers_history(self, conn, manager_params):
+        """ 담당자 history 추가
+
+        담당자 정보가 수정됐을 때 history에 추가하는 함수
+
+        Args:
+            conn (Connection): DB커넥션 객체
+            manager_params (list):
+                [
+                    {
+                        "manager_name": 매니저,
+                        "manager_email": 매니저 이메일,
+                        "manager_phone": 매니저 전화번호
+                        'account_id': 계정 id, 
+                        'manager_id': 담당자 id, 
+                        'seller_id': 셀러 id, 
+                    }
+                ]
+        """
+
+        sql = """
+            INSERT INTO managers_history (
+                manager_id,
+                name,
+                phone,
+                email,
+                is_deleted,
+                modify_account_id
+            ) 
+            SELECT 
+                id,
+                name,
+                phone,
+                email,
+                is_deleted,
+                %(account_id)s
+            FROM
+                managers
+            WHERE
+                id= %(manager_id)s
+                
+        """
+
+        with conn.cursor() as cursor:
+            cursor.executemany(sql, manager_params)
+
+
+    def update_seller_info(self, conn, params):
+        """ 셀러 정보를 수정하는 함수
+
+        셀러 정보를 수정하는 함수
+
+        Args:
+            conn (Connection): DB커넥션 객체
+            params (dict): 
+                {
+                    'profile_image_url': 셀러 프로필 이미지, 
+                    'background_image_url': 배경 이미지, 
+                    'seller_sub_property': 셀러 2차 속성, 
+                    'seller_sub_property_id': 2차 속성 id, 
+                    'korean_brand_name': 셀러 한글 브랜드명, 
+                    'english_brand_name': 셀러 영어 브랜드명, 
+                    'description': 한 줄 소개, 
+                    'detail_description': 상세 소개, 
+                    'zip_code': 우편번호, 
+                    'address': 주소, 
+                    'detail_address': 상세주소, 
+                    'customer_center': 고객센터, 
+                    'customer_center_phone': 고객센터 전화번호, 
+                    'customer_open_time': 고객센터 시작 시간, 
+                    'customer_close_time': 고객센터 마감 시간, 
+                    'delivery_info': 배송 정보, 
+                    'exchange_refund_info': 교환/환불 정보, 
+                    'account_id': 계정 id, 
+                    'account_type_id': 계정 type id, 
+                    'seller_id': 셀러 id
+                }
+        """
+
+        sql = """
+            UPDATE
+                sellers
+            SET
+                property_id = (SELECT property_id FROM sub_property WHERE id = %(seller_sub_property_id)s),
+                sub_property_id = %(seller_sub_property_id)s,
+                zip_code = %(zip_code)s,
+                address = %(address)s,
+                detail_address = %(detail_address)s,
+                korean_brand_name = %(korean_brand_name)s,
+                english_brand_name = %(english_brand_name)s,
+                customer_center_number = %(customer_center_phone)s,
+                customer_center = %(customer_center)s,
+                profile_image_url =%(profile_image_url)s,
+                background_image_url =%(background_image_url)s,
+                description = %(description)s,
+                detail_description = %(detail_description)s,
+                open_at = %(customer_open_time)s,
+                close_at = %(customer_close_time)s
+            WHERE
+                id = %(seller_id)s;
+            """
+
+        with conn.cursor() as cursor:
+            cursor.execute(sql, params)
+    
+    
+    def insert_seller_history(self, conn, params):
+        """ 셀러 history 수정
+
+        셀러 history를 수정하는 함수
+
+        Args:
+            conn (Connection): DB커넥션 객체
+            params (dict): 
+                {
+                    'profile_image_url': 셀러 프로필 이미지, 
+                    'background_image_url': 배경 이미지, 
+                    'seller_sub_property': 셀러 2차 속성, 
+                    'seller_sub_property_id': 2차 속성 id, 
+                    'korean_brand_name': 셀러 한글 브랜드명, 
+                    'english_brand_name': 셀러 영어 브랜드명, 
+                    'description': 한 줄 소개, 
+                    'detail_description': 상세 소개, 
+                    'zip_code': 우편번호, 
+                    'address': 주소, 
+                    'detail_address': 상세주소, 
+                    'customer_center': 고객센터, 
+                    'customer_center_phone': 고객센터 전화번호, 
+                    'customer_open_time': 고객센터 시작 시간, 
+                    'customer_close_time': 고객센터 마감 시간, 
+                    'delivery_info': 배송 정보, 
+                    'exchange_refund_info': 교환/환불 정보, 
+                    'account_id': 계정 id, 
+                    'account_type_id': 계정 type id, 
+                    'seller_id': 셀러 id
+                }  
+        """
+        
+        sql = """
+            INSERT INTO sellers_history (
+                seller_id,
+                modify_account_id,
+                is_deleted,
+                property_id,
+                sub_property_id,
+                seller_status_type_id,
+                zip_code,
+                address,
+                detail_address,
+                korean_brand_name,
+                english_brand_name,
+                customer_center_number,
+                profile_image_url,
+                background_image_url,
+                description,
+                detail_description,
+                open_at,
+                close_at
+            )
+            SELECT
+                id,
+                %(account_id)s,
+                is_deleted,
+                property_id,
+                sub_property_id,
+                seller_status_type_id,
+                zip_code,
+                address,
+                detail_address,
+                korean_brand_name,
+                english_brand_name,
+                customer_center_number,
+                profile_image_url,
+                background_image_url,
+                description,
+                detail_description,
+                open_at,
+                close_at
+            FROM
+                sellers
+            WHERE
+                id = %(seller_id)s;
+        """
+
+        with conn.cursor() as cursor:
+            cursor.execute(sql, params)

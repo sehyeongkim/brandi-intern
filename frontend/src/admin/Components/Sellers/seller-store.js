@@ -7,7 +7,7 @@ import Message from '@/admin/utils/message'
 export default {
   store: store,
   mixins: [AdminApiMixin, CommonMixin],
-  data () {
+  data() {
     return {
       list: [],
       page: 1,
@@ -22,54 +22,50 @@ export default {
       sellerType: [] // 셀러 구분 (일반, 헬피)
     }
   },
-  created () {
+  created() {
     if (this.isMaster()) {
       this.getMeta()
     }
   },
   computed: {
-    prefixUrl () {
-      if (this.isMaster()) {
-        return this.constants.apiDomain + '/master'
-      } else {
-        return this.constants.apiDomain + '/seller'
-      }
+    prefixUrl() {
+      return this.constants.apiDomain
     },
-    maxPage () {
+    maxPage() {
       return Math.ceil(this.total / this.pageLen)
     },
-    constants () {
+    constants() {
       return this.$store.state.const
     },
     // 셀러 리스트 / 수정
-    listUrl () {
-      return this.prefixUrl + '/account'
+    listUrl() {
+      return this.prefixUrl + '/sellers'
     },
     // 셀러 리스트 / 수정
-    getUrl () {
-      if (this.isMaster()) {
-        return this.prefixUrl + '/seller-information/'
-      } else {
-        return this.prefixUrl + '/edit'
-      }
+    getUrl() {
+      return this.prefixUrl + '/sellers'
+    },
+    // 셀러 상태 변경
+    patchUrl() {
+      return this.prefixUrl + '/sellers'
     },
     // 셀러 리스트 / 수정
-    putUrl () {
+    putUrl() {
       return this.prefixUrl + '/edit'
     },
-    metaUrl () {
+    metaUrl() {
       return this.prefixUrl + '/account/init'
     },
     // 셀러 리스트 / 수정
-    statusUrl () {
-      return this.prefixUrl + '/account/level'
+    statusUrl() {
+      return this.prefixUrl + '/sellers'
     },
-    offset () {
+    offset() {
       return (this.page - 1) * this.pageLen
     }
   },
   methods: {
-    loadData () {
+    loadData() {
       this.get(this.prefixUrl + '/edit')
         .then(response => {
           console.log('response', response)
@@ -81,11 +77,11 @@ export default {
           Message.error(e.response.data.message)
         })
     },
-    load () {
+    load() {
       this.loading = true
       const params = JSON.parse(JSON.stringify(this.filter))
       params.limit = this.pageLen
-      params.offset = this.offset
+      params.page = this.page
 
       // this.get(this.constants.apiDomain + '/seller/edit')
       this.get(this.listUrl, {
@@ -93,8 +89,8 @@ export default {
       })
         .then((res) => {
           if (res.data) {
-            const sellerList = res.data.result.data
-            const totalCount = res.data.result.totalCount
+            const sellerList = res.data.result.seller_list
+            const totalCount = res.data.result.total_count
             sellerList.forEach((d) => {
               d.checked = false
             })
@@ -113,13 +109,13 @@ export default {
           this.loading = false
         })
     },
-    changeStatus (sellerId, button) {
+    changeStatus(sellerId, toStatusTypeId) {
       this.loading = true
-      const params = {
-        sellerId: sellerId,
-        actionId: button
+      const payload = {
+        seller_id: sellerId,
+        to_status_type_id: toStatusTypeId
       }
-      this.patch(this.statusUrl, params)
+      this.patch(this.statusUrl + '/' + sellerId, payload)
         .then((res) => {
           Message.success('셀러 상태 변경 성공')
           this.load()
@@ -138,15 +134,14 @@ export default {
           this.loading = false
         })
     },
-    getDetail (sellerId) {
+    getDetail(sellerId) {
       this.loading = true
-      // /seller-information/<sellerId>
-      let url = this.getUrl
-      if (this.isMaster()) url += sellerId
+      const url = this.getUrl + '/' + sellerId
+      // if (this.isMaster()) url += sellerId
       this.get(url)
         .then((res) => {
           if (res.data) {
-            this.detailData = res.data.result.data
+            this.detailData = res.data.result
             if (!this.detailData.managers || this.detailData.managers.length === 0) {
               this.detailData.managers = [{}]
             }
@@ -164,7 +159,7 @@ export default {
           this.loading = false
         })
     },
-    putDetail (sellerId, sellerData) {
+    putDetail(sellerId, sellerData) {
       this.loading = true
       // const diffData = this.difference(this.detailData, this.backupDetailData)
       this.patch(this.putUrl, this.detailData)
@@ -181,7 +176,7 @@ export default {
           this.loading = false
         })
     },
-    getMeta () {
+    getMeta() {
       this.get(this.metaUrl)
         .then((res) => {
           if (res.data) {
@@ -201,16 +196,16 @@ export default {
           // this.loading = false
         })
     },
-    changePage (page) {
+    changePage(page) {
       this.page = page
       this.load()
     },
-    setFilter (filter) {
+    setFilter(filter) {
       this.filter = filter
     }
   },
   watch: {
-    pageLen (v) {
+    pageLen(v) {
       this.changePage(1)
     }
   }

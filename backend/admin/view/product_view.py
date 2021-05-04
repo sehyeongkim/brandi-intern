@@ -59,19 +59,43 @@ class ProductView(MethodView):
             params (dict): 상품번호, 상품명, 상품코드, 판매여부, 진열여부 등의 정보가 담긴 딕셔너리
 
         Returns:
-            200: 상품 조회 리스트 가져오기 성공
+            {
+                "result": {
+                    "product": [
+                        {
+                            "discount_price": 할인가,
+                            "discount_rate": 할인율,
+                            "id": 상품번호,
+                            "image_url": 이미지 URL,
+                            "is_displayed": 진열여부,
+                            "is_selling": 판매여부,
+                            "korean_brand_name": 셀러명,
+                            "price": 상품가격,
+                            "product_code": 상품코드,
+                            "seller_id": 셀러아이디,
+                            "sub_property": 셀러구분,
+                            "title": 상품명,
+                            "upload_date": 등록일자
+                        }
+                    ],
+                    "total_count": 총 상품 수
+                },
+                "status_code": 200
+            }
             500: Exception
         """
         conn = None
         try:
             params = valid.get_params()
+            params['account_id'] = g.account_id
+            params['account_type_id'] = g.account_type_id
             headers = valid.get_headers()
             conn = get_connection()
             
             result = self.service.get_products_list(conn, params, headers)
             
             # HEADERS로 엑셀파일 요청
-            if 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' in headers.values():
+            if 'application/vnd.ms-excel' in headers.values():
                 today = datetime.today().strftime('%Y-%m-%d')
                 return send_file(result, attachment_filename=f'{today}product_list.xls', as_attachment=True)
 

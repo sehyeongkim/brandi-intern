@@ -53,7 +53,7 @@ export default {
     sendSumbit() {
       // this.post(this.constants.apiDomain + "/seller/signin", {
       let res
-      this.post('/seller/signin', {
+      this.post(this.constants.apiDomain + '/seller/signin', {
         id: this.account,
         password: this.password
       })

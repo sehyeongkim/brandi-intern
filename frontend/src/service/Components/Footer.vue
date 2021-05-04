@@ -75,7 +75,7 @@
 <script>
 export default {
   methods: {
-    linkToAdmin () {
+    linkToAdmin() {
       this.$router.push('/admin')
     }
   }

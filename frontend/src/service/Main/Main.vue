@@ -37,16 +37,16 @@ export default {
     Banner,
     ProductBox
   },
-  created () {
+  created() {
     this.getProductData()
   },
-  data () {
+  data() {
     return {
       products: []
     }
   },
   methods: {
-    getProductData () {
+    getProductData() {
       // this.products = mockup.result.data
       API.methods.get(`${SERVER.IP}/products/list`)
         .then((res) => {
@@ -57,14 +57,14 @@ export default {
           this.$router.push('/error/500')
         })
     },
-    numberWithCommas (x) {
+    numberWithCommas(x) {
       return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
     },
-    linkToDetail (product) {
+    linkToDetail(product) {
       // console.log(product)
-      this.$router.push(`/detail/${product.productId}`)
+      this.$router.push(`/detail/${product.product_id}`)
     },
-    moreItemBtn () {
+    moreItemBtn() {
       this.$router.push('/category')
     }
   }

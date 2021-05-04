@@ -16,6 +16,7 @@ export default {
       loading: false,
       filter: {},
       detailData: {},
+      detailHistory: [],
       sellerAttribute: []
     }
   },
@@ -46,7 +47,7 @@ export default {
     },
     // 배송처리
     deliveryUrl() {
-      return this.prefixUrl + '/orders/ready/'
+      return this.prefixUrl + '/orders'
     },
     offset() {
       return (this.page - 1) * this.pageLen
@@ -98,7 +99,8 @@ export default {
       this.get(this.detailUrl + '/' + orderNo)
         .then((res) => {
           if (res.data) {
-            this.detailData = res.data.result.data.orderDetails
+            this.detailData = res.data.result.order_detail
+            this.detailHistory = res.data.result.order_history
           } else {
             Message.error('통신 실패')
           }
@@ -140,13 +142,33 @@ export default {
     async setDelivery(list) {
       if (list.length > 0) {
         try {
-          for (let i = 0, len = list.length; i < len; i++) {
-            await this.patch(this.deliveryUrl + list[i].orderDetailNumber)
+          const payload = []
+          list.forEach(order => {
+            payload.push({ orders_detail_id: order.orders_detail_id, order_status_type_id: 3 })
+          })
+          const res = await this.patch(this.deliveryUrl, payload)
+          const failCount = res.data.post_fail.length
+          const successCount = list.length - failCount
+
+          if (failCount === 0) {
+            Message.success('배송처리가 완료되었습니다.')
+            this.load()
+            return
           }
-          Message.success('배송처리가 완료되었습니다.')
-          this.load()
+          // 일부 성공, 일부 실패
+          if (failCount > 0 && successCount > 0) {
+            Message.warning(`${failCount}건의 배송처리가 실패하고 ${successCount}이 배송되었습니다.`)
+            this.load()
+            return
+          }
+
+          // 일부 성공, 일부 실패
+          if (failCount > 0 && successCount === 0) {
+            Message.error(`${failCount}건의 배송처리가 모두 실패 하여습니다.`)
+            return
+          }
         } catch (e) {
-          Message.error(e.response.data.message)
+          Message.error(e.response.data.user_error_message)
         }
       }
       // 배송처리

@@ -30,27 +30,27 @@
 // import { mapActions } from 'vuex'
 
 export default {
-  data () {
+  data() {
     return {
       mouseOn: false
     }
   },
   methods: {
-    setMouseOver () {
+    setMouseOver() {
       this.mouseOn = true
     },
-    resetMouseOver () {
+    resetMouseOver() {
       this.mouseOn = false
     },
-    toHome () {
+    toHome() {
       if (this.$router.history.current.path !== '/admin') {
         this.$router.push('/admin')
       }
     },
-    logout () {
+    logout() {
       console.log('logout')
     },
-    handleLogout () {
+    handleLogout() {
       // clear()
       this.logout()
       this.$router.push('/admin')

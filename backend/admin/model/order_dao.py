@@ -30,8 +30,9 @@ class OrderDao:
             SELECT 
         """
         order_info = """
-                DATE_FORMAT(o.created_at, '%%Y-%%m-%%d %%h:%%i:%%s') AS created_at,
+                o.created_at AS created_at,
                 o.order_number, 
+                d.id AS orders_detail_id,
                 d.detail_order_number, 
                 s.korean_brand_name,
                 p.title,  
@@ -183,6 +184,61 @@ class OrderDao:
             return order_list_info, order_counts
         
     def get_status_type(self, conn):
+        """ 주문 상태 데이터
+
+        DB에서 주문 상태 데이터를 가지고 오는 함수
+
+        Args:
+            conn (Connection): DB커넥션 객체
+        
+        Returns:
+            [
+                {
+                    'id': 1, 
+                    'name': '상품준비'
+                }, 
+                {
+                    'id': 2, 
+                    'name': '배송중'
+                }, 
+                {
+                    'id': 3, 
+                    'name': '배송완료'
+                }, 
+                {
+                    'id': 4, 
+                    'name': '구매확정'
+                }, 
+                {
+                    'id': 5, 
+                    'name': '반품요청'
+                }, 
+                {
+                    'id': 6, 
+                    'name': '취소요청'
+                }, 
+                {
+                    'id': 7, 
+                    'name': '취소완료'
+                }, 
+                {
+                    'id': 8, 
+                    'name': '환불요청'
+                }, 
+                {
+                    'id': 9, 
+                    'name': '환불완료'
+                }, 
+                {
+                    'id': 10, 
+                    'name': '결제대기'
+                }, 
+                {
+                    'id': 11, 
+                    'name': '결제완료'
+                }
+            ]
+        """
         sql = """
             SELECT
                 id,
@@ -196,6 +252,29 @@ class OrderDao:
             return cursor.fetchall()
 
     def check_if_possible_change(self, conn, body):
+        """ 주문 상태를 변경할 수 있는지 확인
+
+        구매확정, 환불완료 등 이미 변경할 수 없는 상태인지 확인하기 위한 함수
+
+        Args:   
+            conn (Connection): DB커넥션 객체
+            body (list): 
+                [
+                    {
+                        'orders_detail_id': 주문 상세 id, 
+                        'order_status_type_id': 주문 상태 id
+                    }
+                ]
+        
+        Returns:
+            order_detail_results (list):
+                [
+                    {
+                        'orders_detail_id': 주문 상세 id, 
+                        'order_status_type_id': 주문 상태 id
+                    }
+                ]
+        """
         
         order_detail_results = list()
         for data in body:
@@ -212,7 +291,6 @@ class OrderDao:
             with conn.cursor() as cursor:
                 cursor.execute(sql, data)
                 order_detail_results.append(cursor.fetchone())
-        
         return order_detail_results
 
 
@@ -225,7 +303,6 @@ class OrderDao:
             conn (Connection): DB 커넥션 객체
             possible_change_order_status (list): order_service에서 걸러진 주문들 (주문 상태를 변경하지 못하는 주문들은 제외됨)
         """
-        possible_to_patch
         sql = """
             UPDATE 
                 orders_detail
@@ -274,6 +351,8 @@ class OrderDao:
                 WHERE
                     id = %(orders_detail_id)s
             """
+
+            # modify account id를 위해서 추가
             data["account_id"] = g.account_id
             with conn.cursor() as cursor:
                 cursor.execute(sql, data)
@@ -296,7 +375,7 @@ class OrderDao:
         sql_select_info = """
             SELECT 
                 o.order_number, 
-                DATE_FORMAT(o.created_at, '%%Y-%%m-%%d %%h:%%i:%%s') AS created_at,
+                o.created_at AS created_at,
                 od.detail_order_number, 
                 ost.name AS order_status_type, 
                 u.phone as order_phone,
@@ -349,7 +428,7 @@ class OrderDao:
 
         sql_select_history = """
             SELECT 
-                DATE_FORMAT(odh.updated_at, '%%Y-%%m-%%d %%h:%%i:%%s') AS updated_at,
+                odh.updated_at AS updated_at,
                 ost.name AS order_status_type
             FROM 
                 orders_detail AS od
@@ -402,7 +481,7 @@ class OrderDao:
         sql3 = """
                 SELECT 
                     COUNT(*) AS order_month,
-                    SUM(od.price*od.quantity) AS sales_month
+                    SUM(od.price * od.quantity) AS sales_month
                 FROM account AS ac
                 INNER JOIN sellers AS se
                     ON ac.id = se.account_id

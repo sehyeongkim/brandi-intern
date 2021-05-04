@@ -11,7 +11,7 @@
 import imgData from '@/Data/Banner.json'
 import { VueAgile } from 'vue-agile'
 export default {
-  data () {
+  data() {
     return {
       imgData: imgData.data
     }
