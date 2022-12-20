@@ -23,7 +23,7 @@ from utils.custom_exception import (
 class LoginRequired:
     """ Login Decorator
 
-        login decorator에서 account_type을 argument로 받아서
+        login decorator에서 account_type을 받아서
         seller, master, user의 권한이 필요한 경우를 처리
         
         계정과 권한이 맞으면 g 객체에 account_id와 account_type을 담음

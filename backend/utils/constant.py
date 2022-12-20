@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 
 # order_status
 PURCHASE_COMPLETE = 4 # 구매확정
@@ -20,3 +20,4 @@ STORE_OUT = 6 # 퇴점
 START_DATE = datetime(1111, 1, 1, 0, 0)
 END_DATE = datetime(9999, 12, 31, 23, 59)
 PRODUCT_INFO_NOTICE = "상품 상세 참조"
+DATE_OF_MANUFACTURE = date(1111, 1, 1)

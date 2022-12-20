@@ -183,8 +183,15 @@ class UploadFailtoS3(CustomUserError):
         super().__init__(status_code, dev_error_message, error_message)
 
 class DataCannotBeConverted(CustomUserError):
-    def __init__(self, error_message, dev_error_message):
+    def __init__(self, error_message, dev_error_message=None):
         status_code = 400
         if not dev_error_message:
             dev_error_message = "Data cannot be converted"
+        super().__init__(status_code, dev_error_message, error_message)
+
+class ClientError(CustomUserError):
+    def __init__(self, error_message, dev_error_message=None):
+        status_code = 400
+        if not dev_error_message:
+            dev_error_message = "boto3 client connection error"
         super().__init__(status_code, dev_error_message, error_message)

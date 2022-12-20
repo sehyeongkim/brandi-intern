@@ -1,4 +1,5 @@
 import random, string, uuid
+from dateutil.parser import parse
 from flask import g
 from admin.model import ProductDao
 from datetime import timedelta, datetime
@@ -20,7 +21,8 @@ from config import BUCKET_NAME, REGION
 from utils.constant import (
                             START_DATE,
                             END_DATE,
-                            PRODUCT_INFO_NOTICE
+                            PRODUCT_INFO_NOTICE,
+                            DATE_OF_MANUFACTURE
 )
 
 
@@ -185,9 +187,9 @@ class ProductService:
         params['simple_description'] = basic_info.get('simple_description', None)
         params['manufacturer'] = basic_info.get('manufacturer', PRODUCT_INFO_NOTICE)
         params['origin'] = basic_info.get('origin', PRODUCT_INFO_NOTICE)
-        params['discount_rate'] = basic_info.get('discount_rate', 0)
-        params['min_amount'] = basic_info.get('min_amount', 1)
-        params['max_amount'] = basic_info.get('max_amount', 20)
+        params['discount_rate'] = selling_info.get('discount_rate', 0)
+        params['min_amount'] = selling_info.get('min_amount', 1)
+        params['max_amount'] = selling_info.get('max_amount', 20)
 
         if 'discount_start_date' in selling_info:
             params['discount_start_date'] = validate_datetime(selling_info['discount_start_date'])
@@ -204,7 +206,7 @@ class ProductService:
         if 'date_of_manufacture' in basic_info:
             params['date_of_manufacture'] = validate_date(basic_info['date_of_manufacture'])
         else:
-            params['date_of_manufacture'] = PRODUCT_INFO_NOTICE
+            params['date_of_manufacture'] = DATE_OF_MANUFACTURE
 
 
         # 상품 코드 생성
@@ -268,14 +270,16 @@ class ProductService:
     
     def upload_file_to_s3(self, img_obj, folder: str):
         s3_conn = get_s3_connection()
+
         uploaded_at = str(datetime.now())
         filename = img_obj.filename
         name = folder + uploaded_at + filename
-        # 띄어쓰기, 콜론 등 필요없는 부분을 제거하기 위함
         key = name.replace(" ", "").replace(":","")
+
         s3_conn.upload_fileobj(Fileobj=img_obj,
                                 Bucket=BUCKET_NAME,
                                 Key=key)
+
         url = f"https://{BUCKET_NAME}.s3.{REGION}.amazonaws.com/{key}"
         
         return url
@@ -286,10 +290,10 @@ class ProductService:
         Args:
             conn (Connection): DB Connection Object
             product_id (int): image가 해당되는 product_id
-            imgs_obj (list): request로 받은 FileStorage Object list
+            imgs_obj (list): request로 받은 FileStorage Object로 구성된 list
 
         Returns:
-            product_dao 계층의 insert_image_url_dao method
+            product_dao 계층의 insert_image_url_dao 함수
         """
         str_account_id = str(g.account_id)
         str_product_id = str(product_id)
@@ -442,6 +446,7 @@ class ProductService:
         product_detail = {
             'basic_info': {
                 'seller_name' : product_result['seller_name'],
+                'seller_id': product_result['seller_id'],
                 'product_id' : product_result['product_id'],
                 'product_code': product_result['product_code'],
                 'is_selling': product_result['is_selling'],
@@ -473,7 +478,8 @@ class ProductService:
                     'color_id': option['color_id'],
                     'size': option['size'],
                     'size_id': option['size_id'],
-                    'stock': option['stock']
+                    'stock': option['stock'],
+                    'price': option['price']
                 }
             for option in product_option_result],
             'selling_info': {
@@ -489,7 +495,7 @@ class ProductService:
 
         return product_detail
     
-    # 상품 등록 창에서 seller 검색 master만 가능함
+    # 상품 등록 창에서 seller 검색
     def search_seller(self, conn, keyword:str):
         keyword = keyword + '%'
         params = dict()
@@ -590,28 +596,28 @@ class ProductService:
         params['simple_description'] = basic_info.get('simple_description', None)
         params['manufacturer'] = basic_info.get('manufacturer', PRODUCT_INFO_NOTICE)
         params['origin'] = basic_info.get('origin', PRODUCT_INFO_NOTICE)
-        params['discount_rate'] = basic_info.get('discount_rate', 0)
-        params['min_amount'] = basic_info.get('min_amount', 1)
-        params['max_amount'] = basic_info.get('max_amount', 20)
+        params['discount_rate'] = selling_info.get('discount_rate', 0)
+        params['min_amount'] = selling_info.get('min_amount', 1)
+        params['max_amount'] = selling_info.get('max_amount', 20)
 
         # 시간 형식의 data는 datetime 형식으로 변환하여 할당
         if 'discount_start_date' in selling_info:
-            params['discount_start_date'] = datetime.strptime(selling_info['discount_start_date'], '%Y-%m-%d %H:%M')
+            params['discount_start_date'] = parse(selling_info['discount_start_date'])
         else:
             params['discount_start_date'] = START_DATE
         
 
         if 'discount_end_date' in selling_info:
-            params['discount_end_date'] = datetime.strptime(selling_info['discount_end_date'], '%Y-%m-%d %H:%M')
+            params['discount_end_date'] = parse(selling_info['discount_end_date'])
         else:
             params['discount_end_date'] = END_DATE
         
 
         if 'date_of_manufacture' in basic_info:
             # params['date_of_manufacture'] = validate_date(selling_info['date_of_manufacture'])
-            params['date_of_manufacture'] = datetime.strptime(basic_info['date_of_manufacture'], '%Y-%m-%d')
+            params['date_of_manufacture'] = parse(basic_info['date_of_manufacture'])
         else:
-            params['date_of_manufacture'] = PRODUCT_INFO_NOTICE
+            params['date_of_manufacture'] = DATE_OF_MANUFACTURE
         
         # patch products info
         self.product_dao.patch_products_info(conn, params)
@@ -666,6 +672,7 @@ class ProductService:
             data['color_id'] = data.get('color_id', None)
             data['size_id'] = data.get('size_id', None)
             data['stock'] = data.get('stock', None)
+            data['product_id'] = product_id
         
         # 해당 option update
         self.product_dao.update_option_info(conn, update_data)

@@ -29,6 +29,7 @@ class ProductView(MethodView):
     def __init__(self, service):
         self.service = service
 
+    @LoginRequired('seller')
     @validate_params(
         Param('Content-Type', HEADER, str, required=False),
         Param('Authorization', HEADER, str, required=False),
@@ -48,7 +49,6 @@ class ProductView(MethodView):
         Param('end_date', GET, str, rules=[Datetime('%Y-%m-%d')], required=False),
         Param('select_product_id', GET, list, required=False)
     )
-    # @LoginRequired('seller')
     def get(self, valid: ValidRequest):
         """상품 조회 리스트
 
@@ -285,7 +285,7 @@ class ProductDetailView(MethodView):
         try:
             imgs_obj = request.files.getlist('file')
             payload = request.form.get('payload')
-            body = literal_eval(payload)
+            body = json.loads(payload)
             
             if not imgs_obj:
                 raise RequiredDataError('상품 이미지를 입력하세요.') 
@@ -354,10 +354,11 @@ class ProductDetailView(MethodView):
             return post_response_success('상품 수정을 완료하였습니다.')
         
         finally:
-            try:
-                conn.close()
-            except Exception:
-                raise DatabaseCloseFail('알 수 없는 오류가 발생했습니다.')
+            if conn:
+                try:
+                    conn.close()
+                except Exception:
+                    raise DatabaseCloseFail('알 수 없는 오류가 발생했습니다.')
 
 
 class ProductSellerSearchView(MethodView):

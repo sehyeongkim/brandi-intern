@@ -4,6 +4,8 @@ from botocore.exceptions import ClientError
 
 from config import DB, AWS_ACCESS_KEY, AWS_SECRET_KEY, BUCKET_NAME, REGION
 
+from utils.custom_exception import ClientError
+
 def get_connection():
     return pymysql.connect(
         host=DB["HOST"],
@@ -23,5 +25,5 @@ def get_s3_connection():
         
         return result
 
-    except ClientError as e:
-        return "ClientError"
+    except ClientError:
+        raise ClientError('이미지 업로드 중 오류가 발생했습니다.')

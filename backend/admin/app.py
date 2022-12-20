@@ -35,8 +35,6 @@ def create_app():
 
     create_endpoints(app, services)
     
-    app.json_encoder = CustomJSONEncoder
-    
     error_handle(app)
 
     return app

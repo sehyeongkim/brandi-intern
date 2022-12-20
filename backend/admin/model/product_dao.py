@@ -477,7 +477,8 @@ class ProductDao:
                 p.min_amount,
                 p.max_amount,
                 p.id as product_id,
-                s.korean_brand_name as seller_name
+                s.korean_brand_name as seller_name,
+                s.id as seller_id
             FROM 
                 products as p
             INNER JOIN
@@ -534,7 +535,8 @@ class ProductDao:
                 c.name as color,
                 c.id as color_id,
                 s.name as size,
-                s.id as size_id
+                s.id as size_id,
+                o.price as price
             FROM
                 options as o
             INNER JOIN
