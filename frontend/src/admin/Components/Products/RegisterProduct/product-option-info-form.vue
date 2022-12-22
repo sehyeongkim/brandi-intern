@@ -105,12 +105,12 @@ export default {
   },
   props: {
     dataStore: {
-      default () {
+      default() {
         return {}
       }
     }
   },
-  data () {
+  data() {
     return {
       colorList: [],
       sizeList: [],
@@ -133,35 +133,35 @@ export default {
       }
     }
   },
-  created () {
+  created() {
   },
   computed: {
-    colors () {
+    colors() {
       return this.dataStore.colors.map(d => { return { text: d.name, value: d.id } })
     },
-    sizes () {
+    sizes() {
       return this.dataStore.sizes.map(d => { return { text: d.name, value: d.id } })
     }
   },
   methods: {
-    addColor (index) {
+    addColor(index) {
       this.data.colors.splice(index + 1, 0, { colorId: '' })
     },
-    popColor (index) {
+    popColor(index) {
       this.data.colors.splice(index, 1)
     },
-    addSize (index) {
+    addSize(index) {
       this.data.sizes.splice(index + 1, 0, { sizeId: '' })
     },
-    popSize (index) {
+    popSize(index) {
       this.data.sizes.splice(index, 1)
     },
-    filterOption (input, option) {
+    filterOption(input, option) {
       return (
         option.componentOptions.children[0].text.toUpperCase().indexOf(input.toUpperCase()) >= 0
       )
     },
-    applyOptions () {
+    applyOptions() {
       const optionList = []
       // 컬러 > 사이즈 순으로 곱하기 하기
       for (let i = 0, len = this.data.colors.length; i < len; i++) {
@@ -176,10 +176,10 @@ export default {
       }
       this.dataStore.detailData.productOptions = optionList
     },
-    popOption (index) {
+    popOption(index) {
       this.options.splice(index, 1)
     },
-    getData () {
+    getData() {
       return JSON.parse(JSON.stringify(this.data))
     }
   }

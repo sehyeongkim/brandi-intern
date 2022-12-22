@@ -45,34 +45,34 @@ export default {
   components: {},
   props: {
     dataStore: {
-      default () {
+      default() {
         return new Vue(store)
       }
     },
     height: {
-      default () {
+      default() {
         return 500
       }
     }
   },
-  data () {
+  data() {
     return {
       loading: true
     }
   },
   methods: {
-    changePage (page) {
+    changePage(page) {
       this.$emit('change-page', page)
     }
   },
   computed: {
     markAll: {
-      set (v) {
+      set(v) {
         this.dataStore.list.forEach((d) => {
           d.checked = v
         })
       },
-      get () {
+      get() {
         const noChecked = this.dataStore.list.filter((d) => {
           return !d.checked
         })

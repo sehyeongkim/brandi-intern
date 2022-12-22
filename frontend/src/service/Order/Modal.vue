@@ -92,7 +92,7 @@ import SERVER from '@/config.js'
 import API from '@/service/util/service-api'
 
 export default {
-  data () {
+  data() {
     return {
       isNext: true,
       addresses: [],
@@ -110,23 +110,23 @@ export default {
   components: {
     CheckBox
   },
-  mounted () {
+  mounted() {
     this.getAddress()
   },
   methods: {
-    makePayload () {
+    makePayload() {
       const payload = JSON.parse(JSON.stringify(this.data))
       payload.isDefault = payload.isDefault ? 1 : 0
       payload.phone = this.phone.join('-')
       return payload
     },
-    changeNext () {
+    changeNext() {
       this.isNext = !this.isNext
     },
-    chooseAddress (address) {
+    chooseAddress(address) {
       this.$emit('choose', address)
     },
-    getAddress () {
+    getAddress() {
       API.methods
         .get(`${SERVER.IP}/address`)
         .then((res) => {
@@ -139,7 +139,7 @@ export default {
           alert(e.response.data.message)
         })
     },
-    delAddress (addressId) {
+    delAddress(addressId) {
       API.methods
         .delete(`${SERVER.IP}/address/delete`, {
           data: {
@@ -155,7 +155,7 @@ export default {
           alert(e.response.data.message)
         })
     },
-    save () {
+    save() {
       const payload = this.makePayload()
       API.methods
         .post(`${SERVER.IP}/address/add`, payload)

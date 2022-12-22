@@ -135,13 +135,13 @@ import API from '@/service/util/service-api'
 import SERVER from '@/config.js'
 
 export default {
-  data () {
+  data() {
     return {
       detailData: {},
       shipping: {}
     }
   },
-  mounted () {
+  mounted() {
     // this.detailData = mockup.data
     // this.sizeData = mockup.sizeData
     // mockup.options
@@ -155,7 +155,7 @@ export default {
       .catch(() => {
         // console.log(error)
         this.$router.push('/main')
-        alert('존재하지 않는 서비스 상품입니다.')
+        alert('존재하지 않는 서비스 상품입니다.!!!!!')
       })
   }
 }

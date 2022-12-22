@@ -32,7 +32,7 @@ export default {
     // Footer
     ProductBox
   },
-  data () {
+  data() {
     return {
       productList: mockup.data,
       // 구글 로그인 하기
@@ -48,7 +48,7 @@ export default {
   },
   methods: {
     ...mapMutations(serviceStore, ['getStorageToken']),
-    linkToDetail (product) {
+    linkToDetail(product) {
       this.$router.push(`/detail/${product.product_no}`)
     }
   }

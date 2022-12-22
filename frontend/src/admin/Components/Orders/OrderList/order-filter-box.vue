@@ -65,7 +65,7 @@ import moment from 'moment'
 export default {
   name: 'filter-box',
   components: { MultiSelectButtons },
-  data () {
+  data() {
     return {
       // 상단 라디오 필터 데이터가 여기에 모임
       filterTypes: [],
@@ -87,7 +87,7 @@ export default {
     }
   },
   computed: {
-    constants () {
+    constants() {
       return this.$store.state.const
     }
     // filterMask () {
@@ -98,7 +98,7 @@ export default {
     //   }
     // }
   },
-  created () {
+  created() {
     this.setDateRange(this.status.orderDateFilter)
     // 리셋 기능을 위해 clone 데이터 생성
     this.backupFilter = JSON.parse(JSON.stringify(this.filter))
@@ -149,21 +149,21 @@ export default {
       keywordValue: ''
     })
   },
-  mounted () {
+  mounted() {
     this.search()
   },
   methods: {
-    changeFilterType () {
+    changeFilterType() {
       this.$nextTick(() => {
         this.$refs.keyword[this.status.filterType].focus()
         this.status.needMoreFilter = ![1, 2].includes(this.status.filterType)
       })
     },
-    search () {
+    search() {
       const filter = this.getFilter()
       this.$emit('search', filter)
     },
-    getFilter () {
+    getFilter() {
       const filter = JSON.parse(JSON.stringify(this.filter))
       if (this.filter.rangeDate && this.filter.rangeDate.length === 2) {
         filter.start_date = this.filter.rangeDate[0].format('YYYY-MM-DD')
@@ -181,11 +181,11 @@ export default {
       delete filter.rangeDate
       return filter
     },
-    resetFilter () {
+    resetFilter() {
       this.filter = JSON.parse(JSON.stringify(this.backupFilter))
       this.status = JSON.parse(JSON.stringify(this.backupStatus))
     },
-    setDateRange (v) {
+    setDateRange(v) {
       if (v !== undefined) {
         this.filter.rangeDate = [moment().subtract(v - 1, 'day'), moment()]
       } else {
@@ -194,7 +194,7 @@ export default {
     }
   },
   watch: {
-    'status.orderDateFilter' (v) {
+    'status.orderDateFilter'(v) {
       if (v.length > 0) {
         this.setDateRange(v[0])
       } else {

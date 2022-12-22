@@ -23,7 +23,7 @@ export default {
     ProductOption,
     CategoryBreadCrumb
   },
-  data () {
+  data() {
     return {
       testCheck: false
     }

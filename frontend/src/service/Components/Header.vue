@@ -65,12 +65,12 @@ export default {
   methods: {
     ...mapMutations(serviceStore, ['getStorageToken']),
 
-    linkToMain () {
+    linkToMain() {
       this.$route.path !== '/main'
         ? this.$router.push('/main')
         : this.$router.go('/main')
     },
-    linkToCart () {
+    linkToCart() {
       if (this.getToken) {
         this.$route.path !== '/cart' &&
           this.$router.push('/cart')
@@ -80,7 +80,7 @@ export default {
         }
       }
     },
-    linkToLogin () {
+    linkToLogin() {
       if (this.getToken) {
         localStorage.removeItem('user_id')
         localStorage.removeItem('access_token')
@@ -91,7 +91,7 @@ export default {
         this.$route.path !== '/login' && this.$router.push('/login')
       }
     },
-    linkToMyPage () {
+    linkToMyPage() {
       if (this.getToken) {
         this.$route.path !== '/mypage/orderList' &&
           this.$router.push('/mypage')
@@ -101,10 +101,10 @@ export default {
         }
       }
     },
-    linkToEvent () {
+    linkToEvent() {
       this.$router.push('/event')
     },
-    activeTabClass (name) {
+    activeTabClass(name) {
       if (this.$route.path === '/' + name) return 'selected'
     }
   },

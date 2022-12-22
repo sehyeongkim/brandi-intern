@@ -32,17 +32,17 @@
         <template v-for="answer in qnaList">
           <tr @click.prevent="togleAnswer(answer)" :key="answer">
             <td v-if="!isMypage">배송 문의</td>
-            <td><span>{{ answer.isFinished == 1 ? '답변완료' : '답변대기'}}</span></td>
-            <td><p class="scret">{{answer.contents}}</p></td>
-            <td><p v-if="!isMypage">{{answer.writer}}</p></td>
-            <td>{{answer.createdAt}}</td>
+            <td><span>{{ answer.answer.length == 1 ? '답변완료' : '답변대기'}}</span></td>
+            <td><p class="scret">{{answer.question_content}}</p></td>
+            <td><p v-if="!isMypage">{{answer.user_identification}}</p></td>
+            <td>{{answer.question_upload_date}}</td>
           </tr>
-          <tr class="answer" :class="answer.isShow" v-if="answer.answer" :key="answer.answer">
+          <tr class="answer" :class="answer.isShow" v-if="answer.answer.length > 0" :key="answer.answer">
             <td v-if="!isMypage"></td>
             <td></td>
-            <td><p class="scret" v-if="answer.answer">{{answer.answer.contents}}.</p></td>
-            <td><p v-if="answer.answer">{{answer.answer.replier}}.</p></td>
-            <td><p v-if="answer.answer">{{answer.answer.createdAt}}</p></td>
+            <td><p class="scret" v-if="answer.answer">{{answer.answer[0].answer_content}}</p></td>
+            <td><p v-if="answer.answer">{{answer.answer[0].answer_identification}}</p></td>
+            <td><p v-if="answer.answer">{{answer.answer[0].answer_upload_date}}</p></td>
           </tr>
         </template>
       </tbody>
@@ -70,14 +70,14 @@ import SERVER from '@/config'
 import API from '@/service/util/service-api'
 
 export default {
-  created () {
+  created() {
     this.loadData()
   },
   props: {
     title: String,
     isMypage: Boolean // 마이페이지 여부 (false => 상품)
   },
-  data () {
+  data() {
     return {
       qnaList: [],
       qnaTotal: 0,
@@ -92,43 +92,43 @@ export default {
     QnARegister
   },
   methods: {
-    changePage () {
+    changePage() {
       this.loadData()
     },
-    loadData () {
+    loadData() {
       const params = {
         limit: this.pageSize,
-        offset: this.pageSize * (this.current - 1)
+        page: this.current
       }
       if (this.answerType) {
         params.answer = this.answerType
       }
-      const url = this.isMypage ? `${SERVER.IP}/mypage/qna` : `${SERVER.IP}/products/${this.$route.params.id}/question`
+      const url = this.isMypage ? `${SERVER.IP}/mypage/qna` : `${SERVER.IP}/products/${this.$route.params.id}/qna`
       API.methods
         .get(url, {
           params: params
         })
         .then((res) => {
-          this.qnaList = res.data.result.data
-          this.qnaTotal = res.data.result.totalCount
+          this.qnaList = res.data.result.questions
+          this.qnaTotal = res.data.result.total_count
         })
         .catch(() => {
           // console.log(error)
           this.$router.push('/main')
-          alert('존재하지 않는 서비스 상품입니다.')
+          alert('존재하지 않는 서비스 상품입니다.!')
         })
     },
-    togleAnswer (answer) {
-      this.$set(answer, 'answerShow', !answer.answerShow)
+    togleAnswer(answer) {
+      this.$set(answer, 'isShow', !answer.isShow)
       // answer.answerShow = !answer.answerShow
     },
-    openQnARegister () {
+    openQnARegister() {
       // eslint-disable-next-line no-return-assign
       return this.showQnA = !this.showQnA
     }
   },
   watch: {
-    answerType () {
+    answerType() {
       this.loadData()
     }
   }

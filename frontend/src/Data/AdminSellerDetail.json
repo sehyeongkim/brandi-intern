@@ -1,38 +1,29 @@
 {
   "result": {
-    "data": {
-      "address": "경기도",
-      "addressDetail": "군포시 산본동",
-      "backgroundImage": "https://media.vlpt.us/images/c_hyun403/post/7e52f43b-6f8e-4b07-a30f-d655dda28646/%E1%84%91%E1%85%B3%E1%84%85%E1%85%A9%E1%84%91%E1%85%B5%E1%86%AF4.jpeg",
-      "brandEnglish": "All",
-      "brandKorean": "다있슈",
-      "customerServiceClose": "19:00:00",
-      "customerServiceName": "여부세유",
-      "customerServiceOpen": "11:00:00",
-      "customerServicePhone": "010-1234-1234",
-      "deliveryInfo": "총알배송",
-      "description": "일주일만 바짝 법시다",
-      "introduce": "어라랏",
-      "managers": [
-        {
-          "email": "m1@naver.com",
-          "id": 180,
-          "name": "매1",
-          "phone_number": "010-01"
-        },
-        {
-          "email": "m2@naver.com",
-          "id": 181,
-          "name": "매2",
-          "phone_number": "010-02"
-        }
-      ],
-      "postal": "15888",
-      "profile": "https://media.vlpt.us/images/c_hyun403/post/b29b83f1-a8af-47aa-93cc-84b437c1bf0a/%E1%84%91%E1%85%B3%E1%84%85%E1%85%A9%E1%84%91%E1%85%B5%E1%86%AF2.jpeg",
-      "refundInfo": "총알환불",
-      "sellerStatus": "입점 대기",
-      "username": "chyun"
-    }
+    "address": "서울시 도봉구",
+    "background_image_url": "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__340.jpg",
+    "customer_center": "브랜디 고객센터",
+    "customer_center_phone": "01012331233",
+    "customer_close_time": "18:00:00",
+    "customer_open_time": "9:00:00",
+    "delivery_info": "당일 배송 ",
+    "detail_address": "1102호",
+    "english_brand_name": "bbbb",
+    "exchange_refund_info": "교환, 환불은 수령 후 7일까지만 가능",
+    "korean_brand_name": "나나",
+    "manager_info_list": [
+      {
+        "manager_email": "abc12344@naver.com",
+        "manager_name": "bbb",
+        "manager_phone": "456543"
+      }
+    ],
+    "profile_image_url": "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__340.jpg",
+    "seller_description": "후후후훟",
+    "seller_detail_description": "후후후후후",
+    "seller_identification": "sssss",
+    "seller_status_type": "입점거절",
+    "zip_code": 6089
   },
-  "message": "SUCCESS"
+  "status_code": 200
 }

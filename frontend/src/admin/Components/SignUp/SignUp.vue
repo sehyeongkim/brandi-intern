@@ -5,7 +5,9 @@
     <form class="join-info-container" @submit.prevent="onSubmit">
       <h1>셀러회원 가입</h1>
       <div class="line"></div>
-      <img src="https://sadmin.brandi.co.kr/include/img/seller_join_top_2.png" />
+      <img
+        src="https://sadmin.brandi.co.kr/include/img/seller_join_top_2.png"
+      />
       <fieldset class="join-info-text-box">
         <h2>가입 정보</h2>
         <div class="input-container">
@@ -15,14 +17,36 @@
               type="text"
               v-model="infoInput.account.value"
               placeholder="아이디"
-              @keyup="regCheck(regs.idReg,infoInput.account)"
-              :class="[infoInput.account.state ? '': 'errorInput']"
+              @keyup="regCheck(regs.idReg, infoInput.account)"
+              :class="[infoInput.account.state ? '' : 'errorInput']"
             />
           </div>
         </div>
-        <div v-if="!infoInput.account.state && infoInput.account.value.length === 0" class="error">필수 입력항목입니다.</div>
-        <div v-if="!infoInput.account.state && infoInput.account.value.length !== 0 && infoInput.account.value.length < 5" class="error">아이디의 최소 길이는 5글자입니다.</div>
-        <div v-if="!infoInput.account.state && infoInput.account.value.length > 5" class="error">아이디는 5~20글자의 영문, 숫자, 언더바, 하이픈만 사용 가능하며 시작 문자는 영문 또는 숫자입니다.</div>
+        <div
+          v-if="
+            !infoInput.account.state && infoInput.account.value.length === 0
+          "
+          class="error"
+        >
+          필수 입력항목입니다.
+        </div>
+        <div
+          v-if="
+            !infoInput.account.state &&
+              infoInput.account.value.length !== 0 &&
+              infoInput.account.value.length < 5
+          "
+          class="error"
+        >
+          아이디의 최소 길이는 5글자입니다.
+        </div>
+        <div
+          v-if="!infoInput.account.state && infoInput.account.value.length > 5"
+          class="error"
+        >
+          아이디는 5~20글자의 영문, 숫자, 언더바, 하이픈만 사용 가능하며 시작
+          문자는 영문 또는 숫자입니다.
+        </div>
         <div class="input-container">
           <i class="fa fa-lock"></i>
           <div name="비밀번호">
@@ -30,8 +54,8 @@
               type="password"
               v-model="infoInput.password.value"
               placeholder="비밀번호"
-              @keyup="regCheck(regs.idReg,infoInput.password)"
-              :class="[infoInput.password.state ? '': 'errorInput']"
+              @keyup="regCheck(regs.idReg, infoInput.password)"
+              :class="[infoInput.password.state ? '' : 'errorInput']"
             />
           </div>
         </div>
@@ -42,7 +66,7 @@
               type="password"
               v-model="infoInput.password2.value"
               placeholder="비밀번호 확인"
-              :class="[infoInput.password2.state ? '': 'errorInput']"
+              :class="[infoInput.password2.state ? '' : 'errorInput']"
             />
           </div>
         </div>
@@ -59,8 +83,8 @@
               type="text"
               v-model="infoInput.phone_number.value"
               placeholder="핸드폰번호"
-              @keyup="regCheck(regs.phReg,infoInput.phone_number)"
-              :class="[infoInput.phone_number.state ? '': 'errorInput']"
+              @keyup="regCheck(regs.phReg, infoInput.phone_number)"
+              :class="[infoInput.phone_number.state ? '' : 'errorInput']"
             />
           </div>
         </div>
@@ -91,8 +115,8 @@
               type="text"
               v-model="infoInput.brand_name_korean.value"
               placeholder="셀러명 (상호)"
-              @keyup="regCheck(regs.nameReg,infoInput.brand_name_korean)"
-              :class="[infoInput.brand_name_korean.state ? '': 'errorInput']"
+              @keyup="regCheck(regs.nameReg, infoInput.brand_name_korean)"
+              :class="[infoInput.brand_name_korean.state ? '' : 'errorInput']"
             />
           </div>
         </div>
@@ -103,8 +127,8 @@
               type="text"
               v-model="infoInput.brand_name_english.value"
               placeholder="셀러명 (영문 상호)"
-              @keyup="regCheck(regs.engNameReg,infoInput.brand_name_english)"
-              :class="[infoInput.brand_name_english.state ? '': 'errorInput']"
+              @keyup="regCheck(regs.engNameReg, infoInput.brand_name_english)"
+              :class="[infoInput.brand_name_english.state ? '' : 'errorInput']"
             />
           </div>
         </div>
@@ -115,8 +139,8 @@
               type="text"
               v-model="infoInput.brand_crm_number.value"
               placeholder="고객센터 전화번호"
-              @keyup="regCheck(regs.telReg,infoInput.brand_crm_number)"
-              :class="[infoInput.brand_crm_number.state ? '': 'errorInput']"
+              @keyup="regCheck(regs.telReg, infoInput.brand_crm_number)"
+              :class="[infoInput.brand_crm_number.state ? '' : 'errorInput']"
             />
           </div>
         </div>
@@ -158,7 +182,7 @@ export default {
     'radio-btn': RadioBtn,
     Spinner
   },
-  data () {
+  data() {
     return {
       regs: { idReg, pwReg, phReg, nameReg, engNameReg, telReg, urlReg },
       test: '',
@@ -170,7 +194,7 @@ export default {
         brand_name_korean: { value: '', state: true }, // korean_name
         brand_name_english: { value: '', state: true }, // eng_name
         brand_crm_number: { value: '', state: true }, // center_number
-        seller_property_id: { value: '', state: true }
+        sub_property_id: { value: '1', state: true }
       },
       radioList: [
         '쇼핑몰',
@@ -188,16 +212,16 @@ export default {
 
   methods: {
     // 각 인풋창의 정규식을 이용한 체크, 인자로 해당 정규식과 data접근 경로를 써주면 된다.
-    regCheck (reg, name) {
+    regCheck(reg, name) {
       name.state = reg.test(name.value)
     },
 
     // 라디오 버튼에서 v-model이 안되는 버그가 발생하여, 임시로 값 변환 하는 함수
-    change (value) {
-      this.infoInput.seller_property_id.value = value
+    change(value) {
+      this.infoInput.sub_property_id.value = value
     },
 
-    alertWarn (e) {
+    alertWarn(e) {
       // console.log('hoi')
       const result = confirm('브랜디 가입을 취소하시겠습니까?')
       if (result) {
@@ -206,44 +230,51 @@ export default {
       }
     },
 
-    onSubmit () {
+    onSubmit() {
       this.isLoading = true
       const arr = Object.entries(this.infoInput)
       // filter 함수를 통해, valdiation 결과가 모두 true인지 확인합니다.
-      const filterResult = arr.filter(item => {
+      const filterResult = arr.filter((item) => {
         const result = item[1].state === false
         return result
       })
 
       // 위 filter 함수에서 결과가 모두 true인지 조건을 넣어 모두 true일 경우 0이므로,
       // 조건문을 이용하여 axios body에 넣을 값들을 정리합니다.
+      console.log(this.infoInput.sub_property_id.value)
       if (filterResult.length === 0) {
         this.sendSubmit({
-          account: this.infoInput.account.value,
+          id: this.infoInput.account.value,
           password: this.infoInput.password.value,
-          phone_number: this.infoInput.phone_number.value,
-          brand_name_korean: this.infoInput.brand_name_korean.value,
-          brand_name_english: this.infoInput.brand_name_english.value,
-          brand_crm_number: this.infoInput.brand_crm_number.value,
-          seller_property_id: this.infoInput.seller_property_id.value
+          phone: this.infoInput.phone_number.value,
+          korean_brand_name: this.infoInput.brand_name_korean.value,
+          english_brand_name: this.infoInput.brand_name_english.value,
+          customer_center_number: this.infoInput.brand_crm_number.value,
+          sub_property_id: this.infoInput.sub_property_id.value
         })
       }
     },
-    sendSubmit (value) {
+    sendSubmit(value) {
       console.log('보내기 직전', value)
+      let res
       axios
-        .post(this.constants.apiDomain + '/signup', value)
-        .then(res => {
-          console.log('백엔드 응답', res.data)
-          if (res.status === 200) {
+        // .post(this.constants.apiDomain + "/signup", value)
+        .post('/account/signup', value)
+        .then((response) => {
+          console.log('백엔드 응답', response)
+          res = response
+          console.log(res)
+          if (res.data.result.status_code) {
             Message.success('회원가입을 축하합니다!')
             this.isLoading = false
             this.$router.push('/')
           }
         })
-        .catch(error => {
+        .catch((error) => {
           console.log('err', error)
-          this.isLoading = true
+          this.isLoading = false
+          Message.error(String(res.data.user_error_message))
+          this.$router.push('/admin/signup')
         })
     }
   }
@@ -252,7 +283,7 @@ export default {
 
 <style scoped lang="scss">
 //@import "../../styles/_reset.scss";
-@import "@/styles/commonD.scss";
+@import '@/styles/commonD.scss';
 
 h1 {
   margin-bottom: 20px;
@@ -273,8 +304,8 @@ p {
   font-size: 14px;
 }
 
-input[type="text"],
-input[type="password"] {
+input[type='text'],
+input[type='password'] {
   width: 360px;
   height: 35px;
   margin-bottom: 7px;
@@ -400,10 +431,10 @@ input[type="password"] {
   }
 
   .errorInput {
-    border: 1px solid #a94442;;
+    border: 1px solid #a94442;
 
     &:focus {
-      border: 1px solid #a94442;;
+      border: 1px solid #a94442;
     }
   }
 }

@@ -10,8 +10,24 @@
       <div style="clear:both"></div>
     </div>
     <div class="table-header-buttons">
-      <a-button size="small" type="success">선택한상품 엑셀다운로드</a-button>
+      <a-button size="small" type="success">선택한 상품 엑셀다운로드</a-button>
       <a-button size="small" type="success">전체상품 엑셀다운로드</a-button>
+
+      <a-select style="width: 120px" v-model="batchUpdate.selling">
+        <a-select-option value="">판매여부</a-select-option>
+        <a-select-option value="1">판매</a-select-option>
+        <a-select-option value="0">미판매</a-select-option>
+      </a-select>
+      <a-select style="width: 120px" v-model="batchUpdate.display">
+        <a-select-option value="">진열여부</a-select-option>
+        <a-select-option value="1">진열</a-select-option>
+        <a-select-option value="0">미진열</a-select-option>
+      </a-select>
+      <a-button
+        type="warning"
+        :disabled="batchUpdate.selling === '' && batchUpdate.display === ''"
+        @click="doBatchUpdate"
+      >적용</a-button>
     </div>
 
     <board-list :data-store="dataStore" :height="500" @change-page="changePage">
@@ -31,19 +47,34 @@
         <th>Actions</th>
       </template>
       <template slot="row" slot-scope="{item}">
-        <td>{{ item.created_at }}</td> <!-- 등록일 -->
-        <td><img :src="item.main_image" width="70" height="70"></td> <!-- 대표이미지 -->
-        <td>{{ item.name }}</td> <!-- 상품명 -->
-        <td><router-link :to="'products/'+item.product_id">{{ item.code_number }}</router-link></td> <!-- 상품코드 -->
-        <td>{{ item.product_id }}</td> <!-- 상품번호 -->
-        <td>{{ item.seller_property_id | typeToName('sellerSections') }}</td> <!-- 셀러속성 -->
-        <td>{{ item.brand_name_korean }}</td> <!-- 셀러명 -->
+        <!--
+discount_price: 12000
+discount_rate: 0.2
+id: 4
+image_url: "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__340.jpg"
+is_displayed: 1
+is_selling: 1
+korean_brand_name: "라라"
+price: 15000
+product_code: "444"
+seller_id: 4
+sub_property: "디자이너브랜드"
+title: "믓진 아우터 "
+upload_date: "2021-04-20 "
+          -->
+        <td>{{ item.upload_date }}</td> <!-- 등록일 -->
+        <td><img :src="item.image_url" width="70" height="70"></td> <!-- 대표이미지 -->
+        <td>{{ item.title }}</td> <!-- 상품명 -->
+        <td><router-link :to="'products/'+item.product_code">{{ item.product_code }}</router-link></td> <!-- 상품코드 -->
+        <td>{{ item.id }}</td> <!-- 상품번호 -->
+        <td>{{ item.sub_property }}</td> <!-- 셀러속성 -->
+        <td>{{ item.korean_brand_name }}</td> <!-- 셀러명 -->
         <td>{{ item.price | makeComma }}</td> <!-- 판매가 -->
-        <td>{{ item.discount_price | makeComma }} <span class="discount-rate" v-if="item.discount_rate > 0">({{ item.discount_rate }}%)</span></td> <!-- 할인가 -->
-        <td>{{ item.is_sell | typeToName('saleTypes') }}</td> <!-- 판매여부 -->
-        <td>{{ item.is_display | typeToName('exhibitTypes') }}</td> <!-- 진열여부 -->
+        <td>{{ item.discount_price | makeComma }} <span class="discount-rate" v-if="item.discount_rate > 0">({{ item.discount_rate * 100 }}%)</span></td> <!-- 할인가 -->
+        <td>{{ item.is_selling | typeToName('saleTypes') }}</td> <!-- 판매여부 -->
+        <td>{{ item.is_displayed | typeToName('exhibitTypes') }}</td> <!-- 진열여부 -->
         <td><!--{{ getProductDiscountTypeName(item.is_discount) }}-->
-          {{ item.is_discount | typeToName('discountTypes') }}
+          {{ item.discount_rate > 0 ? 1: 0 | typeToName('discountTypes') }}
         </td> <!-- 할인여부 -->
         <td>
           <a-button type="primary" size="small" @click="buyProduct(item)">구매하기</a-button>
@@ -72,9 +103,13 @@ export default {
   name: 'product-list',
   mixins: [CommonMixin],
   components: { BoardList, ProductFilterBox, OrderModal },
-  data () {
+  data() {
     return {
       dataStore: new Vue(store),
+      batchUpdate: {
+        selling: '',
+        display: ''
+      },
       rowCounts: [
         { label: '10개', value: 10 },
         { label: '20개', value: 20 },
@@ -82,28 +117,39 @@ export default {
       ]
     }
   },
-  mounted () {
+  mounted() {
     this.dataStore.$on('test', (d) => {
       console.log('aa', d)
     })
   },
   methods: {
-    search (filter) {
+    doBatchUpdate() {
+      // 상품 상태 일괄 변경
+      const checkedList = this.dataStore.getCheckedList()
+      if (checkedList.length === 0) {
+        Message.error('체크된 상품이 없습니다.')
+        return
+      }
+      if (confirm(`${checkedList.length}건의 상품을 일괄 변경 하시겠습니까?`)) {
+        this.dataStore.batchUpdate(checkedList, this.batchUpdate)
+      }
+    },
+    search(filter) {
       this.dataStore.page = 1
       this.dataStore.setFilter(filter)
       this.load()
     },
     // 상품 구매
-    buyProduct (row) {
+    buyProduct(row) {
       console.log('상품 구매', row)
       this.$refs.orderModal.show(row)
     },
-    changePage (page) {
+    changePage(page) {
       console.log('page', page)
       this.dataStore.changePage(page)
       this.load()
     },
-    load () {
+    load() {
       this.dataStore.load()
         .then((res) => {})
         .catch((e) => {

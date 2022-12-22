@@ -2,7 +2,7 @@
   <div>
     <a-descriptions bordered size="small" class="seller-from" label-width="20%" :column="2">
       <a-descriptions-item label="주문 상세 번호">
-        {{ dataStore.detailData.cartNumber }}
+        {{ dataStore.detailData.order_detail_number }}
       </a-descriptions-item>
       <a-descriptions-item label="주문 상태">
 
@@ -13,7 +13,7 @@
 
       </a-descriptions-item>
       <a-descriptions-item label="결제일시">
-        {{ dataStore.detailData.orderDate }}
+        {{ dataStore.detailData.order_created_at }}
       </a-descriptions-item>
 
       <a-descriptions-item label="정산예정일">
@@ -24,7 +24,7 @@
         0 원
       </a-descriptions-item>
       <a-descriptions-item label="연락처">
-        {{ dataStore.detailData.orderPhone }}
+        {{ dataStore.detailData.orderer_phone }}
         <a-button type="danger">변경</a-button>
       </a-descriptions-item>
     </a-descriptions>
@@ -39,12 +39,12 @@ export default {
   },
   props: {
     dataStore: {
-      default () {
+      default() {
         return {}
       }
     }
   },
-  data () {
+  data() {
     return {
       data: {
         seller_property_id: 1,
@@ -55,24 +55,24 @@ export default {
     }
   },
   computed: {
-    firstCategory () {
+    firstCategory() {
       return this.$store.state.const.firstCategory
     },
-    secondCategory () {
+    secondCategory() {
       return this.$store.state.const.secondCategory
     }
   },
   methods: {
-    showHistoryModal () {
+    showHistoryModal() {
       this.$refs.historyModal.show()
     },
-    setFormData (value) {
+    setFormData(value) {
 
     },
-    getFromData () {
+    getFromData() {
       return JSON.stringify(JSON.parse(this.data))
     },
-    validate () {
+    validate() {
       return true
     }
   }

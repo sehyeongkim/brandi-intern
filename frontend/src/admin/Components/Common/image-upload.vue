@@ -24,7 +24,7 @@
 import AdminApiMixin from '@/admin/mixins/admin-api'
 import store from '@/store/index'
 
-function getBase64 (img, callback) {
+function getBase64(img, callback) {
   const reader = new FileReader()
   reader.addEventListener('load', () => callback(reader.result))
   reader.readAsDataURL(img)
@@ -32,7 +32,7 @@ function getBase64 (img, callback) {
 export default {
   mixins: [AdminApiMixin],
   store: store,
-  data () {
+  data() {
     return {
       loading: false,
       imageUrl: ''
@@ -40,21 +40,21 @@ export default {
   },
   props: {
     value: {
-      default () {
+      default() {
         return ''
       }
     }
   },
-  mounted () {
+  mounted() {
     this.imageUrl = this.value
   },
   computed: {
-    constants () {
+    constants() {
       return this.$store.state.const
     }
   },
   methods: {
-    handleChange (info) {
+    handleChange(info) {
       if (info.file.status === 'uploading') {
         this.loading = true
         return
@@ -67,7 +67,7 @@ export default {
         })
       }
     },
-    beforeUpload (file) {
+    beforeUpload(file) {
       const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png'
       if (!isJpgOrPng) {
         this.$message.error('You can only upload JPG file!')
@@ -95,12 +95,12 @@ export default {
       })
       return false
     },
-    previewFile (file) {
+    previewFile(file) {
       console.log(file)
     }
   },
   watch: {
-    value (v) {
+    value(v) {
       if (typeof (v) === 'string') { this.imageUrl = v }
     }
   }

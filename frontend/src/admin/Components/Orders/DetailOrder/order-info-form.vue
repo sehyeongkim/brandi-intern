@@ -5,10 +5,10 @@
         네이버페이(신용카드)
       </a-descriptions-item>
       <a-descriptions-item label="주문 번호">
-        {{ dataStore.detailData.orderNumber }}
+        {{ dataStore.detailData.order_number }}
       </a-descriptions-item>
       <a-descriptions-item label="주문 일시">
-        {{ dataStore.detailData.orderDate }}
+        {{ dataStore.detailData.order_created_at }}
       </a-descriptions-item>
 
       <a-descriptions-item label="외부거래번호">
@@ -19,7 +19,7 @@
       </a-descriptions-item>
 
       <a-descriptions-item label="총 결제 금액">
-        {{ dataStore.detailData.totalPrice | makeComma }} 원
+        {{ dataStore.detailData.total_price | makeComma }} 원
       </a-descriptions-item>
       <a-descriptions-item label="배송비">
         0 원
@@ -42,12 +42,12 @@ export default {
   },
   props: {
     dataStore: {
-      default () {
+      default() {
         return {}
       }
     }
   },
-  data () {
+  data() {
     return {
       data: {
         seller_property_id: 1,
@@ -58,24 +58,24 @@ export default {
     }
   },
   computed: {
-    firstCategory () {
+    firstCategory() {
       return this.$store.state.const.firstCategory
     },
-    secondCategory () {
+    secondCategory() {
       return this.$store.state.const.secondCategory
     }
   },
   methods: {
-    showHistoryModal () {
+    showHistoryModal() {
       this.$refs.historyModal.show()
     },
-    setFormData (value) {
+    setFormData(value) {
 
     },
-    getFromData () {
+    getFromData() {
       return JSON.stringify(JSON.parse(this.data))
     },
-    validate () {
+    validate() {
       return true
     }
   }

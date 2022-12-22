@@ -13,7 +13,7 @@
 import CartDetailOption from '@/service/Cart/CartDetailOption'
 
 export default {
-  created () {
+  created() {
   },
   components: {
     CartDetailOption
@@ -21,7 +21,7 @@ export default {
   props: {
     brand: {
       type: Object,
-      default () {
+      default() {
         return {
           brandName: String,
           detail: Array

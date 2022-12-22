@@ -7,8 +7,8 @@
       <div class="option">
         <div class="left">
           <label>
-          <input type="checkbox"/>
-          <span>아이디 / 비밀번호 기억하기</span>
+            <input type="checkbox" />
+            <span>아이디 / 비밀번호 기억하기</span>
           </label>
         </div>
         <div class="right">
@@ -32,17 +32,17 @@ import AdminApiMixin from '@/admin/mixins/admin-api'
 export default {
   name: 'login',
   mixins: [AdminApiMixin, CommonMixin],
-  data () {
+  data() {
     return {
       account: '',
       password: ''
     }
   },
   methods: {
-    goSignUp () {
+    goSignUp() {
       this.$router.push('/admin/signup')
     },
-    checkValid () {
+    checkValid() {
       console.log('enter')
       if ((this.account.length !== 0) | (this.password.length !== 0)) {
         this.sendSumbit()
@@ -50,27 +50,33 @@ export default {
     },
 
     // token 물어보기
-    sendSumbit () {
+    sendSumbit() {
+      // this.post(this.constants.apiDomain + "/seller/signin", {
+      let res
       this.post(this.constants.apiDomain + '/seller/signin', {
-        username: this.account,
+        id: this.account,
         password: this.password
       })
-        .then(response => {
+        .then((response) => {
           console.log('response', response)
+          res = response
           if (response.data.result.accessToken) {
-            localStorage.setItem('access_token', response.data.result.accessToken)
-            localStorage.setItem('user_type_id', response.data.result.userTypeId)
+            localStorage.setItem(
+              'access_token',
+              response.data.result.accessToken
+            )
+            localStorage.setItem(
+              'acount_type_id',
+              response.data.result.account_type_id
+            )
           }
         })
         .then(() => {
           this.$router.push('/admin/sellerdashboard')
         })
-        .catch(err => {
-          if (err.response) {
-            console.log(err.response)
-            console.log(err.response.message)
-          }
-          Message.error('로그인에 실패하였습니다.')
+        .catch((err) => {
+          console.log(err)
+          Message.error(res.data.user_error_message)
         })
     }
   }
@@ -119,7 +125,8 @@ export default {
       }
     }
 
-    input[type="text"],input[type="password"] {
+    input[type='text'],
+    input[type='password'] {
       margin-bottom: 7px;
       border: 1px solid lightgrey;
       border-radius: 8px;

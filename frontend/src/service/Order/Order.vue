@@ -5,32 +5,36 @@
     <span class="order-title">주문상품 정보</span>
     <table class="order-list">
       <colgroup>
-        <col width="5%">
-        <col>
-        <col width="10%">
+        <col width="5%" />
+        <col />
+        <col width="10%" />
       </colgroup>
       <thead>
         <tr class="order-list-title">
-            <td colspan="3">일반 배송</td>
+          <td colspan="3">일반 배송</td>
         </tr>
       </thead>
       <tbody>
         <tr class="order-list-brand" v-for="cart in this.cartList" :key="cart">
-            <td colspan="2">{{ cart.name }}</td>
-            <td>주문금액</td>
+          <td colspan="2">{{ cart.name }}</td>
+          <td>주문금액</td>
         </tr>
-        <tr class="order-list-product" v-for="item in purchaseItems.optionQuantity" :key="item">
-            <td>
-                <img :src="purchaseItems.image" alt="">
-            </td>
-            <td>
-                <div>{{ item.name }}</div>
-                <div>{{ item.colorName }} / {{ item.sizeName }} (일반배송)</div>
-                <div>{{ item.quantity }}개</div>
-            </td>
-            <td>
-                <span>{{ totalPrice | makeComma }} 원</span>
-            </td>
+        <tr
+          class="order-list-product"
+          v-for="item in purchaseItems.optionQuantity"
+          :key="item"
+        >
+          <td>
+            <img :src="purchaseItems.image" alt="" />
+          </td>
+          <td>
+            <div>{{ item.name }}</div>
+            <div>{{ item.colorName }} / {{ item.sizeName }} (일반배송)</div>
+            <div>{{ item.quantity }}개</div>
+          </td>
+          <td>
+            <span>{{ totalPrice | makeComma }} 원</span>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -43,24 +47,54 @@
     <table class="info-box">
       <tr>
         <td>이름</td>
-        <td><input type="text" placeholder="이름" class="from-name input-name" v-model="data.orderName"></td>
+        <td>
+          <input
+            type="text"
+            placeholder="이름"
+            class="from-name input-name"
+            v-model="data.orderName"
+          />
+        </td>
       </tr>
       <tr>
         <td>휴대폰</td>
         <td>
-          <input type="text" class="from-phone-first input-phone" v-model="phone[0]" maxlength="3">
+          <input
+            type="text"
+            class="from-phone-first input-phone"
+            v-model="phone[0]"
+            maxlength="3"
+          />
           &nbsp;-&nbsp;
-          <input type="text" class="from-phone-second input-phone" v-model="phone[1]" maxlength="4">
+          <input
+            type="text"
+            class="from-phone-second input-phone"
+            v-model="phone[1]"
+            maxlength="4"
+          />
           &nbsp;-&nbsp;
-          <input type="text" class="from-phone-third input-phone" v-model="phone[2]" maxlength="4">
+          <input
+            type="text"
+            class="from-phone-third input-phone"
+            v-model="phone[2]"
+            maxlength="4"
+          />
         </td>
       </tr>
       <tr>
         <td>이메일</td>
         <td>
-          <input type="text" class="email-address input-email" v-model="email[0]">
+          <input
+            type="text"
+            class="email-address input-email"
+            v-model="email[0]"
+          />
           &nbsp;@&nbsp;
-          <input type="text" class="email-domain input-email" v-model="email[1]">
+          <input
+            type="text"
+            class="email-domain input-email"
+            v-model="email[1]"
+          />
         </td>
       </tr>
     </table>
@@ -72,31 +106,76 @@
     <table class="info-box">
       <tr>
         <td>수령인</td>
-        <td><input type="text" placeholder="이름" class="to-name input-name" v-model="shipingInfo.name" readonly></td>
+        <td>
+          <input
+            type="text"
+            placeholder="이름"
+            class="to-name input-name"
+            v-model="shipingInfo.name"
+            readonly
+          />
+        </td>
       </tr>
       <tr>
         <td>휴대폰</td>
         <td>
-          <input type="text" class="to-phone-first input-phone" v-model="shipongPhone[0]" readonly>
+          <input
+            type="text"
+            class="to-phone-first input-phone"
+            v-model="shipongPhone[0]"
+            readonly
+          />
           &nbsp;-&nbsp;
-          <input type="text" class="to-phone-second input-phone" v-model="shipongPhone[1]" readonly>
+          <input
+            type="text"
+            class="to-phone-second input-phone"
+            v-model="shipongPhone[1]"
+            readonly
+          />
           &nbsp;-&nbsp;
-          <input type="text" class="to-phone-third input-phone" v-model="shipongPhone[2]" readonly>
+          <input
+            type="text"
+            class="to-phone-third input-phone"
+            v-model="shipongPhone[2]"
+            readonly
+          />
         </td>
       </tr>
       <tr>
         <td>배송주소</td>
         <td class="address">
-          <input type="text" class="address-code input-address" v-model="shipingInfo.postal" readonly>
-          <input type="text" class="address-first input-address" v-model="shipingInfo.address" readonly>
-          <input type="text" class="address-second input-address" v-model="shipingInfo.addressDetail" readonly>
-          <span>* 제주도, 도서 산간 지역 등은 배송이 하루 이상 추가 소요될 수 있습니다</span>
+          <input
+            type="text"
+            class="address-code input-address"
+            v-model="shipingInfo.postal"
+            readonly
+          />
+          <input
+            type="text"
+            class="address-first input-address"
+            v-model="shipingInfo.address"
+            readonly
+          />
+          <input
+            type="text"
+            class="address-second input-address"
+            v-model="shipingInfo.addressDetail"
+            readonly
+          />
+          <span
+            >* 제주도, 도서 산간 지역 등은 배송이 하루 이상 추가 소요될 수
+            있습니다</span
+          >
         </td>
       </tr>
       <tr>
         <td>배송메모</td>
         <td>
-          <DropDown :items="deliveryMessage" placeholder="배송시 요청사항을 선택해주세요" v-model="data.shippingMemoTypeId"></DropDown>
+          <DropDown
+            :items="deliveryMessage"
+            placeholder="배송시 요청사항을 선택해주세요"
+            v-model="data.shippingMemoTypeId"
+          ></DropDown>
         </td>
       </tr>
     </table>
@@ -128,14 +207,14 @@ import DropDown from '@/service/Components/DropDown'
 import Modal from './Modal'
 
 export default {
-  created () {
+  created() {
     // const cartItem = JSON.parse(localStorage.getItem('cart'))
     // this.totalPrice = cartItem.totalPrice
     // this.cartList = cartItem.items
     this.getDeliveryMessage()
     this.purchaseItems = JSON.parse(localStorage.getItem('purchaseItems'))
   },
-  data () {
+  data() {
     return {
       deliveryMessage: [],
       // arr: [{
@@ -169,17 +248,23 @@ export default {
     Modal
   },
   computed: {
-    shipongPhone () {
-      const phones = this.shipingInfo.phone ? this.shipingInfo.phone.split('-') : []
+    shipongPhone() {
+      const phones = this.shipingInfo.phone
+        ? this.shipingInfo.phone.split('-')
+        : []
       const arr = ['', '', '']
       for (let i = 0, len = phones.length; i < len; i++) {
         arr[i] = phones[i]
       }
       return arr
     },
-    totalPrice () {
+    totalPrice() {
       let total = 0
-      for (let i = 0, len = this.purchaseItems.optionQuantity.length; i < len; i++) {
+      for (
+        let i = 0, len = this.purchaseItems.optionQuantity.length;
+        i < len;
+        i++
+      ) {
         const item = this.purchaseItems.optionQuantity[i]
         total += item.quantity * item.price
       }
@@ -187,22 +272,24 @@ export default {
     }
   },
   methods: {
-    openModal () {
+    openModal() {
       this.modal = true
     },
-    closeModal () {
+    closeModal() {
       this.modal = false
     },
-    chooseAddress (address) {
+    chooseAddress(address) {
       console.log(address)
       this.shipingInfo = address
       this.modal = false
     },
-    getDeliveryMessage () {
+    getDeliveryMessage() {
       API.methods
         .get(`${SERVER.IP}/shipping-memo`)
         .then((res) => {
-          this.deliveryMessage = res.data.result.data.map(d => { return { label: d.contents, key: d.id } })
+          this.deliveryMessage = res.data.result.data.map((d) => {
+            return { label: d.contents, key: d.id }
+          })
           console.log(res)
         })
         .catch((e) => {
@@ -210,7 +297,7 @@ export default {
           alert(e.data.message)
         })
     },
-    makePayload () {
+    makePayload() {
       const payload = JSON.parse(JSON.stringify(this.data))
       payload.orderId = this.purchaseItems.orderId
       payload.items = this.purchaseItems.items
@@ -220,7 +307,7 @@ export default {
       payload.totalPrice = this.totalPrice
       return payload
     },
-    payment () {
+    payment() {
       const payload = this.makePayload()
       API.methods
         .patch(`${SERVER.IP}/confirmation`, payload)
@@ -253,7 +340,7 @@ export default {
     margin: 90px auto 50px;
   }
 
-  .order-title{
+  .order-title {
     display: inline-block;
     font-size: 25px;
     font-weight: 500;
@@ -272,7 +359,7 @@ export default {
       border: 0;
     }
 
-    .order-list-title>td {
+    .order-list-title > td {
       font-size: 20px;
       font-weight: 600;
       padding: 20px 0;
@@ -293,7 +380,7 @@ export default {
       }
     }
     .order-list-product {
-        padding: 15px 0;
+      padding: 15px 0;
 
       td {
         padding: 15px 15px 15px 0;
@@ -303,9 +390,9 @@ export default {
         height: 80px;
         overflow: hidden;
 
-      img {
-        width: 80px;
-        height: auto;
+        img {
+          width: 80px;
+          height: auto;
         }
       }
       td:nth-child(2) {
@@ -354,7 +441,7 @@ export default {
   }
 
   .input-name {
-    width: 100%
+    width: 100%;
   }
   .input-phone {
     width: 100px;
@@ -383,7 +470,7 @@ export default {
     font-weight: 300;
 
     .delivery-btn {
-      color: #1E88E5;
+      color: #1e88e5;
     }
     .delivery-btn:hover {
       cursor: pointer;
@@ -411,7 +498,7 @@ export default {
         font-weight: 400;
       }
     }
-    tr:last-child>td {
+    tr:last-child > td {
       border: 0;
     }
   }

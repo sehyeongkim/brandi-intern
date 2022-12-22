@@ -94,7 +94,7 @@ export default {
   components: {
     LineChart
   },
-  created () {
+  created() {
     let val1 = Math.floor(Math.random() * 1000) + 50
     let val2 = Math.floor(Math.random() * 1000) + 50
     for (let i = 0; i < 30; i++) {
@@ -109,7 +109,7 @@ export default {
       this.chartData2.datasets[0].data.push(val2)
     }
   },
-  data () {
+  data() {
     return {
       dataStore: new Vue(store),
       chartData1: {

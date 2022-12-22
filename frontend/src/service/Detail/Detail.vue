@@ -1,13 +1,13 @@
 <template>
   <main>
     <article class="ProductInfo">
-      <agile v-if="detailData.imageList[0]" class="agile" :dots="false">
+      <agile v-if="detailData.images[0]" class="agile" :dots="false">
         <div class="imgContainer">
-          <img alt="product  image" :src="detailData.imageList[0]" />
+          <img alt="product  image" :src="detailData.images[0].image_url" />
         </div>
 
-        <div v-for="image in detailData.imageList" class="imgContainer" :key="image">
-          <img alt="product image" :src="image" />
+        <div v-for="image in detailData.images" class="imgContainer" :key="image">
+          <img alt="product image" :src="image.image_url" />
         </div>
 
         <div class="prevBtn" slot="prevButton" />
@@ -17,22 +17,22 @@
       </agile>
 
       <div class="detailInfoContainer">
-        <p class="title">{{ detailData.name }}</p>
+        <p class="title">{{ detailData.product_title }}</p>
         <div class="priceContainer">
-          <span v-if="detailData.discountRate" class="percent">
-            {{ detailData.discountRate }}%
+          <span v-if="detailData.discount_rate" class="percent">
+            {{ detailData.discount_rate }}%
           </span>
           <span class="price">
             {{ detailData.price | makeComma }}원
           </span>
-          <span v-if="detailData.discountRate !== 0" class="cost">
-            {{ detailData.discountPrice | makeComma }}원
+          <span v-if="detailData.discount_rate !== 0" class="cost">
+            {{ detailData.discount_price | makeComma }}원
           </span>
         </div>
         <hr />
 
-        <DropDown :items="detailData.colors" v-model="color" @change="selectOption" placeholder="[색상]을 선택하세요." class="option-box"></DropDown>
-        <DropDown :items="detailData.sizes" v-model="size" @change="selectOption" placeholder="[사이즈]를 선택하세요." class="option-box"></DropDown>
+        <DropDown :items="colors" v-model="color" @change="selectOption" placeholder="[색상]을 선택하세요." class="option-box"></DropDown>
+        <DropDown :items="sizes" v-model="size" @change="selectOption" placeholder="[사이즈]를 선택하세요." class="option-box"></DropDown>
 
         <div class="option-quantity">
           <OptionQuantity v-for="item in optionQuantity" :item="item" :key="item" @remove="removeOption"></OptionQuantity>
@@ -64,7 +64,7 @@
           <div class="tab orderDetail"><a href="#">주문정보</a></div>
         </div>
         <div class="detail-body">
-          <div class="detailHtml" v-html="detailData.productContentImage" />
+          <div class="detailHtml" v-html="detailData.detail_description" />
         </div>
         <div>
           <QnA v-bind="{
@@ -78,7 +78,7 @@
         </div>
       </div>
     </article>
-    <OtherProduct :products="this.others"/>
+    <OtherProduct :products="detailData.other_product"/>
   </main>
 </template>
 
@@ -103,37 +103,53 @@ export default {
     OptionQuantity,
     OtherProduct
   },
-  mounted () {
+  mounted() {
     API.methods
       .get(`${SERVER.IP}/products/${this.$route.params.id}`)
       .then((res) => {
         // console.log(res.data.result)
-        this.detailData = res.data.result.product
-        this.loadRecommends()
+        this.detailData = res.data.result
+        const colors = {}
+        const colorList = []
+        const sizes = {}
+        this.detailData.options.forEach(option => {
+          colors[option.color_id] = option.color_name
+          if (sizes[option.color_id] === undefined) {
+            sizes[option.color_id] = []
+          }
+          let label = option.size_name
+          if (option.option_price > 0) label += ` (+${option.option_price}) `
+          sizes[option.color_id].push({ label: label, key: option.size_id, addPrice: option.option_price })
+        })
+        for (const key in colors) {
+          colorList.push({ label: colors[key], key: key, sizes: sizes[key] })
+        }
+        this.colors = colorList
       })
-      .catch(() => {
-        // console.log(error)
-        this.$router.push('/main')
+      .catch((error) => {
+        console.log(error)
+        // this.$router.push('/main')
         alert('존재하지 않는 서비스 상품입니다.')
       })
   },
   props: {
     id: String
   },
-  data () {
+  data() {
     return {
       brandId: 0,
       color: null,
       size: null,
       optionQuantity: [],
+      colors: [],
+      sizes: [],
+
       detailData: {
         id: 0,
         brand: '',
-        colors: [],
-        sizes: [],
         name: '',
         productContentImage: '',
-        imageList: [],
+        images: [],
         maximum: 0,
         minimum: 0,
         price: 0,
@@ -152,21 +168,21 @@ export default {
   computed: {
     ...mapGetters(serviceStore, ['getToken']),
     // 이건 한번 봐야함!!
-    colorList () {
+    colorList() {
       const res = []
       for (const key in this.detailData.colors) {
         res.push({ key: this.detailData.colors[key].color_name, label: this.detailData.colors[key].color_name })
       }
       return res
     },
-    totalPrice () {
+    totalPrice() {
       let total = 0
       this.optionQuantity.forEach(d => {
-        total += d.quantity * d.price
+        total += d.quantity * (d.price + d.addPrice)
       })
       return total
     },
-    totalCount () {
+    totalCount() {
       let total = 0
       this.optionQuantity.forEach(d => {
         total += d.quantity
@@ -180,10 +196,10 @@ export default {
   methods: {
     ...mapMutations(serviceStore, ['getStorageToken']),
 
-    selectOption () {
+    selectOption() {
       if (this.color && this.size) {
-        const colorItem = this.detailData.colors.find(d => d.key === this.color)
-        const sizeItem = this.detailData.sizes.find(d => d.key === this.size)
+        const colorItem = this.colors.find(d => d.key === this.color)
+        const sizeItem = this.sizes.find(d => d.key === this.size)
 
         const item = this.optionQuantity.find(d => this.size === d.size && this.color === d.color)
         // 동일 옵션이 있다면
@@ -196,15 +212,21 @@ export default {
             name: this.detailData.name,
             sizeName: sizeItem.label,
             colorName: colorItem.label,
-            price: this.detailData.discountPrice,
+            price: this.detailData.discount_price,
+            addPrice: sizeItem.addPrice,
             quantity: 1
           })
         }
         this.color = null
         this.size = null
+      } else {
+        const colorItem = this.colors.find(d => d.key === this.color)
+        this.sizes = colorItem.sizes
+        // console.log(colorItem)
+        // colorItem.sizes
       }
     },
-    removeOption (item) {
+    removeOption(item) {
       const pos = this.optionQuantity.indexOf(item)
       if (pos >= 0) {
         this.optionQuantity.splice(pos, 1)
@@ -212,7 +234,7 @@ export default {
     },
     // 상품구매하기 버튼을 클릭하여 로컬스토리지 저장후 구매하기 페이지로 이동
     // 상품의 갯수가 0이라면 return
-    buyNowHandler () {
+    buyNowHandler() {
       if (this.optionQuantity.length > 0) {
         // if (this.getToken) {
         const orderData = {
@@ -264,7 +286,7 @@ export default {
         ]
     }
     */
-    makePayload () {
+    makePayload() {
       const payload = {
         productId: this.$route.params.id,
         products: []
@@ -279,7 +301,7 @@ export default {
       }
       return payload
     },
-    loadRecommends () {
+    loadRecommends() {
       API.methods
         .get(`${SERVER.IP}/products/recommends`, {
           params: {
@@ -295,7 +317,7 @@ export default {
         })
     },
     // /products/recommends
-    addCart () {
+    addCart() {
       if (this.optionQuantity.length > 0) {
         if (this.getToken) {
           API.methods.post(`${SERVER.IP}/cart`, this.makePayload())
@@ -333,7 +355,7 @@ export default {
         })
       }
     },
-    directPurchase () {
+    directPurchase() {
       if (this.optionQuantity.length > 0) {
         if (this.getToken) {
           API.methods.post(`${SERVER.IP}/direct-purchase`, this.makePayload())

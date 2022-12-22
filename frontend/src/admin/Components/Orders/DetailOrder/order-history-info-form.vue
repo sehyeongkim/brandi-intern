@@ -8,11 +8,12 @@
       </tr>
       </thead>
       <tbody>
-      <tr v-for="item in dataStore.detailData.order_histories" :key="item">
+      <tr v-for="item in dataStore.detailHistory" :key="item">
         <td>{{ item.update_time }}</td>
-        <td>{{ item.order_status_id | typeToName('orderStatusTypes') }}</td>
+        <td>{{ item.order_status_type }}</td>
       </tr>
       </tbody>
+
     </table>
   </div>
 </template>
@@ -26,12 +27,12 @@ export default {
   },
   props: {
     dataStore: {
-      default () {
+      default() {
         return {}
       }
     }
   },
-  data () {
+  data() {
     return {
     }
   },

@@ -20,7 +20,7 @@
 <script>
 export default {
   name: 'DropDown',
-  data () {
+  data() {
     return {
       isOpen: false
     }
@@ -29,7 +29,7 @@ export default {
     value: String,
     items: {
       type: Array,
-      default () {
+      default() {
         return [
           {
             key: '',
@@ -40,33 +40,33 @@ export default {
     },
     placeholder: {
       type: String,
-      default () {
+      default() {
         return '선택해주세요'
       }
     }
   },
-  beforeMount () {
+  beforeMount() {
     document.body.addEventListener('click', this.clickout)
   },
-  beforeDestroy () {
+  beforeDestroy() {
     document.body.removeEventListener('click', this.clickout)
   },
   computed: {
-    displayLabelName () {
+    displayLabelName() {
       if (this.selectedItem) {
         return this.selectedItem.label
       }
       return this.placeholder
     },
-    selectedItem () {
+    selectedItem() {
       return this.items.find(d => d.key === this.value)
     }
   },
   methods: {
-    toggleItem () {
+    toggleItem() {
       this.isOpen = !this.isOpen
     },
-    selectItem (item) {
+    selectItem(item) {
       this.isOpen = false
       if (item === null) {
         this.$emit('input', null)
@@ -76,7 +76,7 @@ export default {
         this.$emit('change', item.key)
       }
     },
-    clickout () {
+    clickout() {
       this.isOpen = false
     }
   },

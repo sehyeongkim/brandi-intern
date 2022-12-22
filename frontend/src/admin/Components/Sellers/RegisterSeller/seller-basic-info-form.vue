@@ -5,22 +5,22 @@
         <template slot="label">
           셀러 프로필 <span class="required">*</span>
         </template>
-        <image-upload v-model="dataStore.detailData.profile" />
+        <image-upload v-model="dataStore.detailData.profile_image_url" />
       </a-descriptions-item>
       <a-descriptions-item label="셀러 상태" :span="3">
-        {{ dataStore.detailData.sellerStatus }}
+        {{ dataStore.detailData.seller_status_type }}
         <!-- {{ getSellerStatusName(dataStore.detailData.seller_status_id) }} -->
       </a-descriptions-item>
       <a-descriptions-item label="셀러 속성" :span="3" v-if="isMaster()">
-        <a-radio-group v-model="dataStore.detailData.sellerCategoryId">
+        <a-radio-group v-model="dataStore.detailData.seller_status_type_id">
           <a-radio v-for="item in constants.sellerSections" :value="item.value" :key="item.value">{{ item.label }}</a-radio>
         </a-radio-group>
       </a-descriptions-item>
       <a-descriptions-item label="셀러 한글명" :span="3">
-        <a-input placeholder="셀러 한글명" class="normal-size" v-model="dataStore.detailData.brandKorean" />
+        <a-input placeholder="셀러 한글명" class="normal-size" v-model="dataStore.detailData.korean_brand_name" />
       </a-descriptions-item>
       <a-descriptions-item label="셀러 영문명" :span="3">
-        <a-input placeholder="셀러 영문명" class="normal-size" v-model="dataStore.detailData.brandEnglish" />
+        <a-input placeholder="셀러 영문명" class="normal-size" v-model="dataStore.detailData.english_brand_name" />
       </a-descriptions-item>
     </a-descriptions>
   </div>
@@ -36,12 +36,12 @@ export default {
   },
   props: {
     dataStore: {
-      default () {
+      default() {
         return {}
       }
     }
   },
-  data () {
+  data() {
     return {
       filter: {
         seller_property_id: 1,
@@ -51,21 +51,21 @@ export default {
     }
   },
   computed: {
-    constants () {
+    constants() {
       return this.$store.state.const
     }
   },
   methods: {
-    setFormData (value) {
+    setFormData(value) {
 
     },
-    getFromData () {
+    getFromData() {
       return JSON.stringify(JSON.parse(this.filter))
     },
-    validate () {
+    validate() {
       return true
     },
-    getSellerStatusName (statusId) {
+    getSellerStatusName(statusId) {
       const statusItem = this.constants.sellerStatus.filter((d) => { return d.value === statusId })
       if (statusItem.length > 0) return statusItem[0].label
       return ''
